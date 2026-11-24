@@ -1,0 +1,21 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:structure_set": {
+    "description": {
+      "identifier": "bearframe:spillway_bunker"
+    },
+    "placement": {
+      "type": "minecraft:random_spread",
+      "salt": 861102,
+      "spacing": 28,
+      "separation": 10,
+      "spread_type": "linear"
+    },
+    "structures": [
+      {
+        "structure": "bearframe:spillway_bunker",
+        "weight": 1
+      }
+    ]
+  }
+}

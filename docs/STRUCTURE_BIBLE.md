@@ -18,3 +18,14 @@ The native plains placement is one candidate per randomized 22-chunk grid cell, 
 | `bearframe:city_orbit` | Current orbital municipal station | Contained arrival bay, Farfield office, inhabited Commons, Systems workroom and Watchtower post. Populates on first authorized trip and uses a dedicated return terminal. |
 
 Sites use footprint-shaped foundations and bounded additions where terrain supports an approach. The maintenance relay keeps its 0.1.0 placement. The checkpoint uses a surface projection to keep the bunker above river water. The city template is placed in a loaded void volume only if it is unoccupied.
+
+## Ruins Expedition
+
+| Ruin | Placement and purpose | Route and encounter | Salvage |
+|---|---|---|---|
+| Spillway Bunker | Forest. A surface pump headhouse once served a buried transfer station. | Lit switchback-free stair descent, service alcoves, pipe rack, old walker and isolated equipment. | Restore the pump bus with redstone. Recover iron, copper and a bucket. |
+| Signal Shelter | Taiga. An old emergency control room supported a transmitter. | Hazard stripe at its surface entrance, a partially flooded stair route between dry landings, a recessed cistern, standby logs, cots and a neutral resident. | Reconnect the battery with copper to reach the emergency cabinet. |
+| Rainline Works | Plains. Homes and repair buildings around a drainage road and square. | Cross streets connect all four sides. Broken roofs, moss and salvage-shop fixtures reflect abandonment and wear. | The municipal workshop accepts iron before opening its shared stockroom. |
+| Saltline Depot | Desert. A shuttered freight and residential stop. | Sand drifts, loading canopies, standardized road stripes and a single Hollow scout near dispatch. | Feed coal to the dispatch station for a one-time mixed supply claim. |
+
+The ruin terminals have their own short incident records, no known Builders are asserted, and the original six-site survey log is preserved. Structures use biome-specific placement rather than being retrofitted into existing chunks. On approach, Spillway drains incidental water within its authored passages. Signal Shelter retains the flooded section and cistern. Introductory ruins never change the original six-site log.

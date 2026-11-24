@@ -1,0 +1,17 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:template_pool": {
+    "description": {
+      "identifier": "bearframe:rainline_town"
+    },
+    "elements": [
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "bearframe/rainline_town"
+        },
+        "weight": 1
+      }
+    ]
+  }
+}

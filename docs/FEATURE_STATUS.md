@@ -2,7 +2,7 @@
 
 | Feature | Checkpoint |
 |---|---|
-| Six Overworld sites with native spacing and biome filters | Implemented; layout regressions and runtime observations in QA_TEST_LOG.md. |
+| Ten Overworld sites with native spacing and biome filters | Implemented; layout regressions and runtime observations in QA_TEST_LOG.md. |
 | Seven original entity definitions and textures | Implemented; render and animation references validated statically. Runtime checks spawned the site and city roles. |
 | Orbital destination, arrival and return | Implemented with per-player surface berth. Runtime coverage uses a native stand-in for a player. |
 | Terminal repairs, shared site loot, personal survey and completion award | Implemented; server fixtures cover the relevant state transitions. |

@@ -1,10 +1,12 @@
+import {RUINS,BUNKER_SIZE,TOWN_SIZE,BUNKER_ENTRY} from "../behavior_pack/scripts/ruins.js";
+import {stampBunker,stampTown} from "./ruin_layouts.mjs";
 // Bedrock little-endian template serialization follows the original Frontier tool.
 import fs from "node:fs";
 import {fileURLToPath} from "node:url";
 import nbt from "prismarine-nbt";
 import {SIZE,DECK,DIRECTION,BREAKER,GATE,RECOVERY,BULKHEAD,POWER_LIGHTS,at} from "../behavior_pack/scripts/layout.js";
 const root=fileURLToPath(new URL("../behavior_pack/",import.meta.url));
-import {TYPES,REGION_ANCHOR,PIN,ACTOR,CACHE,SEAL,SIGNAL,LANDING,CITY_EXIT} from "../behavior_pack/scripts/regions.js";
+import {SURVEY_TYPES,REGION_ANCHOR,PIN,ACTOR,CACHE,SEAL,SIGNAL,LANDING,CITY_EXIT} from "../behavior_pack/scripts/regions.js";
 const origin={x:10,y:DECK+1,z:8};
 const blocks=new Map();
 const put=(x,y,z,name,states={})=>blocks.set(`${x},${y},${z}`,{x,y,z,name,states});
@@ -58,10 +60,18 @@ for(const [x,z,dx,dz] of [[0,8,-1,0],[5,0,0,-1],[5,16,0,1]]){
  put(x-dx,DECK-2,z-dz,"minecraft:polished_deepslate");
 }
 emit("maintenance_relay",SIZE,"plains",22,681147);
-for(const [index,region] of TYPES.entries()){
+for(const [index,region] of SURVEY_TYPES.entries()){
  blocks.clear();
  buildRegion(index,region);
  emit(region.id,SIZE,region.biome,region.spacing,region.salt);
+}
+for(const [i,def] of RUINS.entries()){
+ blocks.clear();
+ const index=SURVEY_TYPES.length+i;
+ if(i<2)stampBunker({put,fill},def,index,i===1);
+ else stampTown({put,fill},def,index,i===3);
+ emit(def.id,i<2?BUNKER_SIZE:TOWN_SIZE,def.biome,def.spacing,def.salt,
+   i<2?BUNKER_ENTRY[1]:DECK,"world_surface",true);
 }
 blocks.clear();
 buildCity();
@@ -166,16 +176,18 @@ function buildCity(){
  put(CITY_EXIT.x,CITY_EXIT.y-99,CITY_EXIT.z+11,"minecraft:lodestone");
 }
 
-function emit(id,size,biome,spacing,salt){
+function emit(id,size,biome,spacing,salt,surface=DECK,projection=id==="intrusion_checkpoint"?"world_surface":"ocean_floor",dry=false){
 const palette=new Map(), data=Array(size.x*size.y*size.z).fill(-1);
 for(const {x,y,z,name,states} of blocks.values()){
  const key=JSON.stringify([name,states]);
  if(!palette.has(key))palette.set(key,palette.size);
  data[(x*size.y+y)*size.z+z]=palette.get(key);
 }
+const explicitAir=palette.get(JSON.stringify([air,{}]));
+const liquids=data.map(index=>dry&&index!==-1?explicitAir:-1);
 const tag=nbt.comp({format_version:nbt.int(1),size:nbt.list(nbt.int([size.x,size.y,size.z])),
  structure:nbt.comp({
- block_indices:{type:"list",value:{type:"list",value:[{type:"int",value:data},{type:"int",value:data.map(()=>-1)}]}},
+ block_indices:{type:"list",value:{type:"list",value:[{type:"int",value:data},{type:"int",value:liquids}]}},
  entities:nbt.list(nbt.comp([])),palette:nbt.comp({default:nbt.comp({
  block_palette:nbt.list(nbt.comp([...palette.keys()].map(key=>{
   const [name,states]=JSON.parse(key);
@@ -190,7 +202,7 @@ if(!biome)return;
 const format_version="1.26.50", identifier=`bearframe:${id}`;
 file(`worldgen/structures/${id}.json`,{format_version,"minecraft:jigsaw":{description:{identifier},
  step:"surface_structures",terrain_adaptation:"beard_box",start_pool:identifier,max_depth:1,
- start_height:{type:"constant",value:{absolute:-(DECK+1)}},heightmap_projection:id==="intrusion_checkpoint"?"world_surface":"ocean_floor",
+ start_height:{type:"constant",value:{absolute:-(surface+1)}},heightmap_projection:projection,
  biome_filters:[{test:"has_biome_tag",operator:"==",value:biome}]}});
 file(`worldgen/template_pools/${id}.json`,{format_version,"minecraft:template_pool":{description:{identifier},
  elements:[{element:{element_type:"minecraft:single_pool_element",location:`bearframe/${id}`},weight:1}]}});

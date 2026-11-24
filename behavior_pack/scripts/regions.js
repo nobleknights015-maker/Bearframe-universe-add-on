@@ -1,5 +1,6 @@
+import {RUINS} from "./ruins.js";
 export const REGION_ANCHOR="bearframe:region_anchor";
-export const TYPES=[
+export const SURVEY_TYPES=[
   {id:"farfield_camp",name:"Farfield Survey Camp",biome:"plains",spacing:25,salt:773210,
    panel:"minecraft:cartography_table",actor:"bearframe:farfield_surveyor"},
   {id:"grid_hub",name:"Overgrown Switchyard",biome:"forest",spacing:24,salt:773213,
@@ -19,6 +20,7 @@ export const TYPES=[
    repair:"Material handler powered. The annex processes parts and stock.",
    loot:[["minecraft:iron_ingot",5],["minecraft:copper_ingot",3]]}
 ];
+export const TYPES=[...SURVEY_TYPES,...RUINS];
 export const PIN=[1,-2,0], CACHE=[5,0,0], SEAL=[[3,0,0],[3,1,0]], ACTOR=[-1,0,3], SIGNAL=[1,2,2], LANDING=[-2,0,0];
 export const ORBIT="bearframe:city_orbit";
 export const CITY_ARRIVAL={x:2.5,y:101,z:.5};

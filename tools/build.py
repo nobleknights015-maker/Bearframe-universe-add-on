@@ -49,10 +49,10 @@ def main():
     OUT=args.output.resolve()
     validate()
     OUT.mkdir(parents=True,exist_ok=True)
-    with zipfile.ZipFile(OUT/"Bearframe_Bedrock_0.2.0.mcaddon","w",zipfile.ZIP_DEFLATED) as z:
+    with zipfile.ZipFile(OUT/"Bearframe_Bedrock_0.3.0.mcaddon","w",zipfile.ZIP_DEFLATED) as z:
         for folder,name in [(BP,"Behavior"),(RP,"Resources")]:
             z.writestr("Bearframe_"+name+".mcpack",archive(folder))
-    with zipfile.ZipFile(OUT/"Bearframe_Bedrock_Source_0.2.0.zip","w",zipfile.ZIP_DEFLATED) as z:
+    with zipfile.ZipFile(OUT/"Bearframe_Bedrock_Source_0.3.0.zip","w",zipfile.ZIP_DEFLATED) as z:
         for root in (BP,RP,ROOT/"docs",ROOT/"tests",ROOT/"tools"):
             for path in sorted(root.rglob("*")):
                 if path.is_file() and "__pycache__" not in path.parts:
@@ -65,7 +65,7 @@ def main():
                 subprocess.run(["git","-C",str(ROOT),"bundle","create",str(bundle),"--all"],check=True)
                 z.write(bundle,bundle.name)
     if args.world:
-        with zipfile.ZipFile(OUT/"Bearframe_Farfield_Arrival_0.2.0.mcworld","w",zipfile.ZIP_DEFLATED) as z:
+        with zipfile.ZipFile(OUT/"Bearframe_Ruins_Expedition_0.3.0.mcworld","w",zipfile.ZIP_DEFLATED) as z:
             for name in ("level.dat","levelname.txt","world_behavior_packs.json","world_resource_packs.json"):
                 z.write(args.world/name,name)
             for kind,root in (("behavior",BP),("resource",RP)):

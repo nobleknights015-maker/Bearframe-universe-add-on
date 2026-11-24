@@ -24,6 +24,11 @@ const promiseError=error=>console.warn("[Bearframe travel] "+error);
 const phase=site=>Number(site.anchor.permutation.getState(STATUS));
 const setStatus=(site,n)=>site.anchor.setPermutation(site.anchor.permutation.withState(STATUS,n));
 const local=(site,offset)=>dims(site.dim,at(site.pos,offset,site.r));
+const offsets=(site)=>site.def.layout??{cache:CACHE,seal:SEAL,signal:SIGNAL,actor:ACTOR};
+const cacheOffsets=[...new Map(TYPES.filter(def=>def.loot).map(def=>{
+  const point=def.layout?.cache??CACHE;
+  return [point.join(","),point];
+})).values()];
 
 export function regionAt(dim,pos){
   const anchor=dims(dim,at(pos,[0,-2,0]));
@@ -34,15 +39,42 @@ export function regionAt(dim,pos){
   if(r>=0)return {dim,pos,def,r,anchor};
 }
 
-function match(block){
+export function matchRegionDevice(block){
   if(!block||block.dimension.id!=="minecraft:overworld")return;
   const {dimension:dim,location:pos,typeId}=block;
   if(panels.has(typeId))return regionAt(dim,pos);
   if(typeId!==CHEST)return;
-  for(let r=0;r<4;r++){
-    const s=regionAt(dim,at(pos,CACHE.map(n=>-n),r));
-    if(s?.r===r&&s.def.loot)return s;
+  for(const offset of cacheOffsets) for(let r=0;r<4;r++){
+    const s=regionAt(dim,at(pos,offset.map(n=>-n),r));
+    if(s?.r===r&&s.def.loot&&offsets(s).cache.join(",")===offset.join(","))return s;
   }
+}
+
+// Native terrain can leave water inside a sealed tunnel. Drain the authored
+// corridor once near first discovery. Do not change the surrounding terrain.
+export function prepareBunker(site){
+  if(!site.def.bunker||site.def.flooded)return;
+  const key="bearframe:bunker_drain:"+keyAt(site.pos);
+  if(world.getDynamicProperty(key))return;
+  const tunnel=[];
+  for(let x=-17;x<=-6;x++){
+    const stair=11-(x+17);
+    for(let z=-1;z<=1;z++)for(let y=stair;y<=stair+3;y++){
+      const block=local(site,[x,y,z]);
+      if(!block)return;
+      tunnel.push(block);
+    }
+  }
+  for(let x=-7;x<=11;x++)for(let z=-7;z<=7;z++)for(let y=0;y<=4;y++){
+    const block=local(site,[x,y,z]);
+    if(!block)return;
+    tunnel.push(block);
+  }
+  for(const block of tunnel){
+    if(block.typeId==="minecraft:water"||block.typeId==="minecraft:flowing_water")block.setType("minecraft:air");
+    if(block.isWaterlogged&&(block.isAir||block.typeId==="minecraft:stone_brick_stairs"))block.setWaterlogged(false);
+  }
+  world.setDynamicProperty(key,true);
 }
 
 export function greetRegion(site){
@@ -50,7 +82,7 @@ export function greetRegion(site){
   const key="bearframe:crew:"+keyAt(pos);
   if(world.getDynamicProperty(key))return;
   if(def.actor==="bearframe:hollow_scout"&&world.getDifficulty()===Difficulty.Peaceful)return;
-  const loc=at(pos,ACTOR,r), feet=dims(dim,loc), floor=feet?.below();
+  const loc=at(pos,offsets(site).actor,r), feet=dims(dim,loc), floor=feet?.below();
   if(!feet?.isAir||!feet.above()?.isAir||!floor||floor.isAir||floor.isLiquid)return;
   const entity=dim.spawnEntity(def.actor,center(loc));
   entity.setDynamicProperty("bearframe:region_role",def.id);
@@ -185,8 +217,9 @@ export function interactRegion(player,site,kind,spend){
     return say(player,"Farfield checked you in. Sneak-interact here to board for Bearframe City. The city return desk brings you back.");
   }
   if(kind===CHEST)return claim(player,site);
-  if(phase(site)>=1)return say(player,def.name+" is running. Check the stores beyond the gate.");
-  const parts=[...SEAL,SIGNAL].map(p=>local(site,p));
+  if(phase(site)>=1)return say(player,def.note??def.name+" is running. Check the stores beyond the gate.");
+  const {seal,signal}=offsets(site);
+  const parts=[...seal,signal].map(p=>local(site,p));
   if(parts.slice(0,2).some(b=>!b||!MOORINGS.includes(b.typeId))||parts[2]?.typeId!=="minecraft:coal_block")
     return say(player,"This site's hardware is blocked, altered, or outside loaded terrain.");
   const [item,n]=def.cost;
@@ -198,14 +231,14 @@ export function installExpedition({validPlayer,spend,attempt}){
   world.beforeEvents.playerInteractWithBlock.subscribe(event=>{
     const {player,block}=event;
     const isExit=block.dimension.id===ORBIT && block.typeId==="minecraft:lodestone" && keyAt(block.location)===keyAt(CITY_EXIT);
-    if(!isExit&&!match(block))return;
+    if(!isExit&&!matchRegionDevice(block))return;
     event.cancel=true;
     if(!event.isFirstEvent)return;
     const {dimension,location}=block;
     system.run(()=>attempt(()=>{
       if(!validPlayer(player)||player.dimension.id!==dimension.id||dist(player.location,location)>49)return;
       if(isExit){travelSurface(player).catch(promiseError);return;}
-      const current=dims(dimension,location),site=match(current);
+      const current=dims(dimension,location),site=matchRegionDevice(current);
       if(site){
         if(current.typeId===site.def.panel)recordSurvey(player,site.def.id);
         Promise.resolve(interactRegion(player,site,current.typeId,spend)).catch(promiseError);

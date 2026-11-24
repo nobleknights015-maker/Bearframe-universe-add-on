@@ -1,10 +1,10 @@
 import {ItemStack} from "@minecraft/server";
-import {TYPES} from "./regions.js";
+import {SURVEY_TYPES} from "./regions.js";
 
 const LOG="bearframe:survey_log";
 const AWARDED="bearframe:survey_awarded";
-const FIELD_ROUTES=["maintenance_relay",...TYPES.map(r=>r.id)];
-const TITLES=["Maintenance Relay",...TYPES.map(r=>r.name)];
+const FIELD_ROUTES=["maintenance_relay",...SURVEY_TYPES.map(r=>r.id)];
+const TITLES=["Maintenance Relay",...SURVEY_TYPES.map(r=>r.name)];
 const INSIGNIA="bearframe:farfield_insignia";
 
 export function recordSurvey(player,id){

@@ -1,3 +1,9 @@
+# 0.3.0 Ruins Expedition
+
+- Bedrock 1.26.63.1 located four new biome-linked structures on seed 13221951 and exercised the east/west routes from exterior pads to consoles, resident uniqueness, local repair debits and once-per-site locker claims. The test found a natural flooded stair in Signal Shelter. The final design retains the wet route, adds an authored cistern, and checks a connected route with dry breathing pockets. The spawn, travel and visible water checks use a headless server, not a graphical player.
+- The four new static route tests check room connections, dry-model entrances, the complete stair incline and matching rotated terminal hardware. All 13 offline tests passed. Terrain determines whether side grades can be added; the test did not generate graded exterior additions at the two bunker headhouses.
+- The earlier native room, city and personal survey code remains present. The old six-site indices were checked for numerical continuity. Android client rendering and live co-op are still pending.
+
 # 0.2.0 world and travel checks
 
 Bedrock Dedicated Server 1.26.63.1 generated and located all six surface types in the regular Overworld. The first checkpoint attempt exposed a waterlogged seal in the river at X 8, Z 422. The expansion checkpoint now uses the surface projection and drains waterlogged bars during a successful bypass. The clean retest opened that seal and collected the stores once.

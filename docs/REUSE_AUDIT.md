@@ -10,3 +10,7 @@ Baseline is the paused local Starbound Frontier release source archive 1.3.4. SH
 | Starter campaign, offworld travel, vehicles, scanning and faction contracts | Rebuild or defer | Scope begins with one Overworld site. No Frontier identifiers, dialogue, destination list or story assets were copied. |
 | Inventory debit and single shared reward patterns | Adapt | Feature-local synchronous consumption and rollback. |
 | Star Odyssey and Infinity resources | Exclude | Independently installed visual packs. Only Infinity is a compatibility target for this checkpoint. |
+
+## Worldbuilding research applied
+
+The November 23 Starbound Frontier worldbuilding study and implementation notes informed this pass. Each biome receives a distinct material palette and former function. Street networks lead to interiors instead of ending at isolated facades. Clues use damaged infrastructure, accent lighting and short records. Test a true approach and repair on generated terrain, including fluid interference and headroom, before claiming a structure is playable. This project samples Infinity's native texture scale as a separate visual dependency, with no redistribution of Star Odyssey or Infinity.

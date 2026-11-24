@@ -7,7 +7,7 @@ import random
 ROOT=Path(__file__).resolve().parents[1]
 BP,RP=ROOT/"behavior_pack",ROOT/"resource_pack"
 SEED=UUID("d5efd705-1ffa-48c6-8148-6ac108170a38")
-VERSION=[0,2,0]
+VERSION=[0,3,0]
 def uid(key):
     return str(uuid5(SEED,key))
 def write(root,path,content):
@@ -192,7 +192,7 @@ write(BP,"blocks/approach_anchor.json",approach)
 
 region=json.loads((BP/"blocks/relay_anchor.json").read_text())
 region["minecraft:block"]["description"]={"identifier":"bearframe:region_anchor","states":{
-    "bearframe:region":[0,1,2,3,4],"bearframe:status":[0,1,2]}}
+    "bearframe:region":[0,1,2,3,4,5,6,7,8],"bearframe:status":[0,1,2]}}
 write(BP,"blocks/region_anchor.json",region)
 write(BP,"dimensions/city_orbit.json",{"format_version":"1.26.50","minecraft:dimension":{
  "description":{"identifier":"bearframe:city_orbit"},"components":{

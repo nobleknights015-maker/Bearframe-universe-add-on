@@ -1,5 +1,5 @@
 import {recordSurvey} from "./survey_log.js";
-import {greetRegion,installExpedition,regionAt} from "./expedition.js";
+import {greetRegion,installExpedition,prepareBunker,regionAt} from "./expedition.js";
 import {REGION_ANCHOR,ORBIT} from "./regions.js";
 import {APPROACH_MARKER,gradeApproach} from "./approaches.js";
 import {BlockVolume,Difficulty,GameMode,ItemStack,system,world} from "@minecraft/server";
@@ -184,14 +184,14 @@ system.runInterval(()=>{
     const {dimension:dim,location:loc}=p;
     const key=[loc.x,loc.y,loc.z].map(n=>Math.floor(n/12)).join(",");
     if(cells.get(p.id)===key)return;
-    const a={x:Math.floor(loc.x)-21,y:Math.max(dim.heightRange.min,Math.floor(loc.y)-12),z:Math.floor(loc.z)-21};
+    const a={x:Math.floor(loc.x)-21,y:Math.max(dim.heightRange.min,Math.floor(loc.y)-18),z:Math.floor(loc.z)-21};
     const b={x:Math.floor(loc.x)+21,y:Math.min(dim.heightRange.max-1,Math.floor(loc.y)+14),z:Math.floor(loc.z)+21};
     for(const p of dim.getBlocks(new BlockVolume(a,b),{includeTypes:[ANCHOR,APPROACH_MARKER,REGION_ANCHOR]},true).getBlockLocationIterator()){
       const marker=loaded(dim,p);
       if(marker?.typeId===APPROACH_MARKER){gradeApproach(marker);continue;}
       if(marker?.typeId===REGION_ANCHOR){
         const region=regionAt(dim,at(p,[0,2,0]));
-        if(region)greetRegion(region);
+        if(region){prepareBunker(region);greetRegion(region);}
         continue;
       }
       const site=resolveSite(dim,at(p,[0,2,0]));

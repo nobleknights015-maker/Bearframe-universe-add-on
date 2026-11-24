@@ -1,7 +1,7 @@
 // Append temporarily to main.js in a disposable world with seed 13221951.
 import {ensureCity,interactRegion,travelCity,travelSurface} from "./expedition.js";
 import {reportSurvey} from "./survey_log.js";
-import {TYPES,CACHE,CITY_ARRIVAL,CITY_EXIT,CITY_ROLES,SEAL,ORBIT as CITY_DIM} from "./regions.js";
+import {SURVEY_TYPES,CACHE,CITY_ARRIVAL,CITY_EXIT,CITY_ROLES,SEAL,ORBIT as CITY_DIM} from "./regions.js";
 
 world.afterEvents.worldLoad.subscribe(()=>system.runTimeout(()=>void (async()=>{
  const dim=world.getDimension("overworld"),areas=world.tickingAreaManager;
@@ -57,7 +57,7 @@ world.afterEvents.worldLoad.subscribe(()=>system.runTimeout(()=>void (async()=>{
        }
        check(bag.emptySlotsCount===26-def.loot.length,"no duplicated awards");
      }else{
-       for(const id of ["maintenance_relay",...TYPES.map(d=>d.id)])recordSurvey(proxy,id);
+       for(const id of ["maintenance_relay",...SURVEY_TYPES.map(d=>d.id)])recordSurvey(proxy,id);
        await travelCity(proxy,site);
        check(proxy.dimension.id===CITY_DIM,"fixture traveled from camp to city");
        reportSurvey(proxy);

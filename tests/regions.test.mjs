@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import test from "node:test";
 import nbt from "prismarine-nbt";
-import {ACTOR,CACHE,CITY_ARRIVAL,CITY_EXIT,CITY_ROLES,LANDING,ORBIT,REGION_ANCHOR,SEAL,TYPES} from "../behavior_pack/scripts/regions.js";
+import {ACTOR,CACHE,CITY_ARRIVAL,CITY_EXIT,CITY_ROLES,LANDING,ORBIT,REGION_ANCHOR,SEAL,SURVEY_TYPES} from "../behavior_pack/scripts/regions.js";
 const bp=new URL("../behavior_pack/",import.meta.url);
 function voxelLookup(name){
  const path=new URL(`structures/bearframe/${name}.mcstructure`,bp);
@@ -10,7 +10,7 @@ function voxelLookup(name){
  const [,sy,sz]=n.size,{block_palette:p}=n.structure.palette.default;
  return (x,y,z)=>p[n.structure.block_indices[0][(x*sy+y)*sz+z]];
 }
-for(const [i,d] of TYPES.entries())test(d.id+" has anchored hardware, approach markers and clear spawn",()=>{
+for(const [i,d] of SURVEY_TYPES.entries())test(d.id+" has anchored hardware, approach markers and clear spawn",()=>{
  const cell=voxelLookup(d.id), at=([x,y,z])=>cell(x+10,y+14,z+8);
  const anchor=at([0,-2,0]);
  assert.equal(anchor.name,REGION_ANCHOR);

@@ -1,0 +1,17 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:template_pool": {
+    "description": {
+      "identifier": "bearframe:saltline_town"
+    },
+    "elements": [
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "bearframe/saltline_town"
+        },
+        "weight": 1
+      }
+    ]
+  }
+}
