@@ -40,9 +40,12 @@ test("all humanoids (Bearframes, Nullframes, Hollows, Hunters, Echoes) use playe
     }
     assert.equal(bones.get("body").pivot[1],12);
     assert.equal(bones.get("head").pivot[1],24);
-    assert.equal(Math.abs(bones.get("arm0").pivot[0]),5.75);
+    assert.equal(Math.abs(bones.get("arm0").pivot[0]),6);
     assert.equal(Math.abs(bones.get("leg0").pivot[0]),2);
     assert(bones.get("head").cubes.length>=4);
+    for(const [name,size] of Object.entries({head:[8,8,8],body:[8,12,4],
+      arm0:[4,12,4],arm1:[4,12,4],leg0:[4,12,4],leg1:[4,12,4]}))
+      assert.deepEqual(bones.get(name).cubes[0].size,size);
     let minY = Infinity, maxY = -Infinity;
     for (const bone of geo.bones) {
       for (const cube of bone.cubes || []) {

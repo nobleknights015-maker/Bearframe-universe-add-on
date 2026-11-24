@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BP = ROOT / "behavior_pack"
 RP = ROOT / "resource_pack"
 SEED = UUID("d5efd705-1ffa-48c6-8148-6ac108170a38")
-VERSION = [0, 4, 3]
+VERSION = [0, 4, 4]
 MIN_ENGINE = [1, 26, 50]
 SERVER_API = "2.10.0"
 
@@ -1736,52 +1736,118 @@ def build_rig(rig_key: str) -> list[dict]:
     return build_humanoid_rig(rig_key)
 
 
-def player_proportions(bones: list[dict], style: str) -> list[dict]:
-    """Fit armor to a 12px inseam, 12px torso and an 8px player head band."""
-    by_name = {part["name"]: part for part in bones}
-    hip = by_name["body"]["pivot"][1]
-    neck = by_name["head"]["pivot"][1]
-    head_top = max(c["origin"][1] + c["size"][1] for c in by_name["head"]["cubes"][:3])
-    if head_top <= neck:
-        raise ValueError("Head geometry must rise above the neck pivot")
-    landmarks = [(0, 0), (hip, 12), (neck, 24), (head_top, 32)]
+def build_player_frame(spec: dict, atlas: Canvas) -> tuple[list[dict], Canvas]:
+    """Classic player cubes with an independent faction armor layer."""
+    style, name, pal = spec["style"], spec["id"], spec["palette"]
+    armor = pal["armor"]
+    dark = "#202127" if style != "echo" else "#262429"
+    glow = pal["glow"]
+    sheet = Canvas(256,128,dark)
+    for y in range(128):
+        source = y*128*4
+        sheet.buf[y*256*4:y*256*4+128*4] = atlas.buf[source:source+128*4]
+    wear = random.Random(name)
+    pale = hex_to_rgba(armor)
+    for i in range(36):
+        x = 128 + i%8*16
+        y = i//8*16
+        limb, face = divmod(i,6)
+        sheet.rect(x,y,x+15,y+15,fill=dark)
+        if limb == 0:
+            sheet.rect(x,y,x+15,y+4,fill=armor)
+            sheet.rect(x,y+12,x+15,y+15,fill=armor)
+            if face == 0:
+                sheet.rect(x+2,y+5,x+13,y+11,fill="#11151c")
+                if style in ("bearframe","echo"):
+                    sheet.rect(x+3,y+7,x+5,y+9,fill=glow)
+                    sheet.rect(x+10,y+7,x+12,y+9,fill="#e06aac" if style=="echo" else glow)
+                else:
+                    sheet.rect(x+2,y+7,x+13,y+8,fill=glow)
+            else:
+                sheet.rect(x+2,y+5,x+13,y+12,fill=armor)
+        else:
+            inset = 1 if limb != 1 else 2
+            for xx,yy,ww,hh in [(inset,0,16-2*inset,6),(inset+1,9,14-2*inset,4)]:
+                sheet.rect(x+xx,y+yy,x+xx+ww-1,y+yy+hh-1,fill=armor)
+                sheet.hline(x+xx,x+xx+ww-1,y+yy,shade(pale,20))
+            sheet.hline(x+3,x+12,y+8,glow)
+            if limb >= 4:
+                sheet.hline(x+3,x+12,y+14,glow)
+        if style == "echo":
+            for _ in range(5):
+                u,v=wear.randrange(1,14),wear.randrange(0,15)
+                sheet.rect(x+u,y+v,x+u+wear.randrange(1,3),y+v+1,fill=dark if u%2 else "#5e5050")
+    if style == "bearframe":
+        # The bear emblem is a display icon. The helmet has no animal anatomy.
+        for tile in (4,):
+            u,v=tile_uv(tile)
+            sheet.rect(u,v,u+31,v+31,fill=armor)
+            sheet.rect(u+3,v+3,u+28,v+28,fill="#141c23")
+            for x in (8,21):
+                sheet.rect(u+x,v+8,u+x+4,v+12,fill=glow)
+            sheet.rect(u+10,v+11,u+22,v+22,fill=glow)
+            for x in (12,18):
+                sheet.rect(u+x,v+14,u+x+2,v+16,fill="#141c23")
+            sheet.rect(u+15,v+19,u+17,v+21,fill="#141c23")
 
-    def fit_y(y):
-        for (a, b), (c, d) in zip(landmarks, landmarks[1:]):
-            if y <= c:
-                return b + (y-a) * (d-b) / (c-a)
-        return y - head_top + 32
+    parts = [
+        ("head",[0,24,0],[-4,24,-4],[8,8,8],"body"),
+        ("body",[0,12,0],[-4,12,-2],[8,12,4],"root"),
+        ("arm0",[-6,22,0],[-8,12,-2],[4,12,4],"body"),
+        ("arm1",[6,22,0],[4,12,-2],[4,12,4],"body"),
+        ("leg0",[-2,12,0],[-4,0,-2],[4,12,4],"root"),
+        ("leg1",[2,12,0],[0,0,-2],[4,12,4],"root"),
+    ]
+    result = [bone("root",[0,0,0],[])]
+    for index,(part,pivot,origin,size,parent) in enumerate(parts):
+        base=box(origin,size,1)
+        for j,face in enumerate(FACES):
+            tile=index*6+j
+            base["uv"][face]={"uv":[128+tile%8*16,tile//8*16],"uv_size":[16,16]}
+        result.append(bone(part,pivot,[base],parent=parent))
 
-    for part in bones:
-        name = part["name"]
-        pivot_x = part["pivot"][0]
-        dx = 0
-        if name.startswith("arm"):
-            dx = math.copysign(5.75, pivot_x) - pivot_x
-        elif name.startswith("leg"):
-            dx = math.copysign(2, pivot_x) - pivot_x
-        part["pivot"][0] = round(pivot_x+dx, 3)
-        part["pivot"][1] = round(fit_y(part["pivot"][1]), 3)
-        for cube in part["cubes"]:
-            x, y, _ = cube["origin"]
-            cube["origin"][0] = round(x+dx, 3)
-            cube["origin"][1] = round(fit_y(y), 3)
-            cube["size"][1] = round(fit_y(y+cube["size"][1])-fit_y(y), 3)
-            if "pivot" in cube:
-                cube["pivot"][0] = round(cube["pivot"][0]+dx, 3)
-                cube["pivot"][1] = round(fit_y(cube["pivot"][1]), 3)
+    head, body, left, right, leg_l, leg_r = (b["cubes"] for b in result[1:])
+    plate = 9 if style=="echo" else 0
+    head += [
+        box([-3.72,30.25,-4.22],[7.44,1.55,.6],plate),
+        box([-3.67,24.4,-4.18],[1.55,1.72,.52],plate),
+        box([2.12,24.4,-4.18],[1.55,1.72,.52],plate),
+    ]
+    if style != "hollow":
+        head += [box([-4.47,26.1,-1.5],[.52,2.9,3],1,west=4),
+                 box([3.95,26.1,-1.5],[.52,2.9,3],1,east=4)]
+    body += [
+        box([-3.65,17.0,-2.28],[7.3,4.9,.64],plate),
+        box([-1.9,18.1,-2.78],[3.8,2.7,.52],1,north=3),
+        box([-2.1,13,-2.22],[4.2,1.75,.45],plate),
+    ]
+    for arm,x in [(left,-8),(right,4)]:
+        arm += [box([x-.14,20.4,-2.23],[4.28,3.27,4.45],plate),
+                box([x+.22,13.8,-2.28],[3.56,2.6,.58],plate,north=6)]
+    for leg,x in [(leg_l,-4),(leg_r,0)]:
+        leg += [box([x+.3,1.1,-2.35],[3.4,3.62,.63],plate),
+                box([x+.45,5.23,-2.18],[3.1,1.58,.34],5)]
 
-    head = by_name["head"]["cubes"]
-    if len(head) < 7:
-        # Replace the older single-shell face with separate crown, chin and inset optics.
-        shell = 9 if style == "echo" else 0
-        head[:1] = [
-            box([-2.95,24.45,-2.55],[5.9,6.45,5.5],shell,south=11),
-            box([-2.7,30.7,-2.4],[5.4,1.3,5.0],shell),
-            box([-2.9,28.1,-2.85],[5.8,2.75,.38],1,north=2),
-            box([-2.25,24.45,-2.78],[4.5,2.0,.65],shell,north=13),
-        ]
-    return bones
+    # Each assignment has physical equipment its native animation can carry.
+    if name in ("farfield_surveyor","field_researcher","city_engineer","atlas_rigger"):
+        body.append(box([-2.4,15.1,2.07],[4.8,6.1,1.62],1,south=7))
+    if name in ("field_researcher","vera_artisan","city_steward"):
+        right.append(box([4.5,15.4,-2.92],[2.8,3.55,.56],1,north=7))
+    if name in ("city_watch","nullframe_hunter","directorate_officer"):
+        head.append(box([2.75,30.36,1.8],[.55,3.05,1.2],1,north=6,up=10))
+        body.append(box([-3.05,12.45,2.16],[6.1,8.1,.68],1,south=6))
+    if name in ("atlas_vanguard","hollow_breacher","hollow_line","echo_sentinel"):
+        left.append(box([-8.2,13.05,-3.45],[4.45,6.0,1.32],plate,north=7))
+    if name=="atlas_rigger":
+        left.append(box([-8.28,12.2,-2.3],[4.56,3.3,4.65],1,north=7))
+    if style=="echo":
+        head.pop(2)
+        right.pop(1)
+        body.append(box([1.95,14.6,-2.43],[1.15,5.0,.52],9,north=7))
+        brace = leg_r if name=="echo_drifter" else leg_l
+        x = .5 if brace is leg_r else -3.5
+        brace.append(box([x,1.25,1.95],[1.2,7.0,.72],1,south=7))
+    return [result[0],result[2],result[1],*result[3:]],sheet
 
 
 def build_animations_for(name: str, family: str) -> dict:
@@ -2639,12 +2705,11 @@ def main() -> None:
         if name in ("directorate_guard", "hollow_line", "nullframe_hunter", "echo_drifter"):
             finish_frontier_optics(atlas, name, pal)
 
-        save_rp_png(tex_path, atlas)
-
-        # Bedrock Geometry
-        bones = build_rig(spec["rig"])
         if spec["anim_family"] == "humanoid":
-            bones = player_proportions(bones, spec["style"])
+            bones, atlas = build_player_frame(spec,atlas)
+        else:
+            bones = build_rig(spec["rig"])
+        save_rp_png(tex_path, atlas)
         bw, bh, boff = spec["bounds"]
         geo_id = f"geometry.bearframe.{name}"
         write_json(RP, f"models/entity/{name}.geo.json", {
@@ -2652,8 +2717,8 @@ def main() -> None:
             "minecraft:geometry": [{
                 "description": {
                     "identifier": geo_id,
-                    "texture_width": 128,
-                    "texture_height": 128,
+                    "texture_width": atlas.w,
+                    "texture_height": atlas.h,
                     "visible_bounds_width": bw,
                     "visible_bounds_height": bh,
                     "visible_bounds_offset": [0, boff, 0],
