@@ -4,7 +4,7 @@
     "description": {
       "identifier": "bearframe:echo_drifter",
       "materials": {
-        "default": "entity_alphatest"
+        "default": "entity"
       },
       "textures": {
         "default": "textures/bearframe/echo_drifter"

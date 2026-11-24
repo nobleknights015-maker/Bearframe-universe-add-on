@@ -8,19 +8,19 @@ const readJson = (url) => JSON.parse(readFileSync(url, "utf8"));
 
 const BEARFRAMES = [
   "farfield_surveyor", "city_steward", "city_engineer", "city_watch",
-  "atlas_rigger", "atlas_vanguard", "vera_artisan"
+  "atlas_rigger", "atlas_vanguard", "vera_artisan", "field_researcher"
 ];
 const NULLFRAMES_AND_HOLLOWS = [
-  "hollow_scout", "hollow_breacher", "directorate_officer", "nullframe_hunter"
+  "hollow_scout", "hollow_breacher", "directorate_officer", "nullframe_hunter", "directorate_guard", "hollow_line"
 ];
 const ECHOES = ["ward_resident", "echo_drifter", "echo_sentinel"];
 const GHOST_GRID = [
-  "grid_walker", "grid_watcher", "grid_turret", "grid_hauler", "grid_guardian"
+  "grid_walker", "grid_watcher", "grid_turret", "grid_hauler", "grid_guardian", "grid_repair_crawler", "grid_protocol_keeper"
 ];
 const ALL_LIVING = [...BEARFRAMES, ...NULLFRAMES_AND_HOLLOWS, ...ECHOES, ...GHOST_GRID];
 
-test("all 19 living entities + grid_bolt projectile exist across BP, RP, models, and textures", () => {
-  assert.equal(ALL_LIVING.length, 19);
+test("all 24 living entities + grid_bolt projectile exist across BP, RP, models, and textures", () => {
+  assert.equal(ALL_LIVING.length, 24);
   const bpFiles = new Set(readdirSync(new URL("entities/", bp)));
   const rpFiles = new Set(readdirSync(new URL("entity/", rp)));
   const modelFiles = new Set(readdirSync(new URL("models/entity/", rp)));
@@ -115,4 +115,23 @@ test("all 4 survival recipes and 6 custom items are properly registered without 
   for (const f of items) {
     assert(!f.includes("sentience") && !f.includes("prime_core"), `Lore violation item: ${f}`);
   }
+});
+
+test("the seven Frontier roles use distinct authored rigs and matching resources",()=>{
+  const lineup=["field_researcher","directorate_guard","hollow_line","nullframe_hunter","echo_drifter",
+    "grid_repair_crawler","grid_protocol_keeper"];
+  const signatures=new Set();
+  for(const id of lineup){
+    const client=readJson(new URL(`entity/${id}.entity.json`,rp))["minecraft:client_entity"].description;
+    const geo=readJson(new URL(`models/entity/${id}.geo.json`,rp))["minecraft:geometry"][0];
+    assert.equal(client.identifier,"bearframe:"+id);
+    assert.equal(client.geometry.default,geo.description.identifier);
+    assert.equal(client.textures.default,"textures/bearframe/"+id);
+    assert(client.spawn_egg);
+    const shape=geo.bones.map(b=>[b.name,b.pivot,b.cubes.map(c=>[c.origin,c.size,c.rotation])]);
+    signatures.add(JSON.stringify(shape));
+    if(id==="grid_repair_crawler")assert.equal(geo.bones.filter(b=>/^leg\d$/.test(b.name)).length,6);
+    if(id==="grid_protocol_keeper")assert(geo.bones.some(b=>b.name==="scanner")&&!geo.bones.some(b=>b.name==="leg0"));
+  }
+  assert.equal(signatures.size,lineup.length);
 });

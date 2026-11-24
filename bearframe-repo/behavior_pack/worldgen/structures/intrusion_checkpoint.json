@@ -5,21 +5,30 @@
       "identifier": "bearframe:intrusion_checkpoint"
     },
     "step": "surface_structures",
-    "terrain_adaptation": "beard_box",
+    "terrain_adaptation": "none",
     "start_pool": "bearframe:intrusion_checkpoint",
     "max_depth": 1,
     "start_height": {
       "type": "constant",
       "value": {
-        "absolute": -14
+        "absolute": -1
       }
     },
-    "heightmap_projection": "world_surface",
+    "heightmap_projection": "ocean_floor",
     "biome_filters": [
       {
-        "test": "has_biome_tag",
-        "operator": "==",
-        "value": "savanna"
+        "any_of": [
+          {
+            "test": "has_biome_tag",
+            "operator": "==",
+            "value": "savanna"
+          },
+          {
+            "test": "has_biome_tag",
+            "operator": "==",
+            "value": "plains"
+          }
+        ]
       }
     ]
   }

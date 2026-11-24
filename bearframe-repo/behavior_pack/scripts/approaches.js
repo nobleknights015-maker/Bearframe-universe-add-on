@@ -46,7 +46,7 @@ export function gradeApproach(marker){
           let safe=true;
           for(let h=ground+1;h<=grade+2;h++){
             const b=dim.getBlock({...p,y:h});
-            if(h<=grade && water(b))continue;
+            if(water(b)) {safe=false;break;}
             if(!b?.isAir){safe=false;break;}
           }
           slices.push(safe?{p,ground,n}:null);

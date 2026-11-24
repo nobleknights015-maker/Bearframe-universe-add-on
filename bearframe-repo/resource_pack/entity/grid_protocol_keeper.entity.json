@@ -1,0 +1,38 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bearframe:grid_protocol_keeper",
+      "materials": {
+        "default": "entity"
+      },
+      "textures": {
+        "default": "textures/bearframe/grid_protocol_keeper"
+      },
+      "geometry": {
+        "default": "geometry.bearframe.grid_protocol_keeper"
+      },
+      "animations": {
+        "idle": "animation.bearframe.grid_protocol_keeper.idle",
+        "attack": "animation.bearframe.grid_protocol_keeper.attack",
+        "walk": "animation.bearframe.grid_protocol_keeper.walk",
+        "ctrl": "controller.animation.bearframe.locomotion"
+      },
+      "scripts": {
+        "initialize": [
+          "variable.attack_time = 0.0;"
+        ],
+        "animate": [
+          "ctrl"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bearframe"
+      ],
+      "spawn_egg": {
+        "base_color": "#59727a",
+        "overlay_color": "#8ef2ea"
+      }
+    }
+  }
+}

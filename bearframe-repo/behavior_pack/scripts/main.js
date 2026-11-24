@@ -1,3 +1,5 @@
+import {buildSurfaceSite} from "./surface_sites.js";
+import {SURFACE_DATUM,SURFACE_DONE} from "./surface_layout.js";
 import {buildSpillway} from "./spillway.js";
 import {SPILLWAY_BUILT,SPILLWAY_MARKER} from "./spillway_layout.js";
 import {recordSurvey} from "./survey_log.js";
@@ -190,8 +192,12 @@ system.runInterval(()=>{
     let pending=false;
     const a={x:Math.floor(loc.x)-21,y:Math.max(dim.heightRange.min,Math.floor(loc.y)-18),z:Math.floor(loc.z)-21};
     const b={x:Math.floor(loc.x)+21,y:Math.min(dim.heightRange.max-1,Math.floor(loc.y)+14),z:Math.floor(loc.z)+21};
-    for(const p of dim.getBlocks(new BlockVolume(a,b),{includeTypes:[ANCHOR,APPROACH_MARKER,REGION_ANCHOR,SPILLWAY_MARKER]},true).getBlockLocationIterator()){
+    for(const p of dim.getBlocks(new BlockVolume(a,b),{includeTypes:[ANCHOR,APPROACH_MARKER,REGION_ANCHOR,SPILLWAY_MARKER,SURFACE_DATUM]},true).getBlockLocationIterator()){
       const marker=loaded(dim,p);
+      if(marker?.typeId===SURFACE_DATUM){
+        if(!marker.permutation.getState(SURFACE_DONE) && !buildSurfaceSite(marker))pending=true;
+        continue;
+      }
       if(marker?.typeId===SPILLWAY_MARKER){
         if(!marker.permutation.getState(SPILLWAY_BUILT) && !buildSpillway(marker))pending=true;
         continue;

@@ -32,7 +32,7 @@ const ANDROID_CHECKLIST: CheckItem[] = [
     id: 'import',
     label: '1. Import & Pack Icons',
     detail:
-      'Open Bearframe_Bedrock_0.4.1.mcaddon from Android Files -> choose Minecraft -> confirm both Bearframe | Behavior and Bearframe | Resources import with custom icons.',
+      'Open Bearframe_Bedrock_0.4.2.mcaddon from Android Files -> choose Minecraft -> confirm both Bearframe | Behavior and Bearframe | Resources import with custom icons.',
   },
   {
     id: 'content-log',
@@ -86,9 +86,9 @@ const ANDROID_CHECKLIST: CheckItem[] = [
 
 const ARTIFACTS: Artifact[] = [
   {
-    filename: 'Bearframe_Bedrock_0.4.1.mcaddon',
+    filename: 'Bearframe_Bedrock_0.4.2.mcaddon',
     subtitle: 'All-in-One Android .mcaddon (folder-based Behavior + Resources)',
-    size: '197 KB',
+    size: '238 KB',
     primary: true,
     icon: Package,
   },
@@ -162,15 +162,15 @@ export default function App() {
               Minecraft Bedrock Add-on · Android Import Build
             </span>
             <span className="font-mono text-xs text-slate-400">
-              Spillway Recovery
+              Frontier Recovery
             </span>
           </div>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-            Bearframe Universe — v0.4.1
+            Bearframe Universe — v0.4.2
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-slate-300">
-            Download one file with both packs. This release rebuilds Spillway
-            Waterworks and the Farfield Surveyor for Minecraft Bedrock.
+            Download one file with both packs. This release adds dry terrain placement,
+            a rebuilt Directorate checkpoint, and seven original Frontier roles.
           </p>
         </header>
 
@@ -181,7 +181,7 @@ export default function App() {
           </div>
           <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-xs leading-relaxed text-slate-200">
             <li>
-              Tap <strong>Bearframe_Bedrock_0.4.1.mcaddon</strong> below to
+              Tap <strong>Bearframe_Bedrock_0.4.2.mcaddon</strong> below to
               save it to your phone&apos;s <strong>Downloads</strong> folder.
             </li>
             <li>
@@ -195,7 +195,7 @@ export default function App() {
               If Android appended <code className="text-amber-300">.zip</code>{' '}
               to the end, rename it back to{' '}
               <code className="text-teal-300">
-                Bearframe_Bedrock_0.4.1.mcaddon
+                Bearframe_Bedrock_0.4.2.mcaddon
               </code>
               , then tap it and choose <strong>Minecraft</strong> to import both
               packs automatically.
@@ -270,11 +270,11 @@ export default function App() {
           <p className="mt-2 text-xs text-slate-400">
             Direct link fallback:{' '}
             <a
-              href="/api/download/Bearframe_Bedrock_0.4.1.mcaddon"
-              download="Bearframe_Bedrock_0.4.1.mcaddon"
+              href="/api/download/Bearframe_Bedrock_0.4.2.mcaddon"
+              download="Bearframe_Bedrock_0.4.2.mcaddon"
               className="text-teal-400 underline hover:text-teal-300"
             >
-              /api/download/Bearframe_Bedrock_0.4.1.mcaddon
+              /api/download/Bearframe_Bedrock_0.4.2.mcaddon
             </a>
           </p>
         </section>
@@ -282,11 +282,11 @@ export default function App() {
         <section className="mt-8 rounded-xl border border-slate-800 bg-slate-900/50 p-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-white">
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
-            Verification (21 Automated Tests Passed)
+            Verification (31 Automated Tests Passed)
           </div>
           <p className="mt-2 text-xs leading-relaxed text-slate-300">
-            Bedrock Dedicated Server verified natural Spillway placement,
-            walkable rooms, the repair and salvage sequence, and save reload.
+            Bedrock Dedicated Server verified a dry naturally generated checkpoint,
+            rejection of unsafe terrain, the repair and salvage sequence, and save reload.
             The Android import and client rendering checks are pending.
           </p>
         </section>

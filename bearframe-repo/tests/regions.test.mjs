@@ -11,7 +11,7 @@ function voxelLookup(name){
  return {size:n.size,cell:(x,y,z)=>p[n.structure.block_indices[0][(x*sy+y)*sz+z]]};
 }
 for(const [i,d] of SURVEY_TYPES.entries())test(d.id+" has anchored hardware, approach markers and clear primary + escort spawns",()=>{
- const {cell}=voxelLookup(d.id), at=([x,y,z])=>cell(x+10,y+14,z+8);
+ const {cell}=voxelLookup(d.id+"_site"), at=([x,y,z])=>cell(x+10,y+14,z+8);
  const anchor=at([0,-2,0]);
  assert.equal(anchor.name,REGION_ANCHOR);
  assert.equal(anchor.states["bearframe:region"],i);
@@ -32,7 +32,8 @@ for(const [i,d] of SURVEY_TYPES.entries())test(d.id+" has anchored hardware, app
   for(const part of SEAL)assert.equal(at(part).name,"minecraft:iron_bars");
  }
  const rule=JSON.parse(readFileSync(new URL(`worldgen/structures/${d.id}.json`,bp)));
- assert.equal(rule["minecraft:jigsaw"].biome_filters[0].value,d.biome);
+ const filter=rule["minecraft:jigsaw"].biome_filters[0];
+ assert((filter.any_of??[filter]).some(f=>f.value===d.biome));
 });
 test("orbital arrival bay, return desk and all 7 canonical department staff resolve",()=>{
  const {size,cell}=voxelLookup("orbital_city");
@@ -48,4 +49,29 @@ test("orbital arrival bay, return desk and all 7 canonical department staff reso
  const dim=JSON.parse(readFileSync(new URL("dimensions/city_orbit.json",bp)))["minecraft:dimension"];
  assert.equal(dim.description.identifier,ORBIT);
  assert.equal(dim.components["minecraft:generation"].generator_type,"void");
+});
+
+import {SURFACE_DATUM,SURFACE_SITES} from "../behavior_pack/scripts/surface_layout.js";
+for(const [index,site] of SURFACE_SITES.entries())test(site.id+" requires dry-grade placement before the building loads",()=>{
+ const marker=voxelLookup(site.id);
+ assert.deepEqual(marker.size,[1,1,1]);
+ assert.equal(marker.cell(0,0,0).name,SURFACE_DATUM);
+ assert.equal(marker.cell(0,0,0).states["bearframe:site"],index);
+ const jigsaw=JSON.parse(readFileSync(new URL(`worldgen/structures/${site.id}.json`,bp)))["minecraft:jigsaw"];
+ assert.equal(jigsaw.terrain_adaptation,"none");
+ const {cell,size}=voxelLookup(site.id+"_site");
+ assert.deepEqual(size,[site.size.x,site.size.y,site.size.z]);
+ for(let x=0;x<site.size.x;x++)for(let z=0;z<site.size.z;z++)assert.equal(cell(x,site.deck-3,z),undefined);
+});
+
+test("the Frontier roles are assigned to authored habitats",()=>{
+ const habitat=id=>SURVEY_TYPES.find(site=>site.id===id);
+ const placements={
+  farfield_camp:"field_researcher",grid_hub:"grid_protocol_keeper",foundry_annex:"grid_repair_crawler",
+ };
+ for(const [site,id] of Object.entries(placements))
+  assert(habitat(site).escorts.some(actor=>actor.type==="bearframe:"+id));
+ const checkpoint=habitat("intrusion_checkpoint");
+ assert.equal(checkpoint.actor,"bearframe:directorate_guard");
+ assert(checkpoint.escorts.some(actor=>actor.type==="bearframe:hollow_line"&&actor.hostile));
 });

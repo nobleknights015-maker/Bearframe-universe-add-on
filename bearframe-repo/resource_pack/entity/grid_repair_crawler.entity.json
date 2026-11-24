@@ -1,0 +1,38 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bearframe:grid_repair_crawler",
+      "materials": {
+        "default": "entity"
+      },
+      "textures": {
+        "default": "textures/bearframe/grid_repair_crawler"
+      },
+      "geometry": {
+        "default": "geometry.bearframe.grid_repair_crawler"
+      },
+      "animations": {
+        "idle": "animation.bearframe.grid_repair_crawler.idle",
+        "attack": "animation.bearframe.grid_repair_crawler.attack",
+        "walk": "animation.bearframe.grid_repair_crawler.walk",
+        "ctrl": "controller.animation.bearframe.locomotion"
+      },
+      "scripts": {
+        "initialize": [
+          "variable.attack_time = 0.0;"
+        ],
+        "animate": [
+          "ctrl"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bearframe"
+      ],
+      "spawn_egg": {
+        "base_color": "#69726b",
+        "overlay_color": "#71e2e7"
+      }
+    }
+  }
+}

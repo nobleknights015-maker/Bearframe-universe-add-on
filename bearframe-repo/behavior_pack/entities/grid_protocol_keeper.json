@@ -1,0 +1,91 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "bearframe:grid_protocol_keeper",
+      "is_spawnable": true,
+      "is_summonable": true
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "ghost_grid",
+          "grid_protocol_keeper",
+          "mob"
+        ]
+      },
+      "minecraft:health": {
+        "value": 33,
+        "max": 33
+      },
+      "minecraft:collision_box": {
+        "width": 0.91,
+        "height": 1.22
+      },
+      "minecraft:persistent": {},
+      "minecraft:physics": {
+        "has_gravity": false,
+        "has_collision": true
+      },
+      "minecraft:can_fly": {},
+      "minecraft:movement": {
+        "value": 0.14
+      },
+      "minecraft:flying_speed": {
+        "value": 0.14
+      },
+      "minecraft:movement.hover": {},
+      "minecraft:navigation.hover": {
+        "can_path_over_water": true,
+        "can_sink": false,
+        "avoid_damage_blocks": true,
+        "avoid_water": false
+      },
+      "minecraft:behavior.random_hover": {
+        "priority": 5,
+        "xz_dist": 6,
+        "y_dist": 2,
+        "y_offset": 0.5,
+        "interval": 2,
+        "hover_height": [
+          1,
+          3
+        ]
+      },
+      "minecraft:behavior.look_at_player": {
+        "priority": 6,
+        "look_distance": 10,
+        "probability": 0.4
+      },
+      "minecraft:attack": {
+        "damage": 3
+      },
+      "minecraft:behavior.melee_attack": {
+        "priority": 2,
+        "speed_multiplier": 1.15,
+        "track_target": true
+      },
+      "minecraft:behavior.hurt_by_target": {
+        "priority": 1,
+        "alert_same_type": true
+      },
+      "minecraft:loot": {
+        "table": "loot_tables/entities/grid_machine.json"
+      },
+      "minecraft:interact": {
+        "interactions": [
+          {
+            "interact_text": "Inspect",
+            "on_interact": {
+              "event": "bearframe:look",
+              "target": "self"
+            }
+          }
+        ]
+      }
+    },
+    "events": {
+      "bearframe:look": {}
+    }
+  }
+}

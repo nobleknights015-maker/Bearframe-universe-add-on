@@ -1,3 +1,4 @@
+import {SURFACE_DATUM,SURFACE_SITES} from "../behavior_pack/scripts/surface_layout.js";
 import {RUINS,BUNKER_SIZE,TOWN_SIZE,BUNKER_ENTRY} from "../behavior_pack/scripts/ruins.js";
 import {stampBunker,stampTown} from "./ruin_layouts.mjs";
 import {SPILLWAY_SIZE} from "../behavior_pack/scripts/spillway_layout.js";
@@ -61,11 +62,11 @@ for(const [x,z,dx,dz] of [[0,8,-1,0],[5,0,0,-1],[5,16,0,1]]){
  put(x,DECK-2,z,"bearframe:approach_anchor",{"bearframe:graded":false});
  put(x-dx,DECK-2,z-dz,"minecraft:polished_deepslate");
 }
-emit("maintenance_relay",SIZE,"plains",22,681147);
+emitSurface("maintenance_relay");
 for(const [index,region] of SURVEY_TYPES.entries()){
  blocks.clear();
  buildRegion(index,region);
- emit(region.id,SIZE,region.biome,region.spacing,region.salt);
+ emitSurface(region.id);
 }
 for(const [i,def] of RUINS.entries()){
  blocks.clear();
@@ -80,12 +81,25 @@ for(const [i,def] of RUINS.entries()){
  }
  if(i===1)stampBunker({put,fill},def,index,i===1);
  else stampTown({put,fill},def,index,i===3);
- emit(def.id,i<2?BUNKER_SIZE:TOWN_SIZE,def.biome,def.spacing,def.salt,
-   i<2?BUNKER_ENTRY[1]:DECK,"world_surface",true);
+ if(i===1)emit(def.id,BUNKER_SIZE,def.biome,def.spacing,def.salt,BUNKER_ENTRY[1],"world_surface",true);
+ else emitSurface(def.id);
 }
 blocks.clear();
 buildCity();
 emit("orbital_city",CITY_SIZE);
+
+function emitSurface(id){
+ const siteIndex=SURFACE_SITES.findIndex(s=>s.id===id);
+ const {size,deck,biome,spacing,salt}=SURFACE_SITES[siteIndex];
+ for(const [key,block] of blocks){
+  if(block.y<deck-2)blocks.delete(key);
+  else if(block.name==="bearframe:approach_anchor")block.states["bearframe:graded"]=true;
+ }
+ emit(id+"_site",size,undefined,undefined,undefined,undefined,undefined,true);
+ blocks.clear();
+ put(0,0,0,SURFACE_DATUM,{"bearframe:site":siteIndex,"bearframe:sited":false});
+ emit(id,{x:1,y:1,z:1},id==="intrusion_checkpoint"?[biome,"plains"]:biome,spacing,salt,0,"ocean_floor",false,"none");
+}
 
 function room(x1,z1,x2,z2,height,wall,door){
  fill(x1,DECK+1,z1,x2,DECK+height,z2,wall);
@@ -131,14 +145,35 @@ function buildRegion(index,region){
    fill(7,DECK,7,13,DECK,7,stripe);
    put(15,DECK+3,8,"minecraft:chain");
   }else if(index===3){
-   for(const x of [4,16])for(const z of [3,13]){
-    fill(x,DECK+1,z,x+1,DECK+3,z,wall);
-    put(x,DECK+4,z,stripe);
+   const base="minecraft:polished_blackstone_bricks", ribs="minecraft:polished_blackstone";
+   const glass="minecraft:tinted_glass", casing="bearframe:spillway_casing";
+   // Continuous three-wide inspection lane between tiered armored pylons.
+   for(const z of [5,11]){
+    fill(3,DECK+1,z,5,DECK+1,z,base);
+    fill(4,DECK+2,z,4,DECK+5,z,ribs);
+    put(4,DECK+4,z,casing);
+    put(4,DECK+5,z,"minecraft:redstone_lamp");
+    fill(1,DECK+1,z,3,DECK+1,z,"minecraft:iron_bars");
    }
-   fill(4,DECK+3,6,4,DECK+4,10,"minecraft:iron_block");
-   fill(4,DECK,6,4,DECK,10,stripe);
-   room(6,2,11,6,3,wall,[9,6]);
-   put(7,DECK+1,4,"minecraft:target");
+   fill(4,DECK+5,5,4,DECK+5,11,ribs);
+   fill(3,DECK+5,7,5,DECK+5,9,casing);
+   fill(0,DECK,6,12,DECK,6,"minecraft:red_terracotta");
+   fill(0,DECK,10,12,DECK,10,"minecraft:red_terracotta");
+   // Gatehouse has a separate visible observation slit, counter and airlock.
+   room(6,2,11,6,4,wall,[9,6]);
+   fill(7,DECK+2,6,8,DECK+2,6,glass);
+   fill(10,DECK+2,6,11,DECK+2,6,glass);
+   fill(7,DECK+1,3,8,DECK+1,3,casing);
+   put(8,DECK+2,3,"minecraft:target");
+   fill(7,DECK+4,3,10,DECK+4,5,base);
+   fill(7,DECK+5,3,10,DECK+5,5,ribs);
+   put(10,DECK+5,3,"minecraft:lightning_rod");
+   // Separate maintenance bay. Trims and skylights break up the stock cage.
+   room(13,12,18,15,3,base,[13,13]);
+   put(16,DECK+1,14,"minecraft:grindstone");
+   put(17,DECK+1,14,"minecraft:barrel");
+   fill(15,DECK+3,12,17,DECK+3,12,glass);
+   for(const z of [5,11])fill(14,DECK+1,z,17,DECK+1,z,casing);
   }else{
    room(2,4,7,12,4,wall,[7,8]);
    fill(4,DECK+3,4,4,DECK+3,12,"minecraft:cut_copper");

@@ -107,8 +107,8 @@
           "family": [
             "directorate",
             "directorate_officer",
-            "monster",
-            "mob"
+            "mob",
+            "monster"
           ]
         },
         "minecraft:attack": {

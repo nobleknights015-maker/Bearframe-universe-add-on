@@ -4,7 +4,7 @@ export const SURVEY_TYPES=[
   {id:"farfield_camp",name:"Farfield Survey Camp",biome:"plains",spacing:25,salt:773210,
    panel:"minecraft:cartography_table",actor:"bearframe:farfield_surveyor",
    escorts:[
-     {type:"bearframe:atlas_rigger",offset:[-4,0,0]},
+     {type:"bearframe:field_researcher",offset:[-4,0,0]},
      {type:"bearframe:atlas_vanguard",offset:[2,0,0]}
    ]},
   {id:"grid_hub",name:"Overgrown Switchyard",biome:"forest",spacing:24,salt:773213,
@@ -12,7 +12,7 @@ export const SURVEY_TYPES=[
    repair:"Switchyard isolated. The service stores can be opened.",
    loot:[["minecraft:copper_ingot",4],["minecraft:amethyst_shard",2],["bearframe:legacy_cell",1]],
    escorts:[
-     {type:"bearframe:grid_watcher",offset:[-2,1,-3],hover:true},
+     {type:"bearframe:grid_protocol_keeper",offset:[-2,1,-3],hover:true},
      {type:"bearframe:grid_turret",offset:[-5,0,0],hostile:true}
    ]},
   {id:"echo_ward",name:"Legacy Support Ward",biome:"taiga",spacing:26,salt:773218,
@@ -23,19 +23,20 @@ export const SURVEY_TYPES=[
      {type:"bearframe:echo_sentinel",offset:[0,0,-4]}
    ]},
   {id:"intrusion_checkpoint",name:"Directorate Intrusion Checkpoint",biome:"savanna",spacing:24,salt:773219,
-   panel:"minecraft:observer",actor:"bearframe:hollow_scout",cost:["minecraft:copper_ingot",3],
+   panel:"minecraft:observer",actor:"bearframe:directorate_guard",cost:["minecraft:copper_ingot",3],
    repair:"Local gate bypassed. The patrol is still active if it survived.",
    loot:[["minecraft:redstone",4],["minecraft:iron_ingot",4],["bearframe:salvaged_alloy",2]],
    escorts:[
      {type:"bearframe:directorate_officer",offset:[-3,0,0]},
-     {type:"bearframe:hollow_breacher",offset:[1,0,4],hostile:true}
+     {type:"bearframe:hollow_line",offset:[1,0,4],hostile:true}
    ]},
   {id:"foundry_annex",name:"Ruined Foundry Annex",biome:"desert",spacing:24,salt:773221,
    panel:"minecraft:blast_furnace",actor:"bearframe:grid_hauler",cost:["minecraft:coal",2],
    repair:"Material handler powered. The annex processes parts and stock.",
    loot:[["minecraft:iron_ingot",5],["minecraft:copper_ingot",3],["bearframe:salvaged_alloy",3]],
    escorts:[
-     {type:"bearframe:grid_guardian",offset:[0,0,-5]}
+     {type:"bearframe:grid_guardian",offset:[0,0,-5]},
+     {type:"bearframe:grid_repair_crawler",offset:[-4,0,-3]}
    ]}
 ];
 export const TYPES=[...SURVEY_TYPES,...RUINS];

@@ -8,7 +8,7 @@ import {REGION_ANCHOR,SURVEY_TYPES} from "../behavior_pack/scripts/regions.js";
 for(const [i,def] of RUINS.entries())if(i!==0)test(def.id+" has a traversable route to its working terminal",()=>{
  const bunker=i<2, size=bunker?BUNKER_SIZE:TOWN_SIZE;
  const terminal=bunker?BUNKER_TERMINAL:TOWN_TERMINAL;
- const path=new URL(`../behavior_pack/structures/bearframe/${def.id}.mcstructure`,import.meta.url);
+ const path=new URL(`../behavior_pack/structures/bearframe/${def.id}${bunker?"":"_site"}.mcstructure`,import.meta.url);
  const raw=nbt.simplify(nbt.parseUncompressed(readFileSync(path),"little"));
  assert.deepEqual(raw.size,[size.x,size.y,size.z]);
  const n=raw.structure.palette.default.block_palette;

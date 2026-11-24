@@ -1,0 +1,101 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.bearframe.grid_protocol_keeper.idle": {
+      "loop": true,
+      "bones": {
+        "body": {
+          "position": [
+            0,
+            "math.sin(query.life_time * 120) * 1.4",
+            0
+          ],
+          "rotation": [
+            "math.sin(query.life_time * 60) * 3",
+            0,
+            "math.cos(query.life_time * 55) * 3"
+          ]
+        },
+        "scanner": {
+          "rotation": [
+            0,
+            "query.life_time * 95",
+            0
+          ]
+        },
+        "thruster0": {
+          "rotation": [
+            "math.sin(query.life_time * 110) * 6",
+            0,
+            -6
+          ]
+        },
+        "thruster1": {
+          "rotation": [
+            "math.cos(query.life_time * 110) * 6",
+            0,
+            6
+          ]
+        }
+      }
+    },
+    "animation.bearframe.grid_protocol_keeper.walk": {
+      "loop": true,
+      "bones": {
+        "body": {
+          "rotation": [
+            12,
+            0,
+            0
+          ]
+        },
+        "thruster0": {
+          "rotation": [
+            18,
+            0,
+            -4
+          ]
+        },
+        "thruster1": {
+          "rotation": [
+            18,
+            0,
+            4
+          ]
+        },
+        "thruster2": {
+          "rotation": [
+            22,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.bearframe.grid_protocol_keeper.attack": {
+      "loop": false,
+      "animation_length": 0.35,
+      "bones": {
+        "body": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.15": [
+              22,
+              0,
+              0
+            ],
+            "0.35": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    }
+  }
+}

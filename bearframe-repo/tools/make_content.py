@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Bearframe Universe Bedrock Add-on 0.4.1 — Asset & Content Generator
+Bearframe Universe Bedrock Add-on 0.4.2 — Asset & Content Generator
 Generates manifests, blocks, items, recipes, loot tables, spawn rules,
 128x128 pixel-art entity atlases (32x32 tile density matching Infinity Sci-Fi),
 player-scale articulated humanoid rigs (Bearframes, Nullframes, Hollows, Hunters, Echoes),
@@ -12,6 +12,7 @@ Zero external Python dependencies (pure-Python RGBA PNG encoder via zlib/struct)
 
 from pathlib import Path
 from uuid import UUID, uuid5
+from copy import deepcopy
 import json
 import math
 import random
@@ -22,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BP = ROOT / "behavior_pack"
 RP = ROOT / "resource_pack"
 SEED = UUID("d5efd705-1ffa-48c6-8148-6ac108170a38")
-VERSION = [0, 4, 1]
+VERSION = [0, 4, 2]
 MIN_ENGINE = [1, 26, 50]
 SERVER_API = "2.10.0"
 
@@ -1302,7 +1303,7 @@ ENTITIES = [
         "id": "nullframe_hunter",
         "title": "Nullframe Hunter",
         "style": "hunter",
-        "rig": "nullframe_hunter",
+        "rig": "tracker",
         "anim_family": "humanoid",
         "collision": (0.68, 1.94),
         "bounds": (2.2, 3.0, 1.0),
@@ -1341,9 +1342,9 @@ ENTITIES = [
         "id": "echo_drifter",
         "title": "Echo Drifter",
         "style": "echo",
-        "rig": "echo_drifter",
+        "rig": "drifter",
         "anim_family": "humanoid",
-        "collision": (0.64, 1.72),
+        "collision": (0.64, 1.70),
         "bounds": (2.0, 2.6, 0.85),
         "health": 26,
         "speed": 0.19,
@@ -1481,7 +1482,245 @@ ENTITIES = [
 ]
 
 
+def build_frontier_frame(variant: str) -> list[dict]:
+    if variant == "researcher":
+        rig = build_farfield_rig()
+        # Apron splits at the hips, handheld data slate and rear sample cassette.
+        rig[1]["cubes"] += [
+            box([-3.8, 11.0, -2.29], [1.85, 6.5, .26], 0, north=13),
+            box([1.95, 11.0, -2.29], [1.85, 6.5, .26], 0, north=13),
+            box([-3.02, 14.1, 3.12], [5.1, 6.8, 1.34], 5, south=7),
+        ]
+        next(b for b in rig if b["name"] == "arm1")["cubes"].append(
+            box([4.05, 12.55, -2.02], [2.75, 4.1, .55], 1, north=7))
+        next(b for b in rig if b["name"] == "head")["cubes"].append(
+            box([-1.8, 29.75, 1.05], [3.6, .85, 1.85], 6))
+        return rig
+
+    shoulder = {"guard": 3.1, "line": 3.8, "tracker": 2.9, "drifter": 2.65}[variant]
+    stature = {"guard": 29.6, "line": 31.3, "tracker": 30.7, "drifter": 27.1}[variant]
+    hip = 12 if variant != "drifter" else 10.8
+    neck = stature - 6.0
+    dark = 1
+    plate = {"drifter":9, "tracker":8}.get(variant,0)
+    helmet = [
+        box([-2.75, neck, -1.65], [5.5, 4, 4.35], dark),
+        box([-3.15, neck+2.55, -2.6], [6.3, 2.5, 5.3], plate),
+        box([-2.55, neck+4.9, -2.1], [5.1, 1.1, 4.35], plate, south=11),
+        box([-2.74, neck+2.28, -2.82], [5.48, 2.08, .28], dark, north=2),
+        box([-2.14, neck+.55, -2.62], [4.28, 1.31, 4.25], plate, north=13),
+        box([-3.08, neck+1.04, -.7], [1.07, 2.05, 2.1], plate),
+        box([2.01, neck+1.23, -.7], [1.07, 1.86, 2.1], plate),
+    ]
+    body = [
+        box([-3.44, hip, -1.78], [6.88, neck-hip, 3.65], dark),
+        box([-3.83, neck-5.6, -2.08], [7.66, 5.2, 4.2], plate, north=3),
+        box([-2.77, hip+2.0, -2.07], [5.54, 3.8, 4.15], plate, north=13),
+        box([-3.62, hip-.22, -2.28], [7.24, 1.35, 4.42], dark, north=5),
+    ]
+    if variant == "line":
+        body += [
+            box([-4.12, neck-4.7, 1.9], [8.24, 4.6, 1.88], dark, south=11),
+            box([-4.22, neck-4.9, -2.47], [8.44, 2.0, .65], plate, north=13),
+            box([-1.3, neck-1.4, -2.28], [2.6, 1.42, 1.03], plate),
+        ]
+        helmet.append(box([-3.22, neck+4.42, -3.14], [6.44, 1.06, 1.16], plate))
+    elif variant == "tracker":
+        body += [
+            box([-4.19, neck-4.2, 1.61], [8.38, 3.66, 1.77], dark, south=7),
+            box([-2.14, hip-2.3, 1.8], [1.85, 7.65, .74], dark, south=6),
+            box([.3, hip-1.25, 1.95], [1.6, 6.55, .51], dark, south=13),
+        ]
+        for x, tilt in [(-2.8,-20),(2.2,20)]:
+            helmet.append(box([x,neck+3.4,1.05],[.78,3.4,1.77],8,north=6,up=10,
+                              rotation=[-21,0,tilt],pivot=[x,neck+3.4,1.05]))
+    elif variant == "drifter":
+        helmet += [
+            box([-3.16, neck+1.28, -2.52], [1.66, 3.6, .45], 9),
+            box([1.95, neck+1.57, .2], [1.52, 2.6, 1.35], 7),
+        ]
+        body += [
+            box([-3.72, hip-1.65, .78], [2.7, 8.2, 2.55], 9, south=6),
+            box([1.42, neck-5.85, -2.28], [1.55, 4.2, .66], 7),
+        ]
+    else:
+        body += [
+            box([-2.62, neck-5.2, 1.9], [5.24, 4.8, 1.6], dark, south=11),
+            box([1.48, neck-4.55, -2.45], [1.8, 1.3, .45], 5, north=7),
+        ]
+
+    result = [bone("root",[0,0,0],[]),
+              bone("body",[0,hip,0],body,parent="root"),
+              bone("head",[0,neck,0],helmet,parent="body")]
+    for i, sign in enumerate((-1,1)):
+        x = sign * (4.0+shoulder*.53)
+        top = neck-.76
+        arms = [
+            box([x-1.08,hip+.22,-1.12],[2.16,top-hip-.02,2.18],dark),
+            box([x-shoulder/2,top-2.7,-shoulder/2],[shoulder,2.75,shoulder],plate,north=13),
+            box([x-1.22,hip+2.2,-1.37],[2.44,3.05,2.62],plate,north=6),
+            box([x-1.01,hip-.42,-1],[2.02,2.35,2.04],dark),
+        ]
+        if i == 0 and variant == "line":
+            arms += [box([x-1.66,hip+.58,-2.4],[3.32,6.4,1.22],plate,north=13),
+                     box([x-1.24,hip+2.1,-2.69],[2.48,3.5,.42],dark,north=7)]
+        if variant == "tracker":
+            arms[1] = box([x-1.47,top-2.3,-1.6],[2.94,2.4,3.2],8,north=13,
+                          rotation=[0,0,14*sign],pivot=[x,top-1.2,0])
+            if i == 1:
+                arms.append(box([x-.72,hip+1.9,-1.7],[1.44,4.3,.72],dark,north=12))
+        if i == 0 and variant == "drifter":
+            arms[1] = box([x-1.35,top-2.2,-1.4],[2.3,2.25,2.8],dark)
+            arms[2] = box([x-1.27,hip+2.0,-1.42],[2.54,3.0,2.8],7)
+        result.append(bone(f"arm{i}",[x,top-.5,0],arms,parent="body"))
+        lx = sign*1.98
+        legs = [
+            box([lx-1.2,1.45,-1.16],[2.4,hip-1.35,2.37],dark),
+            box([lx-1.38,hip-4.15,-1.37],[2.76,3.9,2.72],plate,north=13),
+            box([lx-1.25,1.58,-1.45],[2.5,hip*.32,2.71],plate,north=6),
+            box([lx-1.55,0,-2.0],[3.1,1.64,3.42],dark),
+        ]
+        if i == 1 and variant == "drifter":
+            legs.append(box([lx+.7,1.62,-1.61],[.7,6.3,.61],7,north=11))
+        result.append(bone(f"leg{i}",[lx,hip,0],legs,parent="root"))
+    return result
+
+
+def build_repair_crawler() -> list[dict]:
+    rig = [bone("root",[0,0,0],[]), bone("body",[0,4.75,0], [
+        box([-4.33,2.6,-5.8],[8.66,2.9,11.55],1),
+        box([-3.83,5.15,-4.65],[7.66,2.05,8.12],9,up=0),
+        box([-2.74,6.65,-2.8],[5.48,1.4,4.87],5,up=7),
+        box([-3.73,5.45,2.12],[3.11,1.8,3.3],7),
+    ],parent="root"), bone("head",[0,4.1,-4.45], [
+        box([-2.51,3.18,-6.3],[5.02,2.1,2.9],1,north=2),
+        box([-1.02,3.37,-6.71],[2.04,1.39,.47],1,north=10),
+    ],parent="body")]
+    for i, sign in enumerate((-1,1)):
+        ax=sign*2.52
+        rig.append(bone(f"arm{i}",[ax,5.25,-4.18],[
+            box([ax-.59,4.65,-8.0],[1.08,1.0,3.82],7),
+            box([ax-.91,4.32,-8.63],[1.82,1.12,.81],1,north=12),
+        ],parent="body"))
+        for row,z in enumerate((-3.6,0,3.6)):
+            x=sign*(5.3+(.57 if row==1 else 0))
+            rig.append(bone(f"leg{i*3+row}",[sign*3.52,4.4,z],[
+                box([min(sign*3.5,x),3.55,z-.58],[abs(x)-3.27,1.26,1.16],9),
+                box([x-.56,.68,z-.53],[1.12,3.32,1.07],1),
+                box([x-.72,0,z-.84],[1.44,1.0,1.72],7),
+            ],parent="root"))
+    return rig
+
+
+def build_protocol_keeper() -> list[dict]:
+    rig = [bone("root",[0,0,0],[]), bone("body",[0,8,0],[
+        box([-4.6,5.3,-4.6],[9.2,3.35,9.2],1),
+        box([-3.95,7.2,-4.06],[7.9,4.0,8.12],9,north=11),
+        box([-5.1,8.42,-2.38],[10.2,1.83,4.76],5),
+        box([-2.94,10.6,-3.12],[5.88,1.72,6.24],9,up=7),
+    ],parent="root"),bone("scanner",[0,12.5,0],[
+        box([-.7,11.68,-.74],[1.4,4.85,1.48],1),
+        box([-1.21,15.0,-1.55],[2.42,2.1,3.18],1,up=10),
+        box([-3.29,15.61,-1.03],[6.58,1.24,2.03],9,north=2,up=7),
+        box([-2.43,15.69,-1.41],[4.86,.85,.52],1,north=10),
+        box([-1.69,16.72,-.28],[3.38,.53,1.97],5,up=10),
+        box([-3.48,15.41,-.78],[1.1,.68,1.55],7),
+        box([2.38,15.41,-.78],[1.1,.68,1.55],7),
+    ],parent="body")]
+    for i,(x,z) in enumerate(((-4.8,-2.0),(4.8,-2.0),(0,4.7))):
+        rig.append(bone(f"thruster{i}",[x,7.6,z],[
+            box([x-1.53,5.54,z-1.63],[3.06,2.76,3.25],9),
+            box([x-1.24,4.81,z-1.30],[2.48,1.05,2.6],1,down=10),
+        ],parent="body"))
+    return rig
+
+
+def finish_frontier_optics(canvas: Canvas, name: str, palette: dict) -> None:
+    def panel(tile, base, details):
+        u, v = tile_uv(tile)
+        canvas.rect(u,v,u+31,v+31,fill=base)
+        for x1,y1,x2,y2,color in details:
+            canvas.rect(u+x1,v+y1,u+x2,v+y2,fill=color)
+
+    if name == "directorate_guard":
+        panel(13,"#b7bdc1",[(0,0,31,3,"#d5d8da"),(28,0,31,31,"#8b919a"),
+                           (6,23,24,25,"#25262f"),(8,23,16,24,"#a24448")])
+        panel(3,"#c5cbd0",[(0,26,31,31,"#839096"),(7,8,24,15,"#242933"),
+                          (9,9,22,11,"#aa3d42"),(10,19,20,20,"#737b85")])
+        panel(6,"#adb8c0",[(0,0,31,3,"#dbe0e2"),(8,21,25,22,"#737d85")])
+    elif name == "hollow_line":
+        panel(13,"#939ca4",[(0,0,31,4,"#bac1c5"),(3,23,28,28,"#262a35"),
+                           (3,26,14,27,"#aa4547"),(25,2,28,5,"#414954")])
+        panel(3,"#182028",[(3,4,27,7,"#4d5565"),(9,13,22,16,"#6a252e"),
+                          (11,14,14,15,"#e04c4b"),(17,14,20,15,"#c54249"),(4,26,28,27,"#505360")])
+        panel(6,"#727c88",[(1,1,29,3,"#b1bac0"),(4,19,27,22,"#414956")])
+    elif name == "nullframe_hunter":
+        panel(13,"#242c34",[(0,0,31,4,"#414955"),(4,9,20,10,"#6d7781"),
+                           (10,23,24,24,"#8b3038"),(24,13,26,21,"#20242d")])
+        panel(3,"#252832",[(3,1,28,3,"#484c58"),(4,24,27,25,"#3f4853"),
+                          (13,9,18,21,"#50545d"),(14,11,17,17,"#a84a4e")])
+        panel(6,"#3b424d",[(0,0,30,3,"#586371"),(24,4,26,24,"#242a32")])
+    else:
+        panel(13,"#756d62",[(0,0,31,3,"#8e8575"),(1,7,2,26,"#483f38"),
+                           (5,19,24,22,"#4a6262"),(21,8,25,11,"#a28a63")])
+        panel(6,"#797971",[(3,2,21,4,"#a6a493"),(28,5,31,30,"#4c5152"),(8,21,20,23,"#b78c56")])
+    x, y = tile_uv(2)
+    canvas.rect(x, y, x+31, y+31, fill="#101820")
+    canvas.hline(x+1, x+30, y+2, "#303b44", 2)
+    glow = palette["glow"]
+    if name == "hollow_line":
+        canvas.hline(x+5, x+26, y+15, glow, 4)
+        canvas.hline(x+9, x+22, y+16, "#f4bbb2")
+    elif name == "directorate_guard":
+        for u in (5,19):
+            canvas.rect(x+u, y+12, x+u+7, y+19, fill="#6d2532")
+            canvas.hline(x+u+1, x+u+6, y+15, glow, 2)
+    elif name == "nullframe_hunter":
+        canvas.line(x+4,y+10,x+14,y+20,glow,3)
+        canvas.line(x+18,y+20,x+28,y+10,glow,3)
+    else:
+        canvas.rect(x+16,y+8,x+25,y+22,fill="#766140")
+        canvas.hline(x+18,x+24,y+13,glow,4)
+        canvas.line(x+9,y+7,x+14,y+23,"#586a6e",2)
+
+
+def frontier_variant(source: str, **changes) -> dict:
+    spec = deepcopy(next(s for s in ENTITIES if s["id"] == source))
+    if "palette_patch" in changes:
+        spec["palette"].update(changes.pop("palette_patch"))
+    spec.update(changes)
+    return spec
+
+
+ENTITIES.extend([
+    frontier_variant("farfield_surveyor", id="field_researcher", title="Farfield Instrument Researcher",
+                     rig="researcher", health=26, speed=.19,
+                     palette_patch={"glow":"#a5efd5","accent":"#478974","trim":"#dfae62"}),
+    frontier_variant("directorate_officer", id="directorate_guard", title="Directorate Gate Guard",
+                     rig="guard", health=30, damage=5, collision=(.69,1.85), speed=.23,
+                     families=["directorate","directorate_guard","mob"]),
+    frontier_variant("hollow_breacher", id="hollow_line", title="Hollow Line Drone",
+                     rig="line", role="hostile_hollow", health=30, damage=5,
+                     collision=(.78,1.95), speed=.24),
+    frontier_variant("grid_walker", id="grid_repair_crawler", title="Grid Repair Crawler",
+                     rig="repair_crawler", collision=(.88,.56), bounds=(2.3,1.5,.44),
+                     health=23, damage=2, speed=.21, role="grid_service",
+                     families=["ghost_grid","grid_repair_crawler","mob"],
+                     palette_patch={"armor":"#69726b","accent":"#a57b48","glow":"#71e2e7"}),
+    frontier_variant("grid_watcher", id="grid_protocol_keeper", title="Grid Protocol Keeper",
+                     rig="protocol_keeper", collision=(.91,1.22), bounds=(2.4,2.25,1.0),
+                     health=33, speed=.14, families=["ghost_grid","grid_protocol_keeper","mob"],
+                     palette_patch={"armor":"#59727a","accent":"#456269","glow":"#8ef2ea"}),
+])
+
+
 def build_rig(rig_key: str) -> list[dict]:
+    if rig_key in ("researcher", "guard", "line", "tracker", "drifter"):
+        return build_frontier_frame(rig_key)
+    if rig_key == "repair_crawler":
+        return build_repair_crawler()
+    if rig_key == "protocol_keeper":
+        return build_protocol_keeper()
     if rig_key == "bearframe_farfield":
         return build_farfield_rig()
     if rig_key == "grid_hexapod":
@@ -1800,7 +2039,7 @@ def build_behavior_entity(spec: dict) -> dict:
             "minecraft:behavior.hurt_by_target": {"priority": 1, "alert_same_type": True},
         }
         component_groups["bearframe:hostile"] = {
-            "minecraft:type_family": {"family": ["directorate", "directorate_officer", "monster", "mob"]},
+            "minecraft:type_family": {"family": [*spec["families"], "monster"]},
             "minecraft:attack": {"damage": spec["damage"]},
             "minecraft:behavior.melee_attack": {"priority": 2, "speed_multiplier": 1.1, "track_target": True},
             "minecraft:behavior.hurt_by_target": {"priority": 1, "alert_same_type": True},
@@ -1841,6 +2080,11 @@ def build_behavior_entity(spec: dict) -> dict:
         events["bearframe:stabilize"] = {
             "remove": {"component_groups": ["bearframe:echo_wary"]},
             "add": {"component_groups": ["bearframe:echo_calm"]},
+        }
+    elif role == "grid_service":
+        components["minecraft:behavior.avoid_mob_type"] = {
+            "priority": 2, "entity_types": [{"filters": {"test": "is_family", "subject": "other", "value": "monster"},
+                                             "max_dist": 5, "walk_speed_multiplier": 1.0, "sprint_speed_multiplier": 1.2}]
         }
     elif role == "grid_neutral":
         if spec["id"] == "grid_hauler":
@@ -2081,6 +2325,13 @@ def main() -> None:
     }
     datum["minecraft:block"]["components"]["minecraft:material_instances"]["*"]["texture"] = "bearframe_spillway_conduit"
     write_json(BP, "blocks/spillway_datum.json", datum)
+
+    survey = json.loads(json.dumps(datum))
+    survey["minecraft:block"]["description"] = {
+        "identifier": "bearframe:surface_survey",
+        "states": {"bearframe:site": list(range(8)), "bearframe:sited": [False, True]},
+    }
+    write_json(BP, "blocks/surface_survey.json", survey)
 
     for name, texture, light in [("casing", "bulkhead", 0), ("grate", "grate", 0), ("lamp", "luminaire", 14)]:
         write_json(BP, f"blocks/spillway_{name}.json", {
@@ -2330,8 +2581,11 @@ def main() -> None:
 
         # 128x128 Atlas
         atlas = build_entity_atlas(name, spec["style"], pal)
-        if name == "farfield_surveyor":
+        if name in ("farfield_surveyor", "field_researcher"):
             finish_farfield_atlas(atlas)
+        if name in ("directorate_guard", "hollow_line", "nullframe_hunter", "echo_drifter"):
+            finish_frontier_optics(atlas, name, pal)
+
         save_rp_png(tex_path, atlas)
 
         # Bedrock Geometry
@@ -2385,7 +2639,7 @@ def main() -> None:
             "minecraft:client_entity": {
                 "description": {
                     "identifier": ident,
-                    "materials": {"default": "entity" if name == "farfield_surveyor" else "entity_alphatest"},
+                    "materials": {"default": "entity" if name in ("farfield_surveyor", "field_researcher", "directorate_guard", "hollow_line", "nullframe_hunter", "echo_drifter", "grid_repair_crawler", "grid_protocol_keeper") else "entity_alphatest"},
                     "textures": {"default": tex_path},
                     "geometry": {"default": geo_id},
                     "animations": anim_map,

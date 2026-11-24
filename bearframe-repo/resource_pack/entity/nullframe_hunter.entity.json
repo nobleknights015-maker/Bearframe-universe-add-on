@@ -4,7 +4,7 @@
     "description": {
       "identifier": "bearframe:nullframe_hunter",
       "materials": {
-        "default": "entity_alphatest"
+        "default": "entity"
       },
       "textures": {
         "default": "textures/bearframe/nullframe_hunter"

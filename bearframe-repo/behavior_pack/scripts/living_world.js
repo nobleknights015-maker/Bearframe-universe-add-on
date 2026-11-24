@@ -1,7 +1,29 @@
 import {ItemStack,system,world} from "@minecraft/server";
 import {ORBIT} from "./regions.js";
 
+const directorateCadres = new Set(["bearframe:directorate_officer","bearframe:directorate_guard"]);
+
 const SCAN_DB={
+  "bearframe:field_researcher":{
+    tag:"Bearframe · Farfield Instrument Research",
+    note:"Sentient Farfield specialist. Records environmental readings and clears samples for transport."
+  },
+  "bearframe:directorate_guard":{
+    tag:"Directorate · Gate Guard",
+    note:"A thinking perimeter guard bound by checkpoint directives. Will challenge strangers before escalating."
+  },
+  "bearframe:hollow_line":{
+    tag:"Directorate · Hollow Line Drone",
+    note:"Standardized infantry chassis. The broad forearm housing identifies its coordinated line role."
+  },
+  "bearframe:grid_repair_crawler":{
+    tag:"Unverified Legacy Machine · Repair Crawler",
+    note:"Low underdeck chassis with two probe arms. Avoids fighting and checks for corroded contacts."
+  },
+  "bearframe:grid_protocol_keeper":{
+    tag:"Unverified Legacy Machine · Protocol Keeper",
+    note:"A hovering legacy terminal that polls obsolete site permissions. It has no recognized faction signature."
+  },
   "bearframe:farfield_surveyor":{
     tag:"Bearframe · Exploration (Farfield)",
     note:"Individually sentient Bearframe assigned to Mira's independent Exploration Dept. Chest & side-head displays nominal."
@@ -81,6 +103,16 @@ const SCAN_DB={
 };
 
 const DIALOGUES={
+  "bearframe:field_researcher":[
+    "I run the instruments while the surveyor maps the route. The next sampling site is still unverified.",
+    "The intake residue is older than the casing. I recorded both so we don't mistake a later repair for the original build."
+  ],
+  "bearframe:grid_repair_crawler":[
+    "Twin probes sweep the floor seam. The unit backs away, checks its reading, and continues."
+  ],
+  "bearframe:grid_protocol_keeper":[
+    "The mast rotates. A legacy status display prompts for an obsolete clearance token, then returns to standby."
+  ],
   "bearframe:atlas_rigger":[
     "Atlas's crews reclaim everything worth keeping. Sneak-interact with 2 Salvaged Chassis Alloy to refine iron and copper.",
     "Heavy chassis isn't for show—someone has to lift conduit girders when the cranes stall.",
@@ -131,7 +163,7 @@ function heldItem(player){
 }
 
 export function escalateNearbyDirectorate(dim,origin,radius=14){
-  const officers=dim.getEntities({type:"bearframe:directorate_officer",location:origin,maxDistance:radius});
+  const officers=dim.getEntities({location:origin,maxDistance:radius}).filter(entity=>directorateCadres.has(entity.typeId));
   for(const officer of officers){
     if(officer.getDynamicProperty("bearframe:escalated"))continue;
     officer.setDynamicProperty("bearframe:escalated",true);
@@ -177,6 +209,7 @@ export function installLivingWorld({validPlayer,spend,attempt}){
       target.typeId.startsWith("bearframe:atlas_") ||
       target.typeId.startsWith("bearframe:city_") ||
       target.typeId==="bearframe:farfield_surveyor" ||
+      target.typeId==="bearframe:field_researcher" ||
       target.typeId==="bearframe:vera_artisan" ||
       target.typeId==="bearframe:echo_drifter" ||
       (target.typeId==="bearframe:echo_sentinel" && target.getDynamicProperty("bearframe:stabilized"))
@@ -230,21 +263,22 @@ export function installLivingWorld({validPlayer,spend,attempt}){
     }
 
     // Directorate Officer: verbal restricted-AI hail & escalation warning
-    if(target.typeId==="bearframe:directorate_officer"){
+    if(directorateCadres.has(target.typeId)){
+      const prefix=target.typeId==="bearframe:directorate_guard"?"§c[Directorate Gate Guard]":"§c[Directorate Officer]";
       event.cancel=true;
       system.run(()=>attempt(()=>{
         if(!validPlayer(player)||!target.isValid||distSq(player.location,target.location)>49)return;
         if(target.getDynamicProperty("bearframe:escalated")){
-          return say(player,"§c[Directorate Officer]","Negotiation window closed. Directive enforcement active.");
+          return say(player,prefix,"Negotiation window closed. Directive enforcement active.");
         }
         const warnings=Number(target.getDynamicProperty("bearframe:warnings")??0)+1;
         target.setDynamicProperty("bearframe:warnings",warnings);
         if(warnings===1){
-          return say(player,"§c[Directorate Officer]","Unregistered entity. This perimeter is under Nullframe Directorate control. Vacate immediately.");
+          return say(player,prefix,"Unregistered entity. This perimeter is under Nullframe Directorate control. Vacate immediately.");
         }
         target.setDynamicProperty("bearframe:escalated",true);
         try{target.triggerEvent("bearframe:escalate");}catch{}
-        say(player,"§c[Directorate Officer]","Non-compliance logged. Authorizing containment force.");
+        say(player,prefix,"Non-compliance logged. Authorizing containment force.");
       }));
       return;
     }
@@ -300,6 +334,7 @@ export function installLivingWorld({validPlayer,spend,attempt}){
         if(!validPlayer(player)||!target.isValid||distSq(player.location,target.location)>49)return;
         const prefix=target.typeId.startsWith("bearframe:grid_")?"§3[Legacy Telemetry]":
           target.typeId==="bearframe:city_watch"?"§c[Watchtower]":
+          target.typeId==="bearframe:field_researcher"?"§b[Farfield Research]":
           target.typeId==="bearframe:vera_artisan"?"§d[Visual Production]":"§6[Atlas Division]";
         say(player,prefix,pick(DIALOGUES[target.typeId],Math.floor(system.currentTick/60)));
       }));

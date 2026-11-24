@@ -5,15 +5,16 @@ import nbt from "prismarine-nbt";
 import {ACTORS,BREAKER,DECK,DIRECTION,GATE,RECOVERY,SIZE,at} from "../behavior_pack/scripts/layout.js";
 const root=new URL("../behavior_pack/",import.meta.url);
 const origin={x:10,y:DECK+1,z:8};
-const template=nbt.simplify(nbt.parseUncompressed(readFileSync(new URL("structures/bearframe/maintenance_relay.mcstructure",root)),"little"));
+const template=nbt.simplify(nbt.parseUncompressed(readFileSync(new URL("structures/bearframe/maintenance_relay_site.mcstructure",root)),"little"));
 const data=template.structure.block_indices[0], palette=template.structure.palette.default.block_palette;
 function cell(x,y,z){return palette[data[(x*SIZE.y+y)*SIZE.z+z]]?.name;}
 function named(p){const loc=at(origin,p);return cell(loc.x,loc.y,loc.z);}
-test("all printed deck positions have continuous foundation",()=>{
+test("relay deck keeps two buried footing layers and no deep artificial fill",()=>{
   assert.deepEqual(template.size,[SIZE.x,SIZE.y,SIZE.z]);
   for(let x=0;x<SIZE.x;x++)for(let z=0;z<SIZE.z;z++){
     assert.notEqual(cell(x,DECK,z),"minecraft:air");
-    for(let y=0;y<DECK;y++)assert(cell(x,y,z),`missing structure at ${x}/${y}/${z}`);
+    for(let y=DECK-2;y<DECK;y++)assert(cell(x,y,z),`missing footing at ${x}/${y}/${z}`);
+    for(let y=0;y<DECK-2;y++)assert.equal(cell(x,y,z),undefined);
   }
 });
 test("mechanics resolve authored terminal, marker, breaker, gate, locker, and three standing slots",()=>{

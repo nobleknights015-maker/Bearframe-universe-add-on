@@ -32,7 +32,7 @@ export const RUINS=[
    repair:"The dispatch station is powered. Its loading store is open.",
    note:"The road markings lead from the old sleeping quarters to the freight gantry. Sand buried the outer lanes first.",
    escorts:[
-     {type:"bearframe:hollow_scout",offset:[-4,0,-3],hostile:true},
+     {type:"bearframe:nullframe_hunter",offset:[-4,0,-3],hostile:true},
      {type:"bearframe:hollow_breacher",offset:[-2,0,4],hostile:true}
    ]}
 ];
