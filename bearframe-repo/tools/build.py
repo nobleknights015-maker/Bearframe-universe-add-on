@@ -9,8 +9,8 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 BP, RP = ROOT / "behavior_pack", ROOT / "resource_pack"
-VERSION = "0.4.2"
-VERSION_TUPLE = [0, 4, 2]
+VERSION = "0.4.3"
+VERSION_TUPLE = [0, 4, 3]
 MAX_CUBES_PER_ENTITY = 60  # Android 4 GB RAM geometry budget
 
 

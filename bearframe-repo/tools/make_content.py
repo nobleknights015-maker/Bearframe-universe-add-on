@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BP = ROOT / "behavior_pack"
 RP = ROOT / "resource_pack"
 SEED = UUID("d5efd705-1ffa-48c6-8148-6ac108170a38")
-VERSION = [0, 4, 2]
+VERSION = [0, 4, 3]
 MIN_ENGINE = [1, 26, 50]
 SERVER_API = "2.10.0"
 
@@ -1736,6 +1736,54 @@ def build_rig(rig_key: str) -> list[dict]:
     return build_humanoid_rig(rig_key)
 
 
+def player_proportions(bones: list[dict], style: str) -> list[dict]:
+    """Fit armor to a 12px inseam, 12px torso and an 8px player head band."""
+    by_name = {part["name"]: part for part in bones}
+    hip = by_name["body"]["pivot"][1]
+    neck = by_name["head"]["pivot"][1]
+    head_top = max(c["origin"][1] + c["size"][1] for c in by_name["head"]["cubes"][:3])
+    if head_top <= neck:
+        raise ValueError("Head geometry must rise above the neck pivot")
+    landmarks = [(0, 0), (hip, 12), (neck, 24), (head_top, 32)]
+
+    def fit_y(y):
+        for (a, b), (c, d) in zip(landmarks, landmarks[1:]):
+            if y <= c:
+                return b + (y-a) * (d-b) / (c-a)
+        return y - head_top + 32
+
+    for part in bones:
+        name = part["name"]
+        pivot_x = part["pivot"][0]
+        dx = 0
+        if name.startswith("arm"):
+            dx = math.copysign(5.75, pivot_x) - pivot_x
+        elif name.startswith("leg"):
+            dx = math.copysign(2, pivot_x) - pivot_x
+        part["pivot"][0] = round(pivot_x+dx, 3)
+        part["pivot"][1] = round(fit_y(part["pivot"][1]), 3)
+        for cube in part["cubes"]:
+            x, y, _ = cube["origin"]
+            cube["origin"][0] = round(x+dx, 3)
+            cube["origin"][1] = round(fit_y(y), 3)
+            cube["size"][1] = round(fit_y(y+cube["size"][1])-fit_y(y), 3)
+            if "pivot" in cube:
+                cube["pivot"][0] = round(cube["pivot"][0]+dx, 3)
+                cube["pivot"][1] = round(fit_y(cube["pivot"][1]), 3)
+
+    head = by_name["head"]["cubes"]
+    if len(head) < 7:
+        # Replace the older single-shell face with separate crown, chin and inset optics.
+        shell = 9 if style == "echo" else 0
+        head[:1] = [
+            box([-2.95,24.45,-2.55],[5.9,6.45,5.5],shell,south=11),
+            box([-2.7,30.7,-2.4],[5.4,1.3,5.0],shell),
+            box([-2.9,28.1,-2.85],[5.8,2.75,.38],1,north=2),
+            box([-2.25,24.45,-2.78],[4.5,2.0,.65],shell,north=13),
+        ]
+    return bones
+
+
 def build_animations_for(name: str, family: str) -> dict:
     p = f"animation.bearframe.{name}"
     if family == "humanoid":
@@ -2583,6 +2631,11 @@ def main() -> None:
         atlas = build_entity_atlas(name, spec["style"], pal)
         if name in ("farfield_surveyor", "field_researcher"):
             finish_farfield_atlas(atlas)
+        if spec["style"] == "bearframe" and name not in ("farfield_surveyor", "field_researcher"):
+            x, y = tile_uv(2)
+            atlas.rect(x,y,x+31,y+31,fill=pal["visor_bg"])
+            for u in (5,19):
+                atlas.hline(x+u,x+u+7,y+15,pal["glow"],4)
         if name in ("directorate_guard", "hollow_line", "nullframe_hunter", "echo_drifter"):
             finish_frontier_optics(atlas, name, pal)
 
@@ -2590,6 +2643,8 @@ def main() -> None:
 
         # Bedrock Geometry
         bones = build_rig(spec["rig"])
+        if spec["anim_family"] == "humanoid":
+            bones = player_proportions(bones, spec["style"])
         bw, bh, boff = spec["bounds"]
         geo_id = f"geometry.bearframe.{name}"
         write_json(RP, f"models/entity/{name}.geo.json", {

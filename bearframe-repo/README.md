@@ -1,12 +1,12 @@
-# Bearframe Bedrock 0.4.2 — Frontier Recovery
+# Bearframe Bedrock 0.4.3 — Frontier Recovery
 
-A Bearframe Universe survival add-on for Minecraft Bedrock. This release reviews both Frontier site exports and rebuilds the useful concepts in the maintained Bearframe project. It restores dry siting for eight existing surface locations, rebuilds the Directorate checkpoint, and adds or updates seven original synthetic roles.
+A Bearframe Universe survival add-on for Minecraft Bedrock. This release reviews both Frontier site exports and rebuilds the useful concepts in the maintained Bearframe project. It restores dry siting for eight existing surface locations, rebuilds the Directorate checkpoint, and adds or updates seven original synthetic roles. Version 0.4.3 fits all 17 humanoid NPCs to player proportions while preserving faction-specific 3D armor, equipment and displays. Ghost Grid keeps its machine geometry.
 
 ## Install on Android
 
-1. Download `Bearframe_Bedrock_0.4.2.mcaddon`. It contains both packs.
+1. Download `Bearframe_Bedrock_0.4.3.mcaddon`. It contains both packs.
 2. Open it from **Files → Downloads** with **Minecraft**. If Android adds `.zip` after `.mcaddon`, remove the extra extension.
-3. Activate **Bearframe | Behavior** in a fresh world or a copy of your world. Check that **Bearframe | Resources** is activated and both list 0.4.2. Disable the separately imported Forgotten Frontier and Synthetic Frontier packs in the test world so their old content does not also generate.
+3. Activate **Bearframe | Behavior** in a fresh world or a copy of your world. Check that **Bearframe | Resources** is activated and both list 0.4.3. Disable the separately imported Forgotten Frontier and Synthetic Frontier packs in the test world so their old content does not also generate.
 4. If you use Infinity Sci-Fi, place it below Bearframe Resources. The add-on supplies its own models, textures, and structure materials.
 
 The same archive can be opened with Minecraft for Windows. The manifests declare Bedrock `1.26.50` and stable `@minecraft/server` `2.10.0`. There is no experimental API dependency.

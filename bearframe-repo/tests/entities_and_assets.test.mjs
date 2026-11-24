@@ -38,6 +38,11 @@ test("all humanoids (Bearframes, Nullframes, Hollows, Hunters, Echoes) use playe
     for (const req of ["root", "body", "head", "arm0", "arm1", "leg0", "leg1"]) {
       assert(bones.has(req), `${id} missing humanoid bone ${req}`);
     }
+    assert.equal(bones.get("body").pivot[1],12);
+    assert.equal(bones.get("head").pivot[1],24);
+    assert.equal(Math.abs(bones.get("arm0").pivot[0]),5.75);
+    assert.equal(Math.abs(bones.get("leg0").pivot[0]),2);
+    assert(bones.get("head").cubes.length>=4);
     let minY = Infinity, maxY = -Infinity;
     for (const bone of geo.bones) {
       for (const cube of bone.cubes || []) {
