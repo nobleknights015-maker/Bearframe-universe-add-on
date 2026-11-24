@@ -1,0 +1,37 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bearframe:nullframe_hunter",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/bearframe/nullframe_hunter"
+      },
+      "geometry": {
+        "default": "geometry.bearframe.nullframe_hunter"
+      },
+      "animations": {
+        "idle": "animation.bearframe.nullframe_hunter.idle",
+        "attack": "animation.bearframe.nullframe_hunter.attack",
+        "walk": "animation.bearframe.nullframe_hunter.walk",
+        "ctrl": "controller.animation.bearframe.locomotion",
+        "look": "animation.bearframe.nullframe_hunter.look"
+      },
+      "scripts": {
+        "animate": [
+          "ctrl",
+          "look"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bearframe"
+      ],
+      "spawn_egg": {
+        "base_color": "#cfd4d8",
+        "overlay_color": "#ff293b"
+      }
+    }
+  }
+}

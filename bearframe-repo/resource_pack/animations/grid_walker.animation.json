@@ -1,0 +1,129 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.bearframe.grid_walker.idle": {
+      "loop": true,
+      "bones": {
+        "head": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 48) * 28",
+            0
+          ]
+        },
+        "arm0": {
+          "rotation": [
+            "math.sin(query.life_time * 140) * 7",
+            0,
+            0
+          ]
+        },
+        "arm1": {
+          "rotation": [
+            "math.cos(query.life_time * 140) * 7",
+            0,
+            0
+          ]
+        },
+        "body": {
+          "position": [
+            0,
+            "math.sin(query.life_time * 90) * 0.25",
+            0
+          ]
+        }
+      }
+    },
+    "animation.bearframe.grid_walker.walk": {
+      "loop": true,
+      "bones": {
+        "leg0": {
+          "rotation": [
+            "math.sin(query.modified_distance_moved * 55) * 18",
+            "math.cos(query.modified_distance_moved * 55) * 12",
+            "math.sin(query.modified_distance_moved * 55) * 8"
+          ]
+        },
+        "leg1": {
+          "rotation": [
+            "math.sin(query.modified_distance_moved * 55) * -18",
+            "math.cos(query.modified_distance_moved * 55) * -12",
+            "math.sin(query.modified_distance_moved * 55) * -8"
+          ]
+        },
+        "leg2": {
+          "rotation": [
+            "math.sin(query.modified_distance_moved * 55) * -18",
+            "math.cos(query.modified_distance_moved * 55) * -12",
+            "math.sin(query.modified_distance_moved * 55) * -8"
+          ]
+        },
+        "leg3": {
+          "rotation": [
+            "math.sin(query.modified_distance_moved * 55) * 18",
+            "math.cos(query.modified_distance_moved * 55) * 12",
+            "math.sin(query.modified_distance_moved * 55) * 8"
+          ]
+        },
+        "leg4": {
+          "rotation": [
+            "math.sin(query.modified_distance_moved * 55) * 18",
+            "math.cos(query.modified_distance_moved * 55) * 12",
+            "math.sin(query.modified_distance_moved * 55) * 8"
+          ]
+        },
+        "leg5": {
+          "rotation": [
+            "math.sin(query.modified_distance_moved * 55) * -18",
+            "math.cos(query.modified_distance_moved * 55) * -12",
+            "math.sin(query.modified_distance_moved * 55) * -8"
+          ]
+        }
+      }
+    },
+    "animation.bearframe.grid_walker.attack": {
+      "loop": false,
+      "animation_length": 0.45,
+      "bones": {
+        "arm0": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.2": [
+              -48,
+              12,
+              0
+            ],
+            "0.45": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "arm1": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.2": [
+              -48,
+              -12,
+              0
+            ],
+            "0.45": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    }
+  }
+}

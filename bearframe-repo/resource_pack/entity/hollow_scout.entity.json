@@ -1,0 +1,37 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bearframe:hollow_scout",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/bearframe/hollow_scout"
+      },
+      "geometry": {
+        "default": "geometry.bearframe.hollow_scout"
+      },
+      "animations": {
+        "idle": "animation.bearframe.hollow_scout.idle",
+        "attack": "animation.bearframe.hollow_scout.attack",
+        "walk": "animation.bearframe.hollow_scout.walk",
+        "ctrl": "controller.animation.bearframe.locomotion",
+        "look": "animation.bearframe.hollow_scout.look"
+      },
+      "scripts": {
+        "animate": [
+          "ctrl",
+          "look"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bearframe"
+      ],
+      "spawn_egg": {
+        "base_color": "#bfc5c8",
+        "overlay_color": "#f24848"
+      }
+    }
+  }
+}

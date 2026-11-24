@@ -1,0 +1,24 @@
+{
+  "resource_pack_name": "bearframe",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "bearframe_schematic": {
+      "textures": "textures/bearframe/relay_schematic"
+    },
+    "bearframe_insignia": {
+      "textures": "textures/bearframe/farfield_insignia"
+    },
+    "bearframe_salvaged_alloy": {
+      "textures": "textures/bearframe/salvaged_alloy"
+    },
+    "bearframe_legacy_cell": {
+      "textures": "textures/bearframe/legacy_cell"
+    },
+    "bearframe_field_scanner": {
+      "textures": "textures/bearframe/field_scanner"
+    },
+    "bearframe_repair_wrench": {
+      "textures": "textures/bearframe/repair_wrench"
+    }
+  }
+}

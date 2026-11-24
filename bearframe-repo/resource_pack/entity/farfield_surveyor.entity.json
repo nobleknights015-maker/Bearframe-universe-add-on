@@ -1,0 +1,37 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bearframe:farfield_surveyor",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/bearframe/farfield_surveyor"
+      },
+      "geometry": {
+        "default": "geometry.bearframe.farfield_surveyor"
+      },
+      "animations": {
+        "idle": "animation.bearframe.farfield_surveyor.idle",
+        "attack": "animation.bearframe.farfield_surveyor.attack",
+        "walk": "animation.bearframe.farfield_surveyor.walk",
+        "ctrl": "controller.animation.bearframe.locomotion",
+        "look": "animation.bearframe.farfield_surveyor.look"
+      },
+      "scripts": {
+        "animate": [
+          "ctrl",
+          "look"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bearframe"
+      ],
+      "spawn_egg": {
+        "base_color": "#dde6ea",
+        "overlay_color": "#5de6cf"
+      }
+    }
+  }
+}

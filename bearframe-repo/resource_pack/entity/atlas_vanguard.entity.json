@@ -1,0 +1,37 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bearframe:atlas_vanguard",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/bearframe/atlas_vanguard"
+      },
+      "geometry": {
+        "default": "geometry.bearframe.atlas_vanguard"
+      },
+      "animations": {
+        "idle": "animation.bearframe.atlas_vanguard.idle",
+        "attack": "animation.bearframe.atlas_vanguard.attack",
+        "walk": "animation.bearframe.atlas_vanguard.walk",
+        "ctrl": "controller.animation.bearframe.locomotion",
+        "look": "animation.bearframe.atlas_vanguard.look"
+      },
+      "scripts": {
+        "animate": [
+          "ctrl",
+          "look"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bearframe"
+      ],
+      "spawn_egg": {
+        "base_color": "#d9d6cf",
+        "overlay_color": "#ffc145"
+      }
+    }
+  }
+}

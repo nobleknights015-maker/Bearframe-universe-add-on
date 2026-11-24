@@ -1,0 +1,37 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bearframe:city_engineer",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/bearframe/city_engineer"
+      },
+      "geometry": {
+        "default": "geometry.bearframe.city_engineer"
+      },
+      "animations": {
+        "idle": "animation.bearframe.city_engineer.idle",
+        "attack": "animation.bearframe.city_engineer.attack",
+        "walk": "animation.bearframe.city_engineer.walk",
+        "ctrl": "controller.animation.bearframe.locomotion",
+        "look": "animation.bearframe.city_engineer.look"
+      },
+      "scripts": {
+        "animate": [
+          "ctrl",
+          "look"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bearframe"
+      ],
+      "spawn_egg": {
+        "base_color": "#dce5ee",
+        "overlay_color": "#74b9ff"
+      }
+    }
+  }
+}

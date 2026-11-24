@@ -1,0 +1,33 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "bearframe:repair_wrench"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      "A A",
+      " I ",
+      " I "
+    ],
+    "key": {
+      "A": {
+        "item": "bearframe:salvaged_alloy"
+      },
+      "I": {
+        "item": "minecraft:iron_ingot"
+      }
+    },
+    "unlock": [
+      {
+        "item": "bearframe:salvaged_alloy"
+      }
+    ],
+    "result": {
+      "item": "bearframe:repair_wrench",
+      "count": 1
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bearframe:vera_artisan",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/bearframe/vera_artisan"
+      },
+      "geometry": {
+        "default": "geometry.bearframe.vera_artisan"
+      },
+      "animations": {
+        "idle": "animation.bearframe.vera_artisan.idle",
+        "attack": "animation.bearframe.vera_artisan.attack",
+        "walk": "animation.bearframe.vera_artisan.walk",
+        "ctrl": "controller.animation.bearframe.locomotion",
+        "look": "animation.bearframe.vera_artisan.look"
+      },
+      "scripts": {
+        "animate": [
+          "ctrl",
+          "look"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bearframe"
+      ],
+      "spawn_egg": {
+        "base_color": "#ece6f0",
+        "overlay_color": "#e278ff"
+      }
+    }
+  }
+}

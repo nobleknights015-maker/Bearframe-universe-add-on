@@ -1,0 +1,19 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "bearframe:field_scanner",
+      "menu_category": {
+        "category": "equipment"
+      }
+    },
+    "components": {
+      "minecraft:icon": "bearframe_field_scanner",
+      "minecraft:max_stack_size": 1,
+      "minecraft:display_name": {
+        "value": "item.bearframe:field_scanner.name"
+      },
+      "minecraft:hand_equipped": true
+    }
+  }
+}

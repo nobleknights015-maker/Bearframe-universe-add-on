@@ -1,0 +1,35 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bearframe:grid_turret",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/bearframe/grid_turret"
+      },
+      "geometry": {
+        "default": "geometry.bearframe.grid_turret"
+      },
+      "animations": {
+        "idle": "animation.bearframe.grid_turret.idle",
+        "attack": "animation.bearframe.grid_turret.attack",
+        "look": "animation.bearframe.grid_turret.look",
+        "ctrl": "controller.animation.bearframe.turret"
+      },
+      "scripts": {
+        "animate": [
+          "ctrl"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bearframe"
+      ],
+      "spawn_egg": {
+        "base_color": "#5d6568",
+        "overlay_color": "#56dff0"
+      }
+    }
+  }
+}

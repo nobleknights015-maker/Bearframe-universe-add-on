@@ -1,0 +1,118 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "bearframe:echo_sentinel",
+      "is_spawnable": true,
+      "is_summonable": true
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "echo_frame",
+          "mob"
+        ]
+      },
+      "minecraft:health": {
+        "value": 46,
+        "max": 46
+      },
+      "minecraft:collision_box": {
+        "width": 0.82,
+        "height": 2.06
+      },
+      "minecraft:persistent": {},
+      "minecraft:physics": {},
+      "minecraft:movement": {
+        "value": 0.2
+      },
+      "minecraft:movement.basic": {},
+      "minecraft:navigation.walk": {
+        "avoid_damage_blocks": true,
+        "can_path_over_water": true
+      },
+      "minecraft:jump.static": {},
+      "minecraft:behavior.float": {
+        "priority": 0
+      },
+      "minecraft:behavior.random_stroll": {
+        "priority": 6,
+        "speed_multiplier": 0.72,
+        "xz_dist": 5,
+        "y_dist": 2
+      },
+      "minecraft:behavior.look_at_player": {
+        "priority": 7,
+        "look_distance": 7,
+        "probability": 0.35
+      },
+      "minecraft:behavior.random_look_around": {
+        "priority": 8
+      },
+      "minecraft:knockback_resistance": {
+        "value": 0.6
+      },
+      "minecraft:loot": {
+        "table": "loot_tables/entities/echo_salvage.json"
+      },
+      "minecraft:interact": {
+        "interactions": [
+          {
+            "interact_text": "Stabilize",
+            "on_interact": {
+              "event": "bearframe:look",
+              "target": "self"
+            }
+          }
+        ]
+      }
+    },
+    "events": {
+      "minecraft:entity_spawned": {
+        "add": {
+          "component_groups": [
+            "bearframe:echo_wary"
+          ]
+        }
+      },
+      "bearframe:stabilize": {
+        "remove": {
+          "component_groups": [
+            "bearframe:echo_wary"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "bearframe:echo_calm"
+          ]
+        }
+      },
+      "bearframe:look": {}
+    },
+    "component_groups": {
+      "bearframe:echo_wary": {
+        "minecraft:attack": {
+          "damage": 6
+        },
+        "minecraft:behavior.melee_attack": {
+          "priority": 2,
+          "speed_multiplier": 1.02,
+          "track_target": true
+        },
+        "minecraft:behavior.hurt_by_target": {
+          "priority": 1
+        }
+      },
+      "bearframe:echo_calm": {
+        "minecraft:damage_sensor": {
+          "triggers": [
+            {
+              "cause": "all",
+              "deals_damage": "no"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

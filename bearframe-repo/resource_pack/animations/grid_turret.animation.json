@@ -1,0 +1,54 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.bearframe.grid_turret.idle": {
+      "loop": true,
+      "bones": {
+        "head": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 38) * 55",
+            0
+          ]
+        }
+      }
+    },
+    "animation.bearframe.grid_turret.look": {
+      "loop": true,
+      "bones": {
+        "head": {
+          "rotation": [
+            "math.clamp(query.target_x_rotation, -25, 25)",
+            "query.target_y_rotation",
+            0
+          ]
+        }
+      }
+    },
+    "animation.bearframe.grid_turret.attack": {
+      "loop": false,
+      "animation_length": 0.35,
+      "bones": {
+        "barrels": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.1": [
+              0,
+              0,
+              2.2
+            ],
+            "0.35": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    }
+  }
+}

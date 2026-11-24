@@ -1,0 +1,37 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bearframe:echo_drifter",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/bearframe/echo_drifter"
+      },
+      "geometry": {
+        "default": "geometry.bearframe.echo_drifter"
+      },
+      "animations": {
+        "idle": "animation.bearframe.echo_drifter.idle",
+        "attack": "animation.bearframe.echo_drifter.attack",
+        "walk": "animation.bearframe.echo_drifter.walk",
+        "ctrl": "controller.animation.bearframe.locomotion",
+        "look": "animation.bearframe.echo_drifter.look"
+      },
+      "scripts": {
+        "animate": [
+          "ctrl",
+          "look"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bearframe"
+      ],
+      "spawn_egg": {
+        "base_color": "#8b7f70",
+        "overlay_color": "#e3ba6b"
+      }
+    }
+  }
+}

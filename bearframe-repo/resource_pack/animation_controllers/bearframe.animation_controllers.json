@@ -1,0 +1,93 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.bearframe.locomotion": {
+      "initial_state": "idle",
+      "states": {
+        "idle": {
+          "animations": [
+            "idle"
+          ],
+          "transitions": [
+            {
+              "attack": "variable.attack_time > 0.0"
+            },
+            {
+              "walk": "query.modified_move_speed > 0.04"
+            }
+          ]
+        },
+        "walk": {
+          "animations": [
+            "idle",
+            "walk"
+          ],
+          "transitions": [
+            {
+              "attack": "variable.attack_time > 0.0"
+            },
+            {
+              "idle": "query.modified_move_speed <= 0.04"
+            }
+          ]
+        },
+        "attack": {
+          "animations": [
+            "idle",
+            "attack"
+          ],
+          "transitions": [
+            {
+              "idle": "variable.attack_time <= 0.0 && query.all_animations_finished"
+            }
+          ]
+        }
+      }
+    },
+    "controller.animation.bearframe.turret": {
+      "initial_state": "scan",
+      "states": {
+        "scan": {
+          "animations": [
+            "idle"
+          ],
+          "transitions": [
+            {
+              "fire": "variable.attack_time > 0.0"
+            },
+            {
+              "track": "query.has_target"
+            }
+          ]
+        },
+        "track": {
+          "animations": [
+            "look"
+          ],
+          "transitions": [
+            {
+              "fire": "variable.attack_time > 0.0"
+            },
+            {
+              "scan": "!query.has_target"
+            }
+          ]
+        },
+        "fire": {
+          "animations": [
+            "look",
+            "attack"
+          ],
+          "transitions": [
+            {
+              "track": "query.all_animations_finished && query.has_target"
+            },
+            {
+              "scan": "query.all_animations_finished && !query.has_target"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
