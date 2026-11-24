@@ -1,0 +1,9 @@
+{
+  "resource_pack_name": "bearframe",
+  "texture_name": "atlas.terrain",
+  "texture_data": {
+    "bearframe_anchor": {
+      "textures": "textures/bearframe/anchor"
+    }
+  }
+}

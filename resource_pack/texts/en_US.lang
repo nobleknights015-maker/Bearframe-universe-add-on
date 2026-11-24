@@ -1,0 +1,7 @@
+item.bearframe:relay_schematic.name=Relay Schematic
+entity.bearframe:farfield_surveyor.name=Farfield Surveyor
+item.spawn_egg.entity.bearframe:farfield_surveyor.name=Spawn Farfield Surveyor
+entity.bearframe:grid_walker.name=Legacy Maintenance Walker
+item.spawn_egg.entity.bearframe:grid_walker.name=Spawn Legacy Maintenance Walker
+entity.bearframe:hollow_scout.name=Hollow Perimeter Scout
+item.spawn_egg.entity.bearframe:hollow_scout.name=Spawn Hollow Perimeter Scout

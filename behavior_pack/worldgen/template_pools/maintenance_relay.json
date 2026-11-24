@@ -1,0 +1,17 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:template_pool": {
+    "description": {
+      "identifier": "bearframe:maintenance_relay"
+    },
+    "elements": [
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "bearframe/maintenance_relay"
+        },
+        "weight": 1
+      }
+    ]
+  }
+}

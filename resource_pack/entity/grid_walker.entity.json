@@ -1,0 +1,36 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bearframe:grid_walker",
+      "materials": {
+        "default": "entity"
+      },
+      "textures": {
+        "default": "textures/bearframe/grid_walker"
+      },
+      "geometry": {
+        "default": "geometry.bearframe.grid_walker"
+      },
+      "animations": {
+        "idle": "animation.bearframe.grid_walker.idle",
+        "walk": "animation.bearframe.grid_walker.walk"
+      },
+      "scripts": {
+        "animate": [
+          "idle",
+          {
+            "walk": "query.modified_move_speed > 0.02"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bearframe"
+      ],
+      "spawn_egg": {
+        "base_color": "#656257",
+        "overlay_color": "#68acc2"
+      }
+    }
+  }
+}

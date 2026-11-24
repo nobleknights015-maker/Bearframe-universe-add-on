@@ -1,0 +1,21 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:structure_set": {
+    "description": {
+      "identifier": "bearframe:maintenance_relay"
+    },
+    "placement": {
+      "type": "minecraft:random_spread",
+      "salt": 681147,
+      "spacing": 22,
+      "separation": 10,
+      "spread_type": "linear"
+    },
+    "structures": [
+      {
+        "structure": "bearframe:maintenance_relay",
+        "weight": 1
+      }
+    ]
+  }
+}
