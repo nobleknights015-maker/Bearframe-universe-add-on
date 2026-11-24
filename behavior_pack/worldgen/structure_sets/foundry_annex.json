@@ -1,0 +1,21 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:structure_set": {
+    "description": {
+      "identifier": "bearframe:foundry_annex"
+    },
+    "placement": {
+      "type": "minecraft:random_spread",
+      "salt": 773221,
+      "spacing": 24,
+      "separation": 10,
+      "spread_type": "linear"
+    },
+    "structures": [
+      {
+        "structure": "bearframe:foundry_annex",
+        "weight": 1
+      }
+    ]
+  }
+}

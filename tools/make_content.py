@@ -7,7 +7,7 @@ import random
 ROOT=Path(__file__).resolve().parents[1]
 BP,RP=ROOT/"behavior_pack",ROOT/"resource_pack"
 SEED=UUID("d5efd705-1ffa-48c6-8148-6ac108170a38")
-VERSION=[0,1,0]
+VERSION=[0,2,0]
 def uid(key):
     return str(uuid5(SEED,key))
 def write(root,path,content):
@@ -19,7 +19,7 @@ def png(path,image):
     target.parent.mkdir(parents=True,exist_ok=True)
     image.save(target)
 for root,side,module in [(RP,"Resources","resources"),(BP,"Behavior","data")]:
-    data={"format_version":2,"header":{"name":"Bearframe | "+side,"description":"Farfield Maintenance Relay",
+    data={"format_version":2,"header":{"name":"Bearframe | "+side,"description":"Farfield Survey and Bearframe City",
         "uuid":uid(side),"version":VERSION,"min_engine_version":[1,26,50]},
         "modules":[{"type":module,"uuid":uid(module),"version":VERSION}]}
     if root==BP:
@@ -95,11 +95,16 @@ def walker(scout):
 PALETTES={
  "farfield_surveyor":["#bfcbd0","#242e34","#35494f","#77dac4","#4c7a80","#387b72","#4a6353"],
  "grid_walker":["#656257","#343b39","#344c50","#68acc2","#43595d","#816d4c","#536c43"],
- "hollow_scout":["#a8afb0","#272b32","#592e33","#ea675b","#62313a","#3d3c42","#55545a"]}
-TITLES={"farfield_surveyor":"Farfield Surveyor","grid_walker":"Legacy Maintenance Walker","hollow_scout":"Hollow Perimeter Scout"}
+ "hollow_scout":["#a8afb0","#272b32","#592e33","#ea675b","#62313a","#3d3c42","#55545a"],
+ "ward_resident":["#826e61","#36363e","#43364c","#c6a5dc","#634a5e","#937c69","#534e49"],
+ "city_steward":["#eee0da","#393642","#513648","#f2a3c4","#9c687b","#966375","#7a796e"],
+ "city_engineer":["#cdd8e0","#28333f","#384769","#87b9ed","#435f87","#596f87","#3a5668"],
+ "city_watch":["#c5cbd0","#1d232d","#3c2634","#df6f75","#4a2f39","#66535c","#44404b"]}
+TITLES={"farfield_surveyor":"Farfield Surveyor","grid_walker":"Legacy Maintenance Walker","hollow_scout":"Hollow Perimeter Scout",
+ "ward_resident":"Ward Resident","city_steward":"Commons Steward","city_engineer":"Systems Engineer","city_watch":"Watchtower Officer"}
 
 for name,colors in PALETTES.items():
-    surveyor=name=="farfield_surveyor"
+    humanoid_model=name not in {"grid_walker","hollow_scout"}
     hostile=name=="hollow_scout"
     ident="bearframe:"+name
     atlas=Image.new("RGB",(64,32))
@@ -120,15 +125,28 @@ for name,colors in PALETTES.items():
             draw.line((x+4,y+13,x+11,y+13),fill="#333c3f")
     texture="textures/bearframe/"+name
     png(texture,atlas)
-    bones=humanoid() if surveyor else walker(hostile)
+    bones=humanoid() if humanoid_model else walker(hostile)
+    if name=="ward_resident":
+        bones[1]["cubes"]=bones[1]["cubes"][:1]
+        bones[0]["cubes"]=[cube([-3.5,10,-2],[7,10,4],0),cube([-3,15,-2.4],[5,2,.7],2,3),
+                            cube([2,10,-2.6],[1.5,8,5.2],1),cube([-4.3,11,-2.2],[1,7,2],5)]
+        bones[2]["cubes"]=[cube([-7.1,11,-.8],[2,7,1.8],1),cube([-7.5,10,-1],[2.8,3,2.2],5)]
+    elif name=="city_watch":
+        bones[0]["cubes"].append(cube([-4.6,11,2],[9.2,8,1.3],1,2))
+        bones[2]["cubes"].append(cube([-7.8,16,-2],[3.5,4,4],0))
+        bones[3]["cubes"].append(cube([4.3,16,-2],[3.5,4,4],0))
+    elif name=="city_steward":
+        bones[0]["cubes"].append(cube([-4,11,-2.7],[1.4,8,5.1],5))
+    elif name=="city_engineer":
+        bones[0]["cubes"].append(cube([1.2,12,-2.65],[2.7,3,.8],5))
     geometry="geometry.bearframe."+name
     write(RP,"models/entity/"+name+".geo.json",{"format_version":"1.12.0","minecraft:geometry":[{
       "description":{"identifier":geometry,"texture_width":64,"texture_height":32,"visible_bounds_width":2,
        "visible_bounds_height":3,"visible_bounds_offset":[0,.8,0]},"bones":bones}]})
     prefix="animation.bearframe."+name
     moves={f"leg{i}":{"rotation":[f"math.sin(query.modified_distance_moved * 42) * {25 if i%2==0 else -25}",0,0]}
-           for i in range(2 if surveyor else 4)}
-    if surveyor:
+           for i in range(2 if humanoid_model else 4)}
+    if humanoid_model:
         for i in range(2):
             moves[f"arm{i}"]={"rotation":[f"math.sin(query.modified_distance_moved * 42) * {-19 if i==0 else 19}",0,0]}
     animations={prefix+".idle":{"loop":True,"bones":{
@@ -142,7 +160,7 @@ for name,colors in PALETTES.items():
       "render_controllers":["controller.render.bearframe"],"spawn_egg":{"base_color":colors[0],"overlay_color":colors[3]}}}})
     components={"minecraft:type_family":{"family":[name,"mob"]+(["monster"] if hostile else [])},
      "minecraft:health":{"value":24 if hostile else 26,"max":24 if hostile else 26},
-     "minecraft:collision_box":{"width":.72 if surveyor else .92,"height":1.7 if surveyor else .82},
+     "minecraft:collision_box":{"width":.72 if humanoid_model else .92,"height":1.7 if humanoid_model else .82},
      "minecraft:physics":{},"minecraft:persistent":{},"minecraft:movement":{"value":.23 if hostile else .13},
      "minecraft:movement.basic":{},"minecraft:navigation.walk":{"avoid_damage_blocks":True},
      "minecraft:jump.static":{},"minecraft:behavior.float":{"priority":0},
@@ -155,8 +173,8 @@ for name,colors in PALETTES.items():
           "entity_types":[{"filters":{"test":"is_family","subject":"other","value":"player"},"max_dist":10}]},
          "minecraft:loot":{"table":"loot_tables/entities/hollow_scout.json"}})
     else:
-        components["minecraft:interact"]={"interactions":[{"interact_text":"Talk" if surveyor else "Inspect","on_interact":{"event":"bearframe:look","target":"self"}}]}
-        if surveyor:
+        components["minecraft:interact"]={"interactions":[{"interact_text":"Talk" if humanoid_model else "Inspect","on_interact":{"event":"bearframe:look","target":"self"}}]}
+        if humanoid_model:
             components["minecraft:damage_sensor"]={"triggers":[{"cause":"all","deals_damage":"no"}]}
     write(BP,"entities/"+name+".json",{"format_version":"1.21.0","minecraft:entity":{"description":{
         "identifier":ident,"is_spawnable":True,"is_summonable":True},"components":components,
@@ -171,3 +189,30 @@ write(RP,"texts/languages.json",["en_US"])
 approach=json.loads((BP/"blocks/relay_anchor.json").read_text())
 approach["minecraft:block"]["description"]={"identifier":"bearframe:approach_anchor","states":{"bearframe:graded":[False,True]}}
 write(BP,"blocks/approach_anchor.json",approach)
+
+region=json.loads((BP/"blocks/relay_anchor.json").read_text())
+region["minecraft:block"]["description"]={"identifier":"bearframe:region_anchor","states":{
+    "bearframe:region":[0,1,2,3,4],"bearframe:status":[0,1,2]}}
+write(BP,"blocks/region_anchor.json",region)
+write(BP,"dimensions/city_orbit.json",{"format_version":"1.26.50","minecraft:dimension":{
+ "description":{"identifier":"bearframe:city_orbit"},"components":{
+ "minecraft:dimension_height":{"min_y":-64,"height_range":384},
+ "minecraft:generation":{"generator_type":"void"},"minecraft:default_biome":{"biome":"minecraft:the_end"}}}})
+
+badge=Image.new("RGBA",(32,32))
+paint=ImageDraw.Draw(badge)
+paint.polygon([(16,3),(26,9),(26,23),(16,29),(6,23),(6,9)],fill="#253039")
+paint.polygon([(16,5),(24,10),(24,22),(16,27),(8,22),(8,10)],fill="#a5abae")
+paint.polygon([(16,8),(22,12),(22,20),(16,24),(10,20),(10,12)],fill="#315657")
+paint.line([(11,20),(16,11),(21,20)],fill="#8ee3c6",width=2)
+paint.line([(12,18),(20,18)],fill="#b4e1d3",width=2)
+png("textures/bearframe/farfield_insignia",badge)
+atlas=json.loads((RP/"textures/item_texture.json").read_text())
+atlas["texture_data"]["bearframe_insignia"]={"textures":"textures/bearframe/farfield_insignia"}
+write(RP,"textures/item_texture.json",atlas)
+write(BP,"items/farfield_insignia.json",{"format_version":"1.21.90","minecraft:item":{
+ "description":{"identifier":"bearframe:farfield_insignia","menu_category":{"category":"items"}},
+ "components":{"minecraft:icon":"bearframe_insignia","minecraft:max_stack_size":1,
+ "minecraft:display_name":{"value":"item.bearframe:farfield_insignia.name"}}}})
+with (RP/"texts/en_US.lang").open("a") as language:
+    language.write("item.bearframe:farfield_insignia.name=Farfield Survey Insignia\n")

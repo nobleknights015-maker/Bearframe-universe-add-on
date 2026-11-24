@@ -1,3 +1,6 @@
+import {recordSurvey} from "./survey_log.js";
+import {greetRegion,installExpedition,regionAt} from "./expedition.js";
+import {REGION_ANCHOR,ORBIT} from "./regions.js";
 import {APPROACH_MARKER,gradeApproach} from "./approaches.js";
 import {BlockVolume,Difficulty,GameMode,ItemStack,system,world} from "@minecraft/server";
 import {ACTORS,BREAKER,BULKHEAD,DIRECTION,GATE,POWER_LIGHTS,RECOVERY,ROTATIONS,at} from "./layout.js";
@@ -149,7 +152,10 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event=>{
   system.run(()=>attempt(()=>{
     if(!validPlayer(player)||player.dimension.id!==dimension.id||dist(player.location,location)>49)return;
     const now=loaded(dimension,location),site=now&&findLinked(now);
-    if(site)useRelay(player,site,now.typeId);
+    if(site){
+      if(now.typeId===PANEL)recordSurvey(player,"maintenance_relay");
+      useRelay(player,site,now.typeId);
+    }
   }));
 });
 
@@ -159,6 +165,7 @@ world.beforeEvents.playerInteractWithEntity.subscribe(event=>{
   event.cancel=true;
   system.run(()=>attempt(()=>{
     if(!validPlayer(player)||!target.isValid||dist(player.location,target.location)>49)return;
+    if(target.dimension.id===ORBIT)return;
     if(target.typeId===ACTOR_TYPES.walker)return info(player,"The old walker charts the conduit. Its origin is unverified.");
     if(!player.isSneaking)return info(player,"I'm with Farfield. Start at the lectern. Sneak-interact to trade 2 charcoal for a torch kit.");
     const bag=component(player);
@@ -179,12 +186,19 @@ system.runInterval(()=>{
     if(cells.get(p.id)===key)return;
     const a={x:Math.floor(loc.x)-21,y:Math.max(dim.heightRange.min,Math.floor(loc.y)-12),z:Math.floor(loc.z)-21};
     const b={x:Math.floor(loc.x)+21,y:Math.min(dim.heightRange.max-1,Math.floor(loc.y)+14),z:Math.floor(loc.z)+21};
-    for(const p of dim.getBlocks(new BlockVolume(a,b),{includeTypes:[ANCHOR,APPROACH_MARKER]},true).getBlockLocationIterator()){
+    for(const p of dim.getBlocks(new BlockVolume(a,b),{includeTypes:[ANCHOR,APPROACH_MARKER,REGION_ANCHOR]},true).getBlockLocationIterator()){
       const marker=loaded(dim,p);
       if(marker?.typeId===APPROACH_MARKER){gradeApproach(marker);continue;}
+      if(marker?.typeId===REGION_ANCHOR){
+        const region=regionAt(dim,at(p,[0,2,0]));
+        if(region)greetRegion(region);
+        continue;
+      }
       const site=resolveSite(dim,at(p,[0,2,0]));
       if(site)activateSite(site);
     }
     cells.set(p.id,key);
   });
 },60);
+
+installExpedition({validPlayer,spend,attempt});

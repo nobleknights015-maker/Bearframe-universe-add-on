@@ -29,28 +29,31 @@ export function gradeApproach(marker){
   const position=(n,lane,h)=>({x:x+n*dx+lane*dz,y:h,z:z+n*dz-lane*dx});
   const stepGrade=(n,end,last)=>Math.round(floor+(last-floor)*n/end);
   let route;
-  for(let end=3;end<=18 && !route;end++){
-    const p=position(end,0,floor), distant=position(end+1,0,floor);
-    const last=naturalGrade(dim,p.x,p.z), outside=naturalGrade(dim,distant.x,distant.z);
-    if(last===undefined || outside===undefined || water(dim.getBlock({...p,y:last+1})) ||
-      water(dim.getBlock({...distant,y:outside+1})) || Math.abs(last-floor)>end ||
-      Math.abs(last-outside)>1)continue;
-    const slices=[];
-    for(let n=1;n<=end;n++){
-      const grade=stepGrade(n,end,last);
-      for(const lane of [-1,0,1]){
-        const p=position(n,lane,grade), ground=naturalGrade(dim,p.x,p.z);
-        if(ground===undefined || ground>grade || grade-ground>14){slices.push(null);continue;}
-        let safe=true;
-        for(let h=ground+1;h<=grade+2;h++){
-          const b=dim.getBlock({...p,y:h});
-          if(h<=grade && water(b))continue;
-          if(!b?.isAir){safe=false;break;}
+  for(const lanes of [[-1,0,1],[0]]){
+    if(route)break;
+    for(let end=3;end<=24 && !route;end++){
+      const p=position(end,0,floor), distant=position(end+1,0,floor);
+      const last=naturalGrade(dim,p.x,p.z), outside=naturalGrade(dim,distant.x,distant.z);
+      if(last===undefined || outside===undefined || water(dim.getBlock({...p,y:last+1})) ||
+        water(dim.getBlock({...distant,y:outside+1})) || Math.abs(last-floor)>end ||
+        Math.abs(last-outside)>1)continue;
+      const slices=[];
+      for(let n=1;n<=end;n++){
+        const grade=stepGrade(n,end,last);
+        for(const lane of lanes){
+          const p=position(n,lane,grade), ground=naturalGrade(dim,p.x,p.z);
+          if(ground===undefined || ground>grade || grade-ground>14){slices.push(null);continue;}
+          let safe=true;
+          for(let h=ground+1;h<=grade+2;h++){
+            const b=dim.getBlock({...p,y:h});
+            if(h<=grade && water(b))continue;
+            if(!b?.isAir){safe=false;break;}
+          }
+          slices.push(safe?{p,ground,n}:null);
         }
-        slices.push(safe?{p,ground,n}:null);
       }
+      if(slices.every(Boolean))route={slices,end,last};
     }
-    if(slices.every(Boolean))route={slices,end,last};
   }
   if(!route)return false;
   for(const {p} of route.slices){

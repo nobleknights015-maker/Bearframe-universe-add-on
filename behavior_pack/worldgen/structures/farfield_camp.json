@@ -1,0 +1,26 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:jigsaw": {
+    "description": {
+      "identifier": "bearframe:farfield_camp"
+    },
+    "step": "surface_structures",
+    "terrain_adaptation": "beard_box",
+    "start_pool": "bearframe:farfield_camp",
+    "max_depth": 1,
+    "start_height": {
+      "type": "constant",
+      "value": {
+        "absolute": -14
+      }
+    },
+    "heightmap_projection": "ocean_floor",
+    "biome_filters": [
+      {
+        "test": "has_biome_tag",
+        "operator": "==",
+        "value": "plains"
+      }
+    ]
+  }
+}

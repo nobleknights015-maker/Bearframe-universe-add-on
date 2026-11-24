@@ -1,3 +1,14 @@
+# 0.2.0 world and travel checks
+
+Bedrock Dedicated Server 1.26.63.1 generated and located all six surface types in the regular Overworld. The first checkpoint attempt exposed a waterlogged seal in the river at X 8, Z 422. The expansion checkpoint now uses the surface projection and drains waterlogged bars during a successful bypass. The clean retest opened that seal and collected the stores once.
+
+- The final live probe covered five new native sites and their unique residents, four separate repair and reward sequences, the generated camp, the orbital city and a same-berth round trip. One camp and switchyard approach and four approaches at the ward and annex graded on the test seed. The checkpoint test cleared the interior, but no approach graded there. Terrain and construction clearance govern which approaches can be built.
+- Seven resource models/identifiers and their texture and animation references were validated. Nine offline tests checked foundations, device stamping, entry floors, biome filters and the supported city arrival.
+- The same probe issued one insignia after six survey records, and a repeat report left the inventory unchanged.
+- Transport uses a real in-server entity as a player stand-in; repair and claim use real in-game inventories. No graphical Bedrock client or live two-player session was available. Handheld rendering, user steering and touch inputs, client performance, Realms and console remain unverified.
+
+The runtime probe is `tests/server_world_probe.js`. Run only on disposable seed 13221951. It places fixture blocks, repairs sites, and consumes their shared rewards.
+
 # QA test log
 
 Bedrock Dedicated Server 1.26.63.1, stable server module 2.10.0. Loaded the distinct Bearframe packs and used the attached Infinity v1.0.9 resource pack separately in the test world. Native jigsaw structure placement used the regular Overworld seed 13221951, terminal X -202, Y 68, Z 168, rotation 180°. Three offline tests verified the template, phase hardware, doors, interior routes and separated recovery room.

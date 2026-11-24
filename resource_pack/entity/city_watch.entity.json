@@ -1,0 +1,36 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bearframe:city_watch",
+      "materials": {
+        "default": "entity"
+      },
+      "textures": {
+        "default": "textures/bearframe/city_watch"
+      },
+      "geometry": {
+        "default": "geometry.bearframe.city_watch"
+      },
+      "animations": {
+        "idle": "animation.bearframe.city_watch.idle",
+        "walk": "animation.bearframe.city_watch.walk"
+      },
+      "scripts": {
+        "animate": [
+          "idle",
+          {
+            "walk": "query.modified_move_speed > 0.02"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bearframe"
+      ],
+      "spawn_egg": {
+        "base_color": "#c5cbd0",
+        "overlay_color": "#df6f75"
+      }
+    }
+  }
+}

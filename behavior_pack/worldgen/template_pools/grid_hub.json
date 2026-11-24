@@ -1,0 +1,17 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:template_pool": {
+    "description": {
+      "identifier": "bearframe:grid_hub"
+    },
+    "elements": [
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "bearframe/grid_hub"
+        },
+        "weight": 1
+      }
+    ]
+  }
+}

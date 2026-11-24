@@ -19,3 +19,7 @@ Primary source is the supplied Bearframe Lore Bible Revision 4.10 Master. Read s
 ## Approval needed for story canon
 
 The relay location, architectural details, local Farfield survey, repair sequence, Hollow patrol and walker encounter are playable proposals. Any formal first contact, precise location relative to the protected Sleeper site, involvement of a named cast member, or confirmation of the site's builders needs Founder approval before entering the novel or RP timeline.
+
+## 0.2.0 additions
+
+The Ward Resident is a gameplay-only Echo encounter. Their body is legacy hardware and their request concerns identity safety, consistent with §§146 and 174. The switchyard, patrol and annex are invented playable encounters with open historical provenance. The annex handles metal parts and ordinary stock, in keeping with §§84, 125 and 145. The playable city exterior is a bounded interpretation of the permanent station in §§81, 114, 128–131, 158 and 169. The camp shuttle and survey insignia are gameplay conveniences.

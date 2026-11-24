@@ -13,7 +13,9 @@ export const ACTORS = {
 export const ROTATIONS = [
   (x,z)=>[x,z], (x,z)=>[-z,x], (x,z)=>[-x,-z], (x,z)=>[z,-x]
 ];
-export function at(origin,[x,y,z],rotation=0){
+/** @param {{x:number,y:number,z:number}} origin @param {number[]} offset */
+export function at(origin,offset,rotation=0){
+  const [x,y,z]=offset;
   const [dx,dz]=ROTATIONS[rotation](x,z);
   return {x:origin.x+dx,y:origin.y+y,z:origin.z+dz};
 }

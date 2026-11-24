@@ -4,6 +4,9 @@
   "texture_data": {
     "bearframe_schematic": {
       "textures": "textures/bearframe/relay_schematic"
+    },
+    "bearframe_insignia": {
+      "textures": "textures/bearframe/farfield_insignia"
     }
   }
 }

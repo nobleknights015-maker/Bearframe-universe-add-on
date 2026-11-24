@@ -1,0 +1,21 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:structure_set": {
+    "description": {
+      "identifier": "bearframe:echo_ward"
+    },
+    "placement": {
+      "type": "minecraft:random_spread",
+      "salt": 773218,
+      "spacing": 26,
+      "separation": 10,
+      "spread_type": "linear"
+    },
+    "structures": [
+      {
+        "structure": "bearframe:echo_ward",
+        "weight": 1
+      }
+    ]
+  }
+}

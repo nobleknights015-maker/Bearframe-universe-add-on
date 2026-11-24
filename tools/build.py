@@ -1,14 +1,13 @@
+import argparse
 import io
 import json
 from pathlib import Path
 import subprocess
-import sys
 import tempfile
 import zipfile
 
 ROOT=Path(__file__).resolve().parents[1]
 BP,RP=ROOT/"behavior_pack",ROOT/"resource_pack"
-OUT=Path(sys.argv[1]).resolve() if len(sys.argv)>1 else ROOT/"dist"
 def read(path):
     return json.loads(path.read_text())
 def archive(directory):
@@ -43,12 +42,17 @@ def validate():
             assert key.startswith("bearframe_") and (RP/(entry["textures"]+".png")).is_file()
     assert not any("starbound" in p.name.lower() or "infinity" in p.name.lower() for root in (BP,RP) for p in root.rglob("*"))
 def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument("output",type=Path,nargs="?",default=ROOT/"dist")
+    parser.add_argument("--world",type=Path)
+    args=parser.parse_args()
+    OUT=args.output.resolve()
     validate()
     OUT.mkdir(parents=True,exist_ok=True)
-    with zipfile.ZipFile(OUT/"Bearframe_Bedrock_0.1.0.mcaddon","w",zipfile.ZIP_DEFLATED) as z:
+    with zipfile.ZipFile(OUT/"Bearframe_Bedrock_0.2.0.mcaddon","w",zipfile.ZIP_DEFLATED) as z:
         for folder,name in [(BP,"Behavior"),(RP,"Resources")]:
             z.writestr("Bearframe_"+name+".mcpack",archive(folder))
-    with zipfile.ZipFile(OUT/"Bearframe_Bedrock_Source_0.1.0.zip","w",zipfile.ZIP_DEFLATED) as z:
+    with zipfile.ZipFile(OUT/"Bearframe_Bedrock_Source_0.2.0.zip","w",zipfile.ZIP_DEFLATED) as z:
         for root in (BP,RP,ROOT/"docs",ROOT/"tests",ROOT/"tools"):
             for path in sorted(root.rglob("*")):
                 if path.is_file() and "__pycache__" not in path.parts:
@@ -60,6 +64,20 @@ def main():
                 bundle=Path(directory)/"Bearframe_Bedrock.gitbundle"
                 subprocess.run(["git","-C",str(ROOT),"bundle","create",str(bundle),"--all"],check=True)
                 z.write(bundle,bundle.name)
+    if args.world:
+        with zipfile.ZipFile(OUT/"Bearframe_Farfield_Arrival_0.2.0.mcworld","w",zipfile.ZIP_DEFLATED) as z:
+            for name in ("level.dat","levelname.txt","world_behavior_packs.json","world_resource_packs.json"):
+                z.write(args.world/name,name)
+            for kind,root in (("behavior",BP),("resource",RP)):
+                manifest=read(root/"manifest.json")["header"]
+                expected=[{"pack_id":manifest["uuid"],"version":manifest["version"]}]
+                assert read(args.world/f"world_{kind}_packs.json")==expected
+                for path in sorted(root.rglob("*")):
+                    if path.is_file():
+                        z.write(path,f"{kind}_packs/bearframe/"+path.relative_to(root).as_posix())
+            for path in (args.world/"db").glob("*"):
+                if path.is_file() and path.name not in {"LOCK","LOG","LOG.old"}:
+                    z.write(path,"db/"+path.name)
     for p in OUT.glob("*"):
         with zipfile.ZipFile(p) as z:
             assert z.testzip() is None
