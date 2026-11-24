@@ -24,9 +24,18 @@
         "gravity": 0.0,
         "inertia": 1.0,
         "uncertainty_base": 1.5,
+        "offset": [
+          0,
+          0.2,
+          0
+        ],
+        "should_bounce": false,
         "stop_on_hurt": true
       },
-      "minecraft:physics": {},
+      "minecraft:physics": {
+        "has_gravity": false,
+        "has_collision": true
+      },
       "minecraft:timer": {
         "time": 4.0,
         "looping": false,

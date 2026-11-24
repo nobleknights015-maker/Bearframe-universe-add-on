@@ -1602,8 +1602,6 @@ def build_behavior_entity(spec: dict) -> dict:
                 "attack_interval_min": 2.2,
                 "attack_interval_max": 3.0,
                 "attack_radius": 14.0,
-                "charge_charged_trigger": 0.4,
-                "charge_shoot_trigger": 0.6,
             },
             "minecraft:behavior.nearest_attackable_target": {
                 "priority": 1,
@@ -2129,14 +2127,13 @@ def main() -> None:
                     "scan": {
                         "animations": ["idle"],
                         "transitions": [
-                            {"fire": "variable.attack_time > 0.0"},
                             {"track": "query.has_target"},
                         ],
                     },
                     "track": {
                         "animations": ["look"],
                         "transitions": [
-                            {"fire": "variable.attack_time > 0.0"},
+                            {"fire": "query.is_charging || variable.attack_time > 0.0"},
                             {"scan": "!query.has_target"},
                         ],
                     },
@@ -2258,7 +2255,10 @@ def main() -> None:
                     "textures": {"default": tex_path},
                     "geometry": {"default": geo_id},
                     "animations": anim_map,
-                    "scripts": {"animate": animate_list},
+                    "scripts": {
+                        "initialize": ["variable.attack_time = 0.0;"],
+                        "animate": animate_list,
+                    },
                     "render_controllers": ["controller.render.bearframe"],
                     "spawn_egg": {"base_color": pal["armor"], "overlay_color": pal["glow"]},
                 }
@@ -2318,9 +2318,11 @@ def main() -> None:
                     "gravity": 0.0,
                     "inertia": 1.0,
                     "uncertainty_base": 1.5,
+                    "offset": [0, 0.2, 0],
+                    "should_bounce": False,
                     "stop_on_hurt": True,
                 },
-                "minecraft:physics": {},
+                "minecraft:physics": {"has_gravity": False, "has_collision": True},
                 "minecraft:timer": {"time": 4.0, "looping": False, "time_down_event": {"event": "bearframe:expire"}},
             },
             "component_groups": {"bearframe:despawn": {"minecraft:instant_despawn": {}}},

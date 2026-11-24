@@ -20,6 +20,9 @@
         "look": "animation.bearframe.nullframe_hunter.look"
       },
       "scripts": {
+        "initialize": [
+          "variable.attack_time = 0.0;"
+        ],
         "animate": [
           "ctrl",
           "look"

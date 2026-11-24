@@ -20,6 +20,9 @@
         "look": "animation.bearframe.city_steward.look"
       },
       "scripts": {
+        "initialize": [
+          "variable.attack_time = 0.0;"
+        ],
         "animate": [
           "ctrl",
           "look"

@@ -20,6 +20,9 @@
         "look": "animation.bearframe.atlas_rigger.look"
       },
       "scripts": {
+        "initialize": [
+          "variable.attack_time = 0.0;"
+        ],
         "animate": [
           "ctrl",
           "look"

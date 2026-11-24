@@ -53,9 +53,6 @@
           ],
           "transitions": [
             {
-              "fire": "variable.attack_time > 0.0"
-            },
-            {
               "track": "query.has_target"
             }
           ]
@@ -66,7 +63,7 @@
           ],
           "transitions": [
             {
-              "fire": "variable.attack_time > 0.0"
+              "fire": "query.is_charging || variable.attack_time > 0.0"
             },
             {
               "scan": "!query.has_target"

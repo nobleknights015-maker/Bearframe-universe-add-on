@@ -45,9 +45,7 @@
         "priority": 2,
         "attack_interval_min": 2.2,
         "attack_interval_max": 3.0,
-        "attack_radius": 14.0,
-        "charge_charged_trigger": 0.4,
-        "charge_shoot_trigger": 0.6
+        "attack_radius": 14.0
       },
       "minecraft:behavior.nearest_attackable_target": {
         "priority": 1,

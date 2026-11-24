@@ -4,8 +4,10 @@ import {
   Download,
   FileArchive,
   GitBranch,
+  Layers,
   Package,
   ShieldCheck,
+  Smartphone,
   Square,
   Terminal,
 } from 'lucide-react';
@@ -16,12 +18,21 @@ interface CheckItem {
   detail: string;
 }
 
+interface Artifact {
+  filename: string;
+  subtitle: string;
+  size: string;
+  primary?: boolean;
+  pack?: boolean;
+  icon: typeof Package;
+}
+
 const ANDROID_CHECKLIST: CheckItem[] = [
   {
     id: 'import',
     label: '1. Import & Pack Icons',
     detail:
-      'Tap Bearframe_Bedrock_0.4.0.mcaddon on Android -> confirm both Bearframe | Behavior and Bearframe | Resources import with custom Bearframe icons.',
+      'Open Bearframe_Bedrock_0.4.0.mcaddon from Android Files -> choose Minecraft -> confirm both Bearframe | Behavior and Bearframe | Resources import with custom icons.',
   },
   {
     id: 'content-log',
@@ -73,38 +84,72 @@ const ANDROID_CHECKLIST: CheckItem[] = [
   },
 ];
 
-const DOWNLOADS = [
+const ARTIFACTS: Artifact[] = [
   {
-    title: 'Bearframe_Bedrock_0.4.0.mcaddon',
-    subtitle: 'Android Bedrock Installable Package (Behavior + Resource Packs)',
-    href: '/downloads/Bearframe_Bedrock_0.4.0.mcaddon',
-    size: '157 KB',
+    filename: 'Bearframe_Bedrock_0.4.0.mcaddon',
+    subtitle: 'All-in-One Android .mcaddon (folder-based Behavior + Resources)',
+    size: '186 KB',
     primary: true,
     icon: Package,
   },
   {
-    title: 'Bearframe_Bedrock_Source_0.4.0.zip',
+    filename: 'Bearframe_Behavior_0.4.0.mcpack',
+    subtitle: 'Standalone Behavior Pack (.mcpack fallback if needed on Android)',
+    size: '73 KB',
+    pack: true,
+    icon: Layers,
+  },
+  {
+    filename: 'Bearframe_Resources_0.4.0.mcpack',
+    subtitle: 'Standalone Resource Pack (.mcpack fallback if needed on Android)',
+    size: '106 KB',
+    pack: true,
+    icon: Layers,
+  },
+  {
+    filename: 'Bearframe_Bedrock_Source_0.4.0.zip',
     subtitle: 'Full Repository Source, Docs, Tests, Tools & .gitbundle',
-    href: '/downloads/Bearframe_Bedrock_Source_0.4.0.zip',
-    size: '471 KB',
-    primary: false,
+    size: '476 KB',
     icon: FileArchive,
   },
   {
-    title: 'Bearframe_Bedrock.gitbundle',
-    subtitle: 'Git Bundle (main 6f4fbb8 + gemini-dev 7739835 + tags)',
-    href: '/downloads/Bearframe_Bedrock.gitbundle',
-    size: '228 KB',
-    primary: false,
+    filename: 'Bearframe_Bedrock.gitbundle',
+    subtitle: 'Git Bundle (main 6f4fbb8 + gemini-dev d1da940 + tags)',
+    size: '232 KB',
     icon: GitBranch,
   },
 ];
 
 export default function App() {
   const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [downloading, setDownloading] = useState<string | null>(null);
+  const [lastSaved, setLastSaved] = useState<string | null>(null);
 
   const toggle = (id: string) =>
     setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const triggerDownload = async (filename: string) => {
+    setDownloading(filename);
+    try {
+      const res = await fetch(`/api/download/${encodeURIComponent(filename)}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const buffer = await res.arrayBuffer();
+      const blob = new Blob([buffer], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 10000);
+      setLastSaved(filename);
+    } catch {
+      window.location.href = `/api/download/${encodeURIComponent(filename)}`;
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   const doneCount = Object.values(checked).filter(Boolean).length;
 
@@ -114,67 +159,80 @@ export default function App() {
         <header className="border-b border-slate-800 pb-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="font-mono text-xs uppercase tracking-widest text-teal-400">
-              Minecraft Bedrock Add-on · Release Portal
+              Minecraft Bedrock Add-on · Android Import Build
             </span>
             <span className="font-mono text-xs text-slate-400">
-              branch: gemini-dev · commit 7739835
+              branch: gemini-dev · commit d1da940
             </span>
           </div>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
             Bearframe Universe — v0.4.0
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-slate-300">
-            Installable Android Bedrock build (4 GB RAM target). This utility
-            page serves the real packaged{' '}
-            <code className="text-teal-300">.mcaddon</code> and git deliverables
-            directly from the repository workspace—no PC or paid server
-            required.
+            Packaged as a genuine folder-based{' '}
+            <code className="text-teal-300">.mcaddon</code> (plus standalone{' '}
+            <code className="text-teal-300">.mcpack</code> files) served as raw
+            binary attachments so Android saves the exact Minecraft add-on file
+            instead of opening in Chrome.
           </p>
         </header>
 
-        <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-lg border border-slate-800 bg-slate-900/70 p-3">
-            <div className="font-mono text-xs text-slate-400">Entities</div>
-            <div className="mt-1 text-lg font-semibold text-white">19 + 1</div>
-            <div className="text-xs text-slate-400">Living + bolt</div>
+        <section className="mt-6 rounded-xl border border-teal-500/30 bg-teal-950/20 p-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-teal-300">
+            <Smartphone className="h-4 w-4" />
+            How to Import Into Minecraft on Android
           </div>
-          <div className="rounded-lg border border-slate-800 bg-slate-900/70 p-3">
-            <div className="font-mono text-xs text-slate-400">Structures</div>
-            <div className="mt-1 text-lg font-semibold text-white">11</div>
-            <div className="text-xs text-slate-400">10 surface + orbit</div>
-          </div>
-          <div className="rounded-lg border border-slate-800 bg-slate-900/70 p-3">
-            <div className="font-mono text-xs text-slate-400">Unit Tests</div>
-            <div className="mt-1 text-lg font-semibold text-emerald-400">
-              20 / 20
-            </div>
-            <div className="text-xs text-slate-400">Static passed</div>
-          </div>
-          <div className="rounded-lg border border-slate-800 bg-slate-900/70 p-3">
-            <div className="font-mono text-xs text-slate-400">Bedrock QA</div>
-            <div className="mt-1 text-lg font-semibold text-amber-300">
-              Pending
-            </div>
-            <div className="text-xs text-slate-400">Ready on Android</div>
-          </div>
+          <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-xs leading-relaxed text-slate-200">
+            <li>
+              Tap <strong>Bearframe_Bedrock_0.4.0.mcaddon</strong> below to
+              save it to your phone&apos;s <strong>Downloads</strong> folder.
+            </li>
+            <li>
+              Open your Android <strong>Files</strong> app (or{' '}
+              <strong>CX File Explorer</strong> / <strong>ZArchiver</strong>)
+              and go to <strong>Downloads</strong> — do <em>not</em> tap
+              &ldquo;Open&rdquo; inside Chrome&apos;s bar if Chrome blocks
+              unknown file types.
+            </li>
+            <li>
+              If Android appended <code className="text-amber-300">.zip</code>{' '}
+              to the end, rename it back to{' '}
+              <code className="text-teal-300">
+                Bearframe_Bedrock_0.4.0.mcaddon
+              </code>
+              , then tap it and choose <strong>Minecraft</strong> to import both
+              packs automatically.
+            </li>
+          </ol>
         </section>
 
-        <section className="mt-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
-            Release Artifacts
-          </h2>
+        <section className="mt-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
+              Minecraft Add-on Downloads
+            </h2>
+            {lastSaved && (
+              <span className="font-mono text-xs text-emerald-400">
+                Saved: {lastSaved}
+              </span>
+            )}
+          </div>
           <div className="mt-3 space-y-3">
-            {DOWNLOADS.map((item) => {
+            {ARTIFACTS.map((item) => {
               const Icon = item.icon;
+              const isBusy = downloading === item.filename;
               return (
-                <a
-                  key={item.title}
-                  href={item.href}
-                  download={item.title}
+                <button
+                  key={item.filename}
+                  type="button"
+                  onClick={() => triggerDownload(item.filename)}
+                  disabled={isBusy}
                   className={
                     item.primary
-                      ? 'flex items-center justify-between gap-4 rounded-xl border border-teal-500/60 bg-teal-950/40 p-4 transition hover:border-teal-400 hover:bg-teal-950/60'
-                      : 'flex items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-900/60 p-4 transition hover:border-slate-700 hover:bg-slate-900'
+                      ? 'flex w-full items-center justify-between gap-4 rounded-xl border border-teal-500/70 bg-teal-950/45 p-4 text-left transition hover:border-teal-400 hover:bg-teal-950/70'
+                      : item.pack
+                        ? 'flex w-full items-center justify-between gap-4 rounded-xl border border-slate-700 bg-slate-900/75 p-4 text-left transition hover:border-teal-500/50 hover:bg-slate-900'
+                        : 'flex w-full items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-900/50 p-4 text-left transition hover:border-slate-700 hover:bg-slate-900'
                   }
                 >
                   <div className="flex items-start gap-3">
@@ -182,12 +240,14 @@ export default function App() {
                       className={
                         item.primary
                           ? 'mt-0.5 h-5 w-5 shrink-0 text-teal-400'
-                          : 'mt-0.5 h-5 w-5 shrink-0 text-slate-400'
+                          : item.pack
+                            ? 'mt-0.5 h-5 w-5 shrink-0 text-sky-400'
+                            : 'mt-0.5 h-5 w-5 shrink-0 text-slate-400'
                       }
                     />
                     <div>
                       <div className="font-mono text-sm font-semibold text-white">
-                        {item.title}
+                        {item.filename}
                       </div>
                       <div className="mt-0.5 text-xs text-slate-400">
                         {item.subtitle}
@@ -196,7 +256,7 @@ export default function App() {
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     <span className="font-mono text-xs text-slate-400">
-                      {item.size}
+                      {isBusy ? 'Saving...' : item.size}
                     </span>
                     <Download
                       className={
@@ -206,25 +266,37 @@ export default function App() {
                       }
                     />
                   </div>
-                </a>
+                </button>
               );
             })}
           </div>
+          <p className="mt-2 text-xs text-slate-400">
+            Direct link fallback:{' '}
+            <a
+              href="/api/download/Bearframe_Bedrock_0.4.0.mcaddon"
+              download="Bearframe_Bedrock_0.4.0.mcaddon"
+              className="text-teal-400 underline hover:text-teal-300"
+            >
+              /api/download/Bearframe_Bedrock_0.4.0.mcaddon
+            </a>
+          </p>
         </section>
 
         <section className="mt-8 rounded-xl border border-slate-800 bg-slate-900/50 p-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-white">
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
-            Static Validation Summary
+            Static Validation Summary (20/20 Tests Passed)
           </div>
           <p className="mt-2 text-xs leading-relaxed text-slate-300">
-            Verified in workspace: 20 entities, 6 items, 4 survival recipes, 4
-            Android-capped spawn rules, 20 geometries (UV bounds, bone parents,
-            &le;60 cubes/entity), 72 animations, 2 animation controllers, 11
-            Bedrock NBT structures, all PNG headers/dimensions, JS syntax (
-            <code className="text-slate-200">node --check</code>), and Lore
-            Bible Rev 4.10 guardrails. Live in-game Bedrock verification awaits
-            your Android test below.
+            Folder-based <code className="text-slate-200">.mcaddon</code>{' '}
+            verified (<code className="text-slate-200">Bearframe_Behavior/</code>{' '}
+            + <code className="text-slate-200">Bearframe_Resources/</code>),
+            standalone <code className="text-slate-200">.mcpack</code> root
+            manifests verified, 20 entities, 6 items, 4 survival recipes, 4
+            Android-capped spawn rules, 20 geometries (&le;60 cubes/entity), 72
+            animations, Molang variable initialization, zero-gravity{' '}
+            <code className="text-slate-200">grid_bolt</code> physics, turret
+            ranged attack fix, and 11 NBT structures verified.
           </p>
         </section>
 

@@ -19,6 +19,9 @@
         "ctrl": "controller.animation.bearframe.locomotion"
       },
       "scripts": {
+        "initialize": [
+          "variable.attack_time = 0.0;"
+        ],
         "animate": [
           "ctrl"
         ]

@@ -20,6 +20,9 @@
         "look": "animation.bearframe.echo_sentinel.look"
       },
       "scripts": {
+        "initialize": [
+          "variable.attack_time = 0.0;"
+        ],
         "animate": [
           "ctrl",
           "look"

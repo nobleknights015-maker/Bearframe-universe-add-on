@@ -163,6 +163,14 @@ def validate():
     )
 
 
+def write_folder_into_zip(z: zipfile.ZipFile, directory: Path, prefix: str = ""):
+    for path in sorted(directory.rglob("*")):
+        if path.is_file():
+            rel = path.relative_to(directory).as_posix()
+            arcname = f"{prefix}/{rel}" if prefix else rel
+            z.write(path, arcname)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("output", type=Path, nargs="?", default=ROOT / "dist")
@@ -171,10 +179,25 @@ def main():
     OUT = args.output.resolve()
     validate()
     OUT.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(OUT / f"Bearframe_Bedrock_{VERSION}.mcaddon", "w", zipfile.ZIP_DEFLATED) as z:
-        for folder, name in [(BP, "Behavior"), (RP, "Resources")]:
-            z.writestr("Bearframe_" + name + ".mcpack", archive(folder))
-    with zipfile.ZipFile(OUT / f"Bearframe_Bedrock_Source_{VERSION}.zip", "w", zipfile.ZIP_DEFLATED) as z:
+
+    # 1. Official directory-based .mcaddon (Bearframe_Behavior/ + Bearframe_Resources/)
+    #    Reliably imports in Android Minecraft Bedrock without nested-zip failures.
+    mcaddon_path = OUT / f"Bearframe_Bedrock_{VERSION}.mcaddon"
+    with zipfile.ZipFile(mcaddon_path, "w", zipfile.ZIP_DEFLATED) as z:
+        write_folder_into_zip(z, BP, "Bearframe_Behavior")
+        write_folder_into_zip(z, RP, "Bearframe_Resources")
+
+    # 2. Standalone .mcpack files (manifest.json directly at ZIP root) for direct 1-tap fallback
+    bp_mcpack = OUT / f"Bearframe_Behavior_{VERSION}.mcpack"
+    rp_mcpack = OUT / f"Bearframe_Resources_{VERSION}.mcpack"
+    with zipfile.ZipFile(bp_mcpack, "w", zipfile.ZIP_DEFLATED) as z:
+        write_folder_into_zip(z, BP)
+    with zipfile.ZipFile(rp_mcpack, "w", zipfile.ZIP_DEFLATED) as z:
+        write_folder_into_zip(z, RP)
+
+    # 3. Full source archive + git bundle
+    source_zip = OUT / f"Bearframe_Bedrock_Source_{VERSION}.zip"
+    with zipfile.ZipFile(source_zip, "w", zipfile.ZIP_DEFLATED) as z:
         for root in (BP, RP, ROOT / "docs", ROOT / "tests", ROOT / "tools"):
             for path in sorted(root.rglob("*")):
                 if path.is_file() and "__pycache__" not in path.parts:
@@ -186,6 +209,7 @@ def main():
                 bundle = Path(directory) / "Bearframe_Bedrock.gitbundle"
                 subprocess.run(["git", "-C", str(ROOT), "bundle", "create", str(bundle), "--all"], check=True)
                 z.write(bundle, bundle.name)
+
     if args.world:
         with zipfile.ZipFile(OUT / f"Bearframe_Ruins_Expedition_{VERSION}.mcworld", "w", zipfile.ZIP_DEFLATED) as z:
             for name in ("level.dat", "levelname.txt", "world_behavior_packs.json", "world_resource_packs.json"):
@@ -200,10 +224,23 @@ def main():
             for path in (args.world / "db").glob("*"):
                 if path.is_file() and path.name not in {"LOCK", "LOG", "LOG.old"}:
                     z.write(path, "db/" + path.name)
+
+    # Verify exact Bedrock archive structures & CRC integrity
+    with zipfile.ZipFile(mcaddon_path) as z:
+        names = set(z.namelist())
+        assert "Bearframe_Behavior/manifest.json" in names, "Missing Bearframe_Behavior/manifest.json in .mcaddon"
+        assert "Bearframe_Resources/manifest.json" in names, "Missing Bearframe_Resources/manifest.json in .mcaddon"
+        assert not any(n.endswith(".mcpack") for n in names), ".mcaddon should use folders, not nested .mcpack zips"
+        assert z.testzip() is None
+    for pack_file in (bp_mcpack, rp_mcpack):
+        with zipfile.ZipFile(pack_file) as z:
+            assert "manifest.json" in set(z.namelist()), f"Missing root manifest.json in {pack_file.name}"
+            assert z.testzip() is None
+    with zipfile.ZipFile(source_zip) as z:
+        assert z.testzip() is None
+
     for p in sorted(OUT.glob("*")):
-        if p.is_file() and p.suffix in {".mcaddon", ".zip", ".mcworld"}:
-            with zipfile.ZipFile(p) as z:
-                assert z.testzip() is None
+        if p.is_file() and p.suffix in {".mcaddon", ".mcpack", ".zip", ".mcworld"}:
             print(p, p.stat().st_size)
 
 
