@@ -55,10 +55,11 @@ test("Bearframes have immutable chest core display + dual side-head tech modules
     const geo = readJson(new URL(`models/entity/${id}.geo.json`, rp))["minecraft:geometry"][0];
     const body = geo.bones.find(b => b.name === "body");
     const head = geo.bones.find(b => b.name === "head");
-    const hasChestDisplay = body.cubes.some(c => c.origin[2] < -2.3);
+    const usesTile = (face, u, v) => face?.uv[0] === u && face.uv[1] === v;
+    const hasChestDisplay = body.cubes.some(c => c.origin[2] < -2.3 && usesTile(c.uv.north, 96, 0));
     assert(hasChestDisplay, `${id} missing immutable chest core display cube`);
-    const leftSideMod = head.cubes.some(c => c.origin[0] >= 3.2 && c.origin[1] < 29);
-    const rightSideMod = head.cubes.some(c => c.origin[0] + c.size[0] <= -3.2 && c.origin[1] < 29);
+    const leftSideMod = head.cubes.some(c => c.origin[0] >= 3 && c.origin[1] < 29 && usesTile(c.uv.east, 0, 32));
+    const rightSideMod = head.cubes.some(c => c.origin[0] + c.size[0] <= -3 && c.origin[1] < 29 && usesTile(c.uv.west, 0, 32));
     assert(leftSideMod && rightSideMod, `${id} missing dual side-head tech display modules`);
   }
 });

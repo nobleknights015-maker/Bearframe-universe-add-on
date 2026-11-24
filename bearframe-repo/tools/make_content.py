@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Bearframe Universe Bedrock Add-on 0.4.0 — Asset & Content Generator
+Bearframe Universe Bedrock Add-on 0.4.1 — Asset & Content Generator
 Generates manifests, blocks, items, recipes, loot tables, spawn rules,
 128x128 pixel-art entity atlases (32x32 tile density matching Infinity Sci-Fi),
 player-scale articulated humanoid rigs (Bearframes, Nullframes, Hollows, Hunters, Echoes),
@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BP = ROOT / "behavior_pack"
 RP = ROOT / "resource_pack"
 SEED = UUID("d5efd705-1ffa-48c6-8148-6ac108170a38")
-VERSION = [0, 4, 0]
+VERSION = [0, 4, 1]
 MIN_ENGINE = [1, 26, 50]
 SERVER_API = "2.10.0"
 
@@ -488,6 +488,107 @@ def bone(name: str, pivot: list[float], cubes: list[dict], parent: str | None = 
 # RIG FAMILY 1: Player-Scale Articulated Humanoid Base Frames
 # (Minecraft player height = 30-32px = 1.875-2.0 blocks, feet cleanly at Y=0)
 # ---------------------------------------------------------------------------
+
+def finish_farfield_atlas(canvas: Canvas) -> None:
+    """Use a slim optical band, clean ceramic surfaces and restrained survey markings."""
+    def paint(tile, base, details):
+        ox, oy = tile_uv(tile)
+        canvas.rect(ox, oy, ox + 31, oy + 31, fill=base)
+        for x1, y1, x2, y2, color in details:
+            canvas.rect(ox + x1, oy + y1, ox + x2, oy + y2, fill=color)
+
+    paint(0, "#cad6dc", [
+        (0, 0, 31, 3, "#e8f0f1"), (0, 4, 2, 29, "#d8e4e8"),
+        (29, 4, 31, 31, "#a0b3bf"), (0, 29, 31, 31, "#a4b6c1"),
+        (4, 27, 9, 27, "#8297a2"), (25, 6, 26, 7, "#a0b3bf"),
+    ])
+    paint(2, "#0c1b25", [
+        (0, 0, 31, 2, "#314e58"), (0, 28, 31, 31, "#162c38"),
+        (3, 8, 28, 9, "#294451"),
+        (4, 13, 12, 20, "#287a76"), (19, 13, 27, 20, "#287a76"),
+        (5, 14, 11, 18, "#8af6df"), (20, 14, 26, 18, "#8af6df"),
+        (6, 14, 11, 15, "#c4fff0"), (20, 14, 25, 15, "#c4fff0"),
+        (3, 22, 9, 23, "#22494e"), (22, 22, 28, 23, "#22494e"),
+    ])
+    paint(5, "#3d6f73", [
+        (0, 0, 31, 4, "#638d90"), (0, 27, 31, 31, "#2f5259"),
+        (5, 7, 24, 11, "#96beb7"), (5, 12, 19, 13, "#729e98"),
+        (24, 23, 27, 25, "#adc9bd"),
+    ])
+    paint(6, "#a5b7bf", [
+        (0, 0, 31, 3, "#d0dde0"), (28, 5, 31, 31, "#788b98"),
+        (4, 21, 27, 25, "#235865"), (7, 22, 16, 24, "#8dd1c6"),
+    ])
+    paint(14, "#b7c8ce", [
+        (0, 0, 31, 4, "#e9f1f0"), (0, 25, 31, 31, "#64888b"),
+        (11, 11, 20, 20, "#24636d"), (9, 10, 12, 13, "#24636d"),
+        (19, 10, 22, 13, "#24636d"), (13, 17, 18, 20, "#8fcccc"),
+        (13, 14, 13, 15, "#e5f1ef"), (18, 14, 18, 15, "#e5f1ef"),
+    ])
+    paint(13, "#596d78", [
+        (0, 0, 31, 2, "#8d9ca2"), (3, 5, 28, 24, "#ccd7da"),
+        (6, 7, 25, 10, "#acbbc3"), (7, 19, 24, 23, "#899fa9"),
+        (5, 25, 26, 29, "#3e5761"), (11, 26, 20, 27, "#66b2a9"),
+    ])
+
+
+def build_farfield_rig() -> list[dict]:
+    """A standard player-scale chassis wearing independent survey hardware."""
+    core = [
+        box([-3.35, 12, -1.85], [6.7, 10.6, 3.7], 1),
+        box([-3.7, 15.3, -2.13], [7.4, 5.8, 4.25], 0, south=11),
+        box([-3.95, 20.7, -1.97], [7.9, 1.65, 3.9], 0),
+        box([-2.76, 14.1, -1.99], [5.52, 1.7, 3.98], 13),
+        box([-3.64, 12.15, -2.05], [7.28, 1.35, 4.1], 13),
+        box([-1.89, 16.85, -2.35], [3.78, 3.5, 0.36], 1, north=3),
+        box([-1.36, 22.1, -1.31], [2.72, 2.1, 2.62], 1),
+        box([-2.58, 15.05, 2.1], [5.16, 6.2, 1.35], 13, south=7),
+        box([-1.89, 16.0, 3.32], [3.78, 4.7, 0.48], 5, south=7),
+        box([1.55, 20.6, 2.7], [0.54, 2.6, 0.57], 1, up=10),
+        box([-3.45, 11.6, 0.35], [1.15, 2.85, 2.03], 1, south=7),
+    ]
+    helmet = [
+        box([-2.76, 23.7, -2.06], [5.52, 3.3, 4.9], 1),
+        box([-3.14, 25.55, -2.88], [6.28, 3.48, 5.92], 0, south=11),
+        box([-2.78, 28.96, -2.4], [5.56, 1.38, 5.13], 0),
+        box([-2.34, 24.02, -2.99], [4.68, 1.31, 4.84], 13),
+        box([-2.86, 25.74, -3.08], [5.72, 2.32, 0.3], 1, north=2),
+        box([-3.17, 27.96, -3.16], [6.34, 0.82, 1.25], 0),
+        box([-3.11, 25.15, -2.91], [1.13, 1.66, 2.23], 0, north=6),
+        box([1.98, 25.15, -2.91], [1.13, 1.66, 2.23], 0, north=6),
+        box([-3.56, 25.52, -1.32], [0.56, 2.8, 2.64], 1, west=4),
+        box([3.0, 25.52, -1.32], [0.56, 2.8, 2.64], 1, east=4),
+    ]
+    output = [
+        bone("root", [0, 0, 0], []),
+        bone("body", [0, 12.1, 0], core, parent="root"),
+        bone("head", [0, 23.45, 0], helmet, parent="body"),
+    ]
+    for i, side in enumerate((-1, 1)):
+        x = side * 5.39
+        arms = [
+            box([x - 1.14, 14.1, -1.09], [2.28, 7.75, 2.18], 1),
+            box([x - 1.48, 19.3, -1.38], [2.96, 2.96, 2.76], 0, north=14 if i == 0 else 6),
+            box([x - 1.24, 15.85, -1.35], [2.48, 2.6, 2.46], 0, north=6 if i == 0 else 13),
+            box([x - 0.91, 12.08, -1.0], [1.82, 2.22, 1.95], 1),
+            box([x - 0.94, 12.74, -1.07], [1.88, 1.15, 0.33], 13),
+        ]
+        if i == 0:
+            arms.append(box([x - 0.75, 16.15, -1.56], [1.5, 1.89, 0.41], 1, north=7))
+        output.append(bone(f"arm{i}", [x, 21.25, 0], arms, parent="body"))
+
+        x = side * 2.0
+        legs = [
+            box([x - 1.26, 3.75, -1.21], [2.52, 8.32, 2.42], 1),
+            box([x - 1.4, 7.55, -1.36], [2.8, 3.76, 2.72], 0, north=13),
+            box([x - 0.94, 5.81, -1.43], [1.88, 1.5, 0.64], 13),
+            box([x - 1.29, 1.66, -1.37], [2.58, 4.04, 2.74], 0, north=6),
+            box([x - 1.4, 0, -1.95], [2.8, 1.62, 3.52], 1, north=13),
+            box([x - 1.31, 1.37, -1.87], [2.62, 0.53, 3.25], 13),
+        ]
+        output.append(bone(f"leg{i}", [x, 12.05, 0], legs, parent="root"))
+    return output
+
 
 def build_humanoid_rig(variant: str) -> list[dict]:
     """
@@ -1381,6 +1482,8 @@ ENTITIES = [
 
 
 def build_rig(rig_key: str) -> list[dict]:
+    if rig_key == "bearframe_farfield":
+        return build_farfield_rig()
     if rig_key == "grid_hexapod":
         return build_grid_hexapod_walker()
     if rig_key == "grid_watcher":
@@ -1971,6 +2074,28 @@ def main() -> None:
     }
     write_json(BP, "blocks/region_anchor.json", region_anchor)
 
+    datum = json.loads(json.dumps(relay_anchor))
+    datum["minecraft:block"]["description"] = {
+        "identifier": "bearframe:spillway_datum",
+        "states": {"bearframe:excavated": [False, True]},
+    }
+    datum["minecraft:block"]["components"]["minecraft:material_instances"]["*"]["texture"] = "bearframe_spillway_conduit"
+    write_json(BP, "blocks/spillway_datum.json", datum)
+
+    for name, texture, light in [("casing", "bulkhead", 0), ("grate", "grate", 0), ("lamp", "luminaire", 14)]:
+        write_json(BP, f"blocks/spillway_{name}.json", {
+            "format_version": "1.26.50",
+            "minecraft:block": {
+                "description": {"identifier": f"bearframe:spillway_{name}"},
+                "components": {
+                    "minecraft:geometry": "minecraft:geometry.full_block",
+                    "minecraft:material_instances": {"*": {"texture": f"bearframe_spillway_{texture}", "render_method": "opaque"}},
+                    "minecraft:light_emission": light,
+                    "minecraft:destructible_by_mining": {"seconds_to_destroy": 3.0},
+                },
+            },
+        })
+
     # Dimension (preserved)
     write_json(BP, "dimensions/city_orbit.json", {
         "format_version": "1.26.50",
@@ -1989,7 +2114,14 @@ def main() -> None:
     write_json(RP, "textures/terrain_texture.json", {
         "resource_pack_name": "bearframe",
         "texture_name": "atlas.terrain",
-        "texture_data": {"bearframe_anchor": {"textures": "textures/bearframe/anchor"}},
+        "texture_data": {
+            "bearframe_anchor": {"textures": "textures/bearframe/anchor"},
+            **{
+                f"bearframe_spillway_{key}": {"textures": f"textures/bearframe/spillway/{filename}"}
+                for key, filename in [("bulkhead", "bulkhead"), ("grate", "grate"),
+                                      ("luminaire", "luminaire"), ("conduit", "power_conduit")]
+            },
+        },
     })
 
     item_icons = {
@@ -2198,6 +2330,8 @@ def main() -> None:
 
         # 128x128 Atlas
         atlas = build_entity_atlas(name, spec["style"], pal)
+        if name == "farfield_surveyor":
+            finish_farfield_atlas(atlas)
         save_rp_png(tex_path, atlas)
 
         # Bedrock Geometry
@@ -2251,7 +2385,7 @@ def main() -> None:
             "minecraft:client_entity": {
                 "description": {
                     "identifier": ident,
-                    "materials": {"default": "entity_alphatest"},
+                    "materials": {"default": "entity" if name == "farfield_surveyor" else "entity_alphatest"},
                     "textures": {"default": tex_path},
                     "geometry": {"default": geo_id},
                     "animations": anim_map,

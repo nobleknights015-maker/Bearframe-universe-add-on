@@ -1,0 +1,21 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:block": {
+    "description": {
+      "identifier": "bearframe:spillway_casing"
+    },
+    "components": {
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "bearframe_spillway_bulkhead",
+          "render_method": "opaque"
+        }
+      },
+      "minecraft:light_emission": 0,
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 3.0
+      }
+    }
+  }
+}

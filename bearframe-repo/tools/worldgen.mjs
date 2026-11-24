@@ -1,5 +1,7 @@
 import {RUINS,BUNKER_SIZE,TOWN_SIZE,BUNKER_ENTRY} from "../behavior_pack/scripts/ruins.js";
 import {stampBunker,stampTown} from "./ruin_layouts.mjs";
+import {SPILLWAY_SIZE} from "../behavior_pack/scripts/spillway_layout.js";
+import {stampSpillway,stampSpillwayBeacon} from "./spillway.mjs";
 // Bedrock little-endian template serialization follows the original Frontier tool.
 import fs from "node:fs";
 import {fileURLToPath} from "node:url";
@@ -68,7 +70,15 @@ for(const [index,region] of SURVEY_TYPES.entries()){
 for(const [i,def] of RUINS.entries()){
  blocks.clear();
  const index=SURVEY_TYPES.length+i;
- if(i<2)stampBunker({put,fill},def,index,i===1);
+ if(i===0){
+  stampSpillwayBeacon({put});
+  emit(def.id,{x:1,y:1,z:1},[def.biome,"plains"],def.spacing,def.salt,0,"ocean_floor",false,"none");
+  blocks.clear();
+  stampSpillway({put,fill},def,index);
+  emit("spillway_facility",SPILLWAY_SIZE,undefined,undefined,undefined,undefined,undefined,true);
+  continue;
+ }
+ if(i===1)stampBunker({put,fill},def,index,i===1);
  else stampTown({put,fill},def,index,i===3);
  emit(def.id,i<2?BUNKER_SIZE:TOWN_SIZE,def.biome,def.spacing,def.salt,
    i<2?BUNKER_ENTRY[1]:DECK,"world_surface",true);
@@ -196,9 +206,10 @@ function buildCity(){
  put(CITY_EXIT.x,CITY_EXIT.y-99,CITY_EXIT.z+11,"minecraft:lodestone");
 }
 
-function emit(id,size,biome,spacing,salt,surface=DECK,projection=id==="intrusion_checkpoint"?"world_surface":"ocean_floor",dry=false){
+function emit(id,size,biome,spacing,salt,surface=DECK,projection=id==="intrusion_checkpoint"?"world_surface":"ocean_floor",dry=false,adaptation="beard_box"){
 const palette=new Map(), data=Array(size.x*size.y*size.z).fill(-1);
 for(const {x,y,z,name,states} of blocks.values()){
+ if(x<0||y<0||z<0||x>=size.x||y>=size.y||z>=size.z)throw Error(`${id} block outside template: ${x},${y},${z}`);
  const key=JSON.stringify([name,states]);
  if(!palette.has(key))palette.set(key,palette.size);
  data[(x*size.y+y)*size.z+z]=palette.get(key);
@@ -221,9 +232,10 @@ file(`structures/bearframe/${id}.mcstructure`,Buffer.from(nbt.writeUncompressed(
 if(!biome)return;
 const format_version="1.26.50", identifier=`bearframe:${id}`;
 file(`worldgen/structures/${id}.json`,{format_version,"minecraft:jigsaw":{description:{identifier},
- step:"surface_structures",terrain_adaptation:"beard_box",start_pool:identifier,max_depth:1,
+ step:"surface_structures",terrain_adaptation:adaptation,start_pool:identifier,max_depth:1,
  start_height:{type:"constant",value:{absolute:-(surface+1)}},heightmap_projection:projection,
- biome_filters:[{test:"has_biome_tag",operator:"==",value:biome}]}});
+ biome_filters:Array.isArray(biome)?[{any_of:biome.map(value=>({test:"has_biome_tag",operator:"==",value}))}]:
+   [{test:"has_biome_tag",operator:"==",value:biome}]}});
 file(`worldgen/template_pools/${id}.json`,{format_version,"minecraft:template_pool":{description:{identifier},
  elements:[{element:{element_type:"minecraft:single_pool_element",location:`bearframe/${id}`},weight:1}]}});
 file(`worldgen/structure_sets/${id}.json`,{format_version,"minecraft:structure_set":{description:{identifier},

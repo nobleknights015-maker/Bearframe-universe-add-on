@@ -4,7 +4,7 @@
     "description": {
       "identifier": "bearframe:farfield_surveyor",
       "materials": {
-        "default": "entity_alphatest"
+        "default": "entity"
       },
       "textures": {
         "default": "textures/bearframe/farfield_surveyor"

@@ -14,3 +14,14 @@ Baseline is the paused local Starbound Frontier release source archive 1.3.4. SH
 ## Worldbuilding research applied
 
 The November 23 Starbound Frontier worldbuilding study and implementation notes informed this pass. Each biome receives a distinct material palette and former function. Street networks lead to interiors instead of ending at isolated facades. Clues use damaged infrastructure, accent lighting and short records. Test a true approach and repair on generated terrain, including fluid interference and headroom, before claiming a structure is playable. This project samples Infinity's native texture scale as a separate visual dependency, with no redistribution of Star Odyssey or Infinity.
+
+## Spillway 0.4.1
+
+The four project-owned industrial tiles are copied from the original 1.3.4 Starbound Frontier resource pack, under `textures/sf/blocks/`. Bearframe stores copies under `textures/bearframe/spillway/` and registers them in its own atlas. No Frontier script, pack identity or worldgen seed is required.
+
+| Tile | Role | SHA-256 |
+|---|---|---|
+| `bulkhead.png` | Machinery casing | `e128552058a9a05279f7093e83b0b7c628992099e69af15c76008f154bd59b2d` |
+| `grate.png` | Dry service grates | `6246e9a42446bd78d321bdad3bbe4a689214ee781eec7d2509a1bc8a5e648d3e` |
+| `luminaire.png` | Flush service lights | `223d1117e0abcb49f559e7b8a894b95255d88723dd8db5973b9051dd926c66e2` |
+| `power_conduit.png` | Survey datum | `e960ce92a032612ddfee7a77f08257032315fc991ae0bb9185e39e7c7d7d6ba4` |

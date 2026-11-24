@@ -4,7 +4,7 @@ import {interactRegion,matchRegionDevice} from "./expedition.js";
 
 world.afterEvents.worldLoad.subscribe(()=>system.runTimeout(()=>void(async()=>{
  const dim=world.getDimension("overworld"), mgr=world.tickingAreaManager;
- const fixtures=[["spillway_bunker",43,15,true],["shelter_bunker",242,-693,true],
+ const fixtures=[["shelter_bunker",242,-693,true],
   ["rainline_town",-687,-222,false],["saltline_town",1727,526,false]];
  const check=(yes,message)=>{if(!yes)throw Error(message);};
  for(const [id,x,z,bunker] of fixtures){

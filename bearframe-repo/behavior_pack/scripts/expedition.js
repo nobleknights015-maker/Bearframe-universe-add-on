@@ -1,3 +1,4 @@
+import {isRecoverySpillway} from "./spillway.js";
 import {recordSurvey,reportSurvey} from "./survey_log.js";
 import {escalateNearbyDirectorate} from "./living_world.js";
 import {BlockVolume,Difficulty,ItemStack,system,world} from "@minecraft/server";
@@ -54,7 +55,7 @@ export function matchRegionDevice(block){
 // Native terrain can leave water inside a sealed tunnel. Drain the authored
 // corridor once near first discovery. Do not change the surrounding terrain.
 export function prepareBunker(site){
-  if(!site.def.bunker||site.def.flooded)return;
+  if(!site.def.bunker||site.def.flooded||isRecoverySpillway(site))return;
   const key="bearframe:bunker_drain:"+keyAt(site.pos);
   if(world.getDynamicProperty(key))return;
   const tunnel=[];
@@ -89,11 +90,12 @@ function canSpawnAt(dim,loc,hover=false){
 export function greetRegion(site){
   const {def,dim,pos,r}=site;
   const peaceful=world.getDifficulty()===Difficulty.Peaceful;
+  const recovery=isRecoverySpillway(site);
   const primaryKey="bearframe:crew:"+keyAt(pos);
   if(!world.getDynamicProperty(primaryKey)){
     const isHostilePrimary=def.actor==="bearframe:hollow_scout"||def.actor==="bearframe:hollow_breacher"||def.actor==="bearframe:grid_turret";
     if(!isHostilePrimary||!peaceful){
-      const loc=at(pos,offsets(site).actor,r);
+      const loc=at(pos,recovery?[-3,0,-11]:offsets(site).actor,r);
       if(canSpawnAt(dim,loc,false)){
         const entity=dim.spawnEntity(def.actor,center(loc));
         entity.setDynamicProperty("bearframe:region_role",def.id);
@@ -102,8 +104,12 @@ export function greetRegion(site){
     }
   }
   // Spawn additional contextual site squad members (multiplayer-safe via per-slot dynamic properties)
-  if(Array.isArray(def.escorts)){
-    for(const [idx,escort] of def.escorts.entries()){
+  const escorts=recovery?[
+    {type:"bearframe:grid_watcher",offset:[3,3,-10],hover:true},
+    {type:"bearframe:farfield_surveyor",offset:[-2,0,11]},
+  ]:def.escorts;
+  if(Array.isArray(escorts)){
+    for(const [idx,escort] of escorts.entries()){
       if(escort.hostile&&peaceful)continue;
       const eKey=`bearframe:escort:${keyAt(pos)}:${idx}`;
       if(world.getDynamicProperty(eKey))continue;

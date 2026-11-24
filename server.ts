@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 
 const DOWNLOADS_DIR = path.resolve(__dirname, 'public', 'downloads');
 const ALLOWED_FILES = new Set([
+  'Bearframe_Bedrock_0.4.1.mcaddon',
   'Bearframe_Bedrock_0.4.0.mcaddon',
   'Bearframe_Behavior_0.4.0.mcpack',
   'Bearframe_Resources_0.4.0.mcpack',

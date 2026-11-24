@@ -32,7 +32,7 @@ const ANDROID_CHECKLIST: CheckItem[] = [
     id: 'import',
     label: '1. Import & Pack Icons',
     detail:
-      'Open Bearframe_Bedrock_0.4.0.mcaddon from Android Files -> choose Minecraft -> confirm both Bearframe | Behavior and Bearframe | Resources import with custom icons.',
+      'Open Bearframe_Bedrock_0.4.1.mcaddon from Android Files -> choose Minecraft -> confirm both Bearframe | Behavior and Bearframe | Resources import with custom icons.',
   },
   {
     id: 'content-log',
@@ -86,35 +86,35 @@ const ANDROID_CHECKLIST: CheckItem[] = [
 
 const ARTIFACTS: Artifact[] = [
   {
-    filename: 'Bearframe_Bedrock_0.4.0.mcaddon',
+    filename: 'Bearframe_Bedrock_0.4.1.mcaddon',
     subtitle: 'All-in-One Android .mcaddon (folder-based Behavior + Resources)',
-    size: '186 KB',
+    size: '197 KB',
     primary: true,
     icon: Package,
   },
   {
     filename: 'Bearframe_Behavior_0.4.0.mcpack',
-    subtitle: 'Standalone Behavior Pack (.mcpack fallback if needed on Android)',
+    subtitle: 'Archived 0.4.0 Behavior Pack',
     size: '73 KB',
     pack: true,
     icon: Layers,
   },
   {
     filename: 'Bearframe_Resources_0.4.0.mcpack',
-    subtitle: 'Standalone Resource Pack (.mcpack fallback if needed on Android)',
+    subtitle: 'Archived 0.4.0 Resource Pack',
     size: '106 KB',
     pack: true,
     icon: Layers,
   },
   {
     filename: 'Bearframe_Bedrock_Source_0.4.0.zip',
-    subtitle: 'Full Repository Source, Docs, Tests, Tools & .gitbundle',
+    subtitle: 'Archived 0.4.0 Source Snapshot',
     size: '476 KB',
     icon: FileArchive,
   },
   {
     filename: 'Bearframe_Bedrock.gitbundle',
-    subtitle: 'Git Bundle (main 6f4fbb8 + gemini-dev d1da940 + tags)',
+    subtitle: 'Archived Gemini Git Bundle',
     size: '232 KB',
     icon: GitBranch,
   },
@@ -162,18 +162,15 @@ export default function App() {
               Minecraft Bedrock Add-on · Android Import Build
             </span>
             <span className="font-mono text-xs text-slate-400">
-              branch: gemini-dev · commit d1da940
+              Spillway Recovery
             </span>
           </div>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-            Bearframe Universe — v0.4.0
+            Bearframe Universe — v0.4.1
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-slate-300">
-            Packaged as a genuine folder-based{' '}
-            <code className="text-teal-300">.mcaddon</code> (plus standalone{' '}
-            <code className="text-teal-300">.mcpack</code> files) served as raw
-            binary attachments so Android saves the exact Minecraft add-on file
-            instead of opening in Chrome.
+            Download one file with both packs. This release rebuilds Spillway
+            Waterworks and the Farfield Surveyor for Minecraft Bedrock.
           </p>
         </header>
 
@@ -184,7 +181,7 @@ export default function App() {
           </div>
           <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-xs leading-relaxed text-slate-200">
             <li>
-              Tap <strong>Bearframe_Bedrock_0.4.0.mcaddon</strong> below to
+              Tap <strong>Bearframe_Bedrock_0.4.1.mcaddon</strong> below to
               save it to your phone&apos;s <strong>Downloads</strong> folder.
             </li>
             <li>
@@ -198,7 +195,7 @@ export default function App() {
               If Android appended <code className="text-amber-300">.zip</code>{' '}
               to the end, rename it back to{' '}
               <code className="text-teal-300">
-                Bearframe_Bedrock_0.4.0.mcaddon
+                Bearframe_Bedrock_0.4.1.mcaddon
               </code>
               , then tap it and choose <strong>Minecraft</strong> to import both
               packs automatically.
@@ -273,11 +270,11 @@ export default function App() {
           <p className="mt-2 text-xs text-slate-400">
             Direct link fallback:{' '}
             <a
-              href="/api/download/Bearframe_Bedrock_0.4.0.mcaddon"
-              download="Bearframe_Bedrock_0.4.0.mcaddon"
+              href="/api/download/Bearframe_Bedrock_0.4.1.mcaddon"
+              download="Bearframe_Bedrock_0.4.1.mcaddon"
               className="text-teal-400 underline hover:text-teal-300"
             >
-              /api/download/Bearframe_Bedrock_0.4.0.mcaddon
+              /api/download/Bearframe_Bedrock_0.4.1.mcaddon
             </a>
           </p>
         </section>
@@ -285,18 +282,12 @@ export default function App() {
         <section className="mt-8 rounded-xl border border-slate-800 bg-slate-900/50 p-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-white">
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
-            Static Validation Summary (20/20 Tests Passed)
+            Verification (21 Automated Tests Passed)
           </div>
           <p className="mt-2 text-xs leading-relaxed text-slate-300">
-            Folder-based <code className="text-slate-200">.mcaddon</code>{' '}
-            verified (<code className="text-slate-200">Bearframe_Behavior/</code>{' '}
-            + <code className="text-slate-200">Bearframe_Resources/</code>),
-            standalone <code className="text-slate-200">.mcpack</code> root
-            manifests verified, 20 entities, 6 items, 4 survival recipes, 4
-            Android-capped spawn rules, 20 geometries (&le;60 cubes/entity), 72
-            animations, Molang variable initialization, zero-gravity{' '}
-            <code className="text-slate-200">grid_bolt</code> physics, turret
-            ranged attack fix, and 11 NBT structures verified.
+            Bedrock Dedicated Server verified natural Spillway placement,
+            walkable rooms, the repair and salvage sequence, and save reload.
+            The Android import and client rendering checks are pending.
           </p>
         </section>
 

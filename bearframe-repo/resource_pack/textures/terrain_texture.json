@@ -4,6 +4,18 @@
   "texture_data": {
     "bearframe_anchor": {
       "textures": "textures/bearframe/anchor"
+    },
+    "bearframe_spillway_bulkhead": {
+      "textures": "textures/bearframe/spillway/bulkhead"
+    },
+    "bearframe_spillway_grate": {
+      "textures": "textures/bearframe/spillway/grate"
+    },
+    "bearframe_spillway_luminaire": {
+      "textures": "textures/bearframe/spillway/luminaire"
+    },
+    "bearframe_spillway_conduit": {
+      "textures": "textures/bearframe/spillway/power_conduit"
     }
   }
 }

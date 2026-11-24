@@ -1,3 +1,5 @@
+import {buildSpillway} from "./spillway.js";
+import {SPILLWAY_BUILT,SPILLWAY_MARKER} from "./spillway_layout.js";
 import {recordSurvey} from "./survey_log.js";
 import {greetRegion,installExpedition,prepareBunker,regionAt} from "./expedition.js";
 import {installLivingWorld} from "./living_world.js";
@@ -183,11 +185,17 @@ system.runInterval(()=>{
     if(p.dimension.id!=="minecraft:overworld")return cells.delete(p.id);
     const {dimension:dim,location:loc}=p;
     const key=[loc.x,loc.y,loc.z].map(n=>Math.floor(n/12)).join(",");
-    if(cells.get(p.id)===key)return;
+    const last=cells.get(p.id);
+    if(last?.key===key && (!last.pending || system.currentTick-last.tick<240))return;
+    let pending=false;
     const a={x:Math.floor(loc.x)-21,y:Math.max(dim.heightRange.min,Math.floor(loc.y)-18),z:Math.floor(loc.z)-21};
     const b={x:Math.floor(loc.x)+21,y:Math.min(dim.heightRange.max-1,Math.floor(loc.y)+14),z:Math.floor(loc.z)+21};
-    for(const p of dim.getBlocks(new BlockVolume(a,b),{includeTypes:[ANCHOR,APPROACH_MARKER,REGION_ANCHOR]},true).getBlockLocationIterator()){
+    for(const p of dim.getBlocks(new BlockVolume(a,b),{includeTypes:[ANCHOR,APPROACH_MARKER,REGION_ANCHOR,SPILLWAY_MARKER]},true).getBlockLocationIterator()){
       const marker=loaded(dim,p);
+      if(marker?.typeId===SPILLWAY_MARKER){
+        if(!marker.permutation.getState(SPILLWAY_BUILT) && !buildSpillway(marker))pending=true;
+        continue;
+      }
       if(marker?.typeId===APPROACH_MARKER){gradeApproach(marker);continue;}
       if(marker?.typeId===REGION_ANCHOR){
         const region=regionAt(dim,at(p,[0,2,0]));
@@ -197,7 +205,7 @@ system.runInterval(()=>{
       const site=resolveSite(dim,at(p,[0,2,0]));
       if(site)activateSite(site);
     }
-    cells.set(p.id,key);
+    cells.set(p.id,{key,pending,tick:system.currentTick});
   });
 },60);
 
