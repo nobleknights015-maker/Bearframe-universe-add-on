@@ -1,5 +1,9 @@
+import {registerChartSite,installRouteCharts} from "./route_charts.js";
+import {installEcology,retainResident} from "./ecology.js";
+import {installActivityLog} from "./activity_log.js";
+import {campaignSignal,installCampaign} from "./campaign.js";
 import {buildSurfaceSite} from "./surface_sites.js";
-import {SURFACE_DATUM,SURFACE_DONE} from "./surface_layout.js";
+import {SURFACE_DATUM,SURFACE_DONE,LEGACY_DATUM} from "./surface_layout.js";
 import {buildSpillway} from "./spillway.js";
 import {SPILLWAY_BUILT,SPILLWAY_MARKER} from "./spillway_layout.js";
 import {recordSurvey} from "./survey_log.js";
@@ -143,7 +147,7 @@ function activateSite(site){
     if(role==="scout"&&world.getDifficulty()===Difficulty.Peaceful)continue;
     const key=`bearframe:resident:${terminal.x},${terminal.y},${terminal.z}:${role}`;
     if(world.getDynamicProperty(key))continue;
-    dim.spawnEntity(ACTOR_TYPES[role],{x:pos.x+.5,y:pos.y,z:pos.z+.5});
+    retainResident(dim.spawnEntity(ACTOR_TYPES[role],{x:pos.x+.5,y:pos.y,z:pos.z+.5}));
     world.setDynamicProperty(key,true);
   }
 }
@@ -158,7 +162,10 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event=>{
     if(!validPlayer(player)||player.dimension.id!==dimension.id||dist(player.location,location)>49)return;
     const now=loaded(dimension,location),site=now&&findLinked(now);
     if(site){
-      if(now.typeId===PANEL)recordSurvey(player,"maintenance_relay");
+      if(now.typeId===PANEL){
+        recordSurvey(player,"maintenance_relay");
+        campaignSignal(player,"read","maintenance_relay",location);
+      }
       useRelay(player,site,now.typeId);
     }
   }));
@@ -190,26 +197,27 @@ system.runInterval(()=>{
     const last=cells.get(p.id);
     if(last?.key===key && (!last.pending || system.currentTick-last.tick<240))return;
     let pending=false;
-    const a={x:Math.floor(loc.x)-21,y:Math.max(dim.heightRange.min,Math.floor(loc.y)-18),z:Math.floor(loc.z)-21};
-    const b={x:Math.floor(loc.x)+21,y:Math.min(dim.heightRange.max-1,Math.floor(loc.y)+14),z:Math.floor(loc.z)+21};
-    for(const p of dim.getBlocks(new BlockVolume(a,b),{includeTypes:[ANCHOR,APPROACH_MARKER,REGION_ANCHOR,SPILLWAY_MARKER,SURFACE_DATUM]},true).getBlockLocationIterator()){
+    const a={x:Math.floor(loc.x)-40,y:Math.max(dim.heightRange.min,Math.floor(loc.y)-18),z:Math.floor(loc.z)-40};
+    const b={x:Math.floor(loc.x)+40,y:Math.min(dim.heightRange.max-1,Math.floor(loc.y)+14),z:Math.floor(loc.z)+40};
+    for(const p of dim.getBlocks(new BlockVolume(a,b),{includeTypes:[ANCHOR,APPROACH_MARKER,REGION_ANCHOR,SPILLWAY_MARKER,SURFACE_DATUM,LEGACY_DATUM]},true).getBlockLocationIterator()){
       const marker=loaded(dim,p);
-      if(marker?.typeId===SURFACE_DATUM){
+      if(marker?.typeId===SURFACE_DATUM||marker?.typeId===LEGACY_DATUM){
         if(!marker.permutation.getState(SURFACE_DONE) && !buildSurfaceSite(marker))pending=true;
         continue;
       }
       if(marker?.typeId===SPILLWAY_MARKER){
+        registerChartSite("spillway_bunker",dim.id,marker.location,"beacon");
         if(!marker.permutation.getState(SPILLWAY_BUILT) && !buildSpillway(marker))pending=true;
         continue;
       }
       if(marker?.typeId===APPROACH_MARKER){gradeApproach(marker);continue;}
       if(marker?.typeId===REGION_ANCHOR){
         const region=regionAt(dim,at(p,[0,2,0]));
-        if(region){prepareBunker(region);greetRegion(region);}
+        if(region){registerChartSite(region.def.id,dim.id,region.pos);prepareBunker(region);greetRegion(region);}
         continue;
       }
       const site=resolveSite(dim,at(p,[0,2,0]));
-      if(site)activateSite(site);
+      if(site){registerChartSite("maintenance_relay",dim.id,at(p,[0,2,0]));activateSite(site);}
     }
     cells.set(p.id,{key,pending,tick:system.currentTick});
   });
@@ -217,3 +225,11 @@ system.runInterval(()=>{
 
 installExpedition({validPlayer,spend,attempt});
 installLivingWorld({validPlayer,spend,attempt});
+
+installCampaign(["relay_nine", "frontier_ruin", "crashed_skiff", "sealed_archive_bunker", "collapsed_transit_bunker", "rootbound_service_bunker", "flooded_pump_bunker", "overgrown_colony", "lost_waystation", "nivalis_lab", "shattered_array"]);
+
+installActivityLog();
+
+installEcology();
+
+installRouteCharts();

@@ -1,0 +1,40 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bearframe:city_mira",
+      "materials": {
+        "default": "entity"
+      },
+      "textures": {
+        "default": "textures/bearframe/city_mira"
+      },
+      "geometry": {
+        "default": "geometry.bearframe.city_mira"
+      },
+      "animations": {
+        "idle": "animation.bearframe.city_mira.idle",
+        "attack": "animation.bearframe.city_mira.attack",
+        "walk": "animation.bearframe.city_mira.walk",
+        "ctrl": "controller.animation.bearframe.locomotion",
+        "look": "animation.bearframe.city_mira.look"
+      },
+      "scripts": {
+        "initialize": [
+          "variable.attack_time = 0.0;"
+        ],
+        "animate": [
+          "ctrl",
+          "look"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bearframe"
+      ],
+      "spawn_egg": {
+        "base_color": "#dde6ea",
+        "overlay_color": "#5de6cf"
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:structure_set": {
+    "description": {
+      "identifier": "bearframe:relay_nine"
+    },
+    "placement": {
+      "type": "minecraft:random_spread",
+      "salt": 904184,
+      "spacing": 40,
+      "separation": 20,
+      "spread_type": "linear"
+    },
+    "structures": [
+      {
+        "structure": "bearframe:relay_nine",
+        "weight": 1
+      }
+    ]
+  }
+}

@@ -1,3 +1,6 @@
+import {populateBuriedSite,retainResident,fieldInteraction} from "./ecology.js";
+import {placeFieldLog,noteActivity} from "./activity_log.js";
+import {campaignSignal,campaignDialogue,ensureDispatchBench} from "./campaign.js";
 import {isRecoverySpillway} from "./spillway.js";
 import {recordSurvey,reportSurvey} from "./survey_log.js";
 import {escalateNearbyDirectorate} from "./living_world.js";
@@ -91,6 +94,7 @@ export function greetRegion(site){
   const {def,dim,pos,r}=site;
   const peaceful=world.getDifficulty()===Difficulty.Peaceful;
   const recovery=isRecoverySpillway(site);
+  populateBuriedSite(site,at);
   const primaryKey="bearframe:crew:"+keyAt(pos);
   if(!world.getDynamicProperty(primaryKey)){
     const isHostilePrimary=def.actor==="bearframe:hollow_scout"||def.actor==="bearframe:hollow_breacher"||def.actor==="bearframe:grid_turret";
@@ -99,6 +103,7 @@ export function greetRegion(site){
       if(canSpawnAt(dim,loc,false)){
         const entity=dim.spawnEntity(def.actor,center(loc));
         entity.setDynamicProperty("bearframe:region_role",def.id);
+        retainResident(entity);
         world.setDynamicProperty(primaryKey,true);
       }
     }
@@ -117,6 +122,7 @@ export function greetRegion(site){
       if(!canSpawnAt(dim,loc,Boolean(escort.hover)))continue;
       const entity=dim.spawnEntity(escort.type,center(loc));
       entity.setDynamicProperty("bearframe:region_role",def.id);
+        retainResident(entity);
       world.setDynamicProperty(eKey,true);
     }
   }
@@ -169,6 +175,453 @@ async function withArea(dim,from,to,name,task){
   finally{areas.removeTickingArea(name);}
 }
 
+const STATION_WINGS = [
+  {
+    "id": "orbit_commons",
+    "origin": {
+      "x": 60,
+      "y": 99,
+      "z": -24
+    },
+    "size": [
+      51,
+      12,
+      47
+    ],
+    "roleIds": [
+      7,
+      8,
+      13,
+      16
+    ],
+    "link": [
+      [
+        59,
+        101,
+        -2
+      ],
+      [
+        59,
+        101,
+        -1
+      ],
+      [
+        59,
+        101,
+        0
+      ],
+      [
+        59,
+        101,
+        1
+      ],
+      [
+        59,
+        101,
+        2
+      ],
+      [
+        59,
+        102,
+        -2
+      ],
+      [
+        59,
+        102,
+        -1
+      ],
+      [
+        59,
+        102,
+        0
+      ],
+      [
+        59,
+        102,
+        1
+      ],
+      [
+        59,
+        102,
+        2
+      ],
+      [
+        59,
+        103,
+        -2
+      ],
+      [
+        59,
+        103,
+        -1
+      ],
+      [
+        59,
+        103,
+        0
+      ],
+      [
+        59,
+        103,
+        1
+      ],
+      [
+        59,
+        103,
+        2
+      ],
+      [
+        59,
+        104,
+        -2
+      ],
+      [
+        59,
+        104,
+        -1
+      ],
+      [
+        59,
+        104,
+        0
+      ],
+      [
+        59,
+        104,
+        1
+      ],
+      [
+        59,
+        104,
+        2
+      ]
+    ]
+  },
+  {
+    "id": "orbit_farfield",
+    "origin": {
+      "x": 10,
+      "y": 99,
+      "z": -38
+    },
+    "size": [
+      35,
+      10,
+      27
+    ],
+    "roleIds": [
+      9,
+      14
+    ],
+    "link": [
+      [
+        26,
+        101,
+        -11
+      ],
+      [
+        26,
+        101,
+        -10
+      ],
+      [
+        26,
+        102,
+        -11
+      ],
+      [
+        26,
+        102,
+        -10
+      ],
+      [
+        26,
+        103,
+        -11
+      ],
+      [
+        26,
+        103,
+        -10
+      ],
+      [
+        26,
+        104,
+        -11
+      ],
+      [
+        26,
+        104,
+        -10
+      ],
+      [
+        27,
+        101,
+        -11
+      ],
+      [
+        27,
+        101,
+        -10
+      ],
+      [
+        27,
+        102,
+        -11
+      ],
+      [
+        27,
+        102,
+        -10
+      ],
+      [
+        27,
+        103,
+        -11
+      ],
+      [
+        27,
+        103,
+        -10
+      ],
+      [
+        27,
+        104,
+        -11
+      ],
+      [
+        27,
+        104,
+        -10
+      ],
+      [
+        28,
+        101,
+        -11
+      ],
+      [
+        28,
+        101,
+        -10
+      ],
+      [
+        28,
+        102,
+        -11
+      ],
+      [
+        28,
+        102,
+        -10
+      ],
+      [
+        28,
+        103,
+        -11
+      ],
+      [
+        28,
+        103,
+        -10
+      ],
+      [
+        28,
+        104,
+        -11
+      ],
+      [
+        28,
+        104,
+        -10
+      ]
+    ]
+  },
+  {
+    "id": "orbit_operations",
+    "origin": {
+      "x": 10,
+      "y": 99,
+      "z": 12
+    },
+    "size": [
+      35,
+      10,
+      27
+    ],
+    "roleIds": [
+      10,
+      12
+    ],
+    "link": [
+      [
+        26,
+        101,
+        10
+      ],
+      [
+        26,
+        101,
+        11
+      ],
+      [
+        26,
+        102,
+        10
+      ],
+      [
+        26,
+        102,
+        11
+      ],
+      [
+        26,
+        103,
+        10
+      ],
+      [
+        26,
+        103,
+        11
+      ],
+      [
+        26,
+        104,
+        10
+      ],
+      [
+        26,
+        104,
+        11
+      ],
+      [
+        27,
+        101,
+        10
+      ],
+      [
+        27,
+        101,
+        11
+      ],
+      [
+        27,
+        102,
+        10
+      ],
+      [
+        27,
+        102,
+        11
+      ],
+      [
+        27,
+        103,
+        10
+      ],
+      [
+        27,
+        103,
+        11
+      ],
+      [
+        27,
+        104,
+        10
+      ],
+      [
+        27,
+        104,
+        11
+      ],
+      [
+        28,
+        101,
+        10
+      ],
+      [
+        28,
+        101,
+        11
+      ],
+      [
+        28,
+        102,
+        10
+      ],
+      [
+        28,
+        102,
+        11
+      ],
+      [
+        28,
+        103,
+        10
+      ],
+      [
+        28,
+        103,
+        11
+      ],
+      [
+        28,
+        104,
+        10
+      ],
+      [
+        28,
+        104,
+        11
+      ]
+    ]
+  }
+];
+
+function ensureCityCrew(dim,index) {
+  const role=CITY_ROLES[index];
+  const key="bearframe:city_crew:"+index;
+  if(world.getDynamicProperty(key))return;
+  const cell={x:Math.floor(role.pos.x),y:Math.floor(role.pos.y),z:Math.floor(role.pos.z)};
+  if(!canSpawnAt(dim,cell,false))return;
+  const e=dim.spawnEntity(role.type,role.pos);
+  e.nameTag=role.name;
+  e.setDynamicProperty("bearframe:city_role",index);
+  world.setDynamicProperty(key,true);
+}
+
+async function buildStationWings(dim) {
+  for(const wing of STATION_WINGS){
+    const [w,h,d]=wing.size;
+    const {origin:from}=wing;
+    const to=at(from,[w-1,h-1,d-1]);
+    const key="bearframe:station_wing:"+wing.id;
+    const built=world.getDynamicProperty(key);
+    if(!built || wing.roleIds.some(index=>!world.getDynamicProperty("bearframe:city_crew:"+index))){
+      await withArea(dim,from,to,"bearframe-build-"+wing.id,()=>{
+        if(!built){
+          const occupied=dim.getBlocks(new BlockVolume(from,to),{excludeTypes:["minecraft:air"]},true);
+          if(occupied.getCapacity())throw Error("Orbital expansion volume is occupied: "+wing.id);
+          world.structureManager.place("bearframe:"+wing.id,dim,from,{includeEntities:false});
+          world.setDynamicProperty(key,true);
+        }
+        for(const index of wing.roleIds)ensureCityCrew(dim,index);
+      });
+    }
+    const linkKey="bearframe:station_link:"+wing.id;
+    if(!world.getDynamicProperty(linkKey)){
+      const first=at(CITY_ORIGIN,[0,0,0]);
+      const last=at(first,[CITY_SIZE.x-1,CITY_SIZE.y-1,CITY_SIZE.z-1]);
+      await withArea(dim,first,last,"bearframe-connect-"+wing.id,()=>{
+        const blocks=wing.link.map(([x,y,z])=>dim.getBlock({x,y,z}));
+        const safe=new Set(["minecraft:air","minecraft:tinted_glass","minecraft:polished_blackstone","minecraft:polished_deepslate","minecraft:smooth_quartz"]);
+        if(blocks.some(block=>!block||!safe.has(block.typeId)))throw Error("Orbital passage is obstructed: "+wing.id);
+        for(const block of blocks)if(!block.isAir)block.setType("minecraft:air");
+        world.setDynamicProperty(linkKey,true);
+      });
+    }
+  }
+}
+
 async function buildOrbit(){
   const dim=world.getDimension(ORBIT);
   const from=CITY_ORIGIN,to=at(from,[CITY_SIZE.x-1,CITY_SIZE.y-1,CITY_SIZE.z-1]);
@@ -179,17 +632,12 @@ async function buildOrbit(){
       world.structureManager.place("bearframe:orbital_city",dim,from,{includeEntities:false});
       world.setDynamicProperty(CITY_BUILT,true);
     }
-    for(const [index,role] of CITY_ROLES.entries()){
-      const key="bearframe:city_crew:"+index;
-      if(world.getDynamicProperty(key))continue;
-      const cell={x:Math.floor(role.pos.x),y:Math.floor(role.pos.y),z:Math.floor(role.pos.z)};
-      if(!canSpawnAt(dim,cell,false))continue;
-      const e=dim.spawnEntity(role.type,role.pos);
-      e.nameTag=role.name;
-      e.setDynamicProperty("bearframe:city_role",index);
-      world.setDynamicProperty(key,true);
-    }
+    for(const index of [0,1,2,3,4,5,6,11,15])ensureCityCrew(dim,index);
+    placeFieldLog(dim,"bearframe:log:station",[
+      {x:4,y:101,z:3},{x:5,y:101,z:3},{x:4,y:101,z:-3}
+    ]);
   });
+  await buildStationWings(dim);
 }
 
 export function ensureCity(){
@@ -217,7 +665,7 @@ export async function travelCity(player,site){
         player.setDynamicProperty(TRANSIT,undefined);
         return say(player,"Docking failed. Try the camp terminal again.");
       }
-      say(player,"Bearframe City. All six department bays are active. Use the Return Desk in the arrival bay to go back.");
+      say(player,"Bearframe City. Sneak-interact with Mira in the Farfield Annex to begin The Last Dispatch. Use the Return Desk in the arrival bay to go back.");
     });
   }finally{transit.delete(player.id);}
 }
@@ -248,10 +696,16 @@ export async function travelSurface(player){
 export function interactRegion(player,site,kind,spend){
   const {def}=site;
   if(def.id==="farfield_camp"){
+    placeFieldLog(site.dim,"bearframe:log:camp:"+keyAt(site.pos),[
+      at(site.pos,[-3,0,2],site.r),at(site.pos,[-3,0,-2],site.r),at(site.pos,[1,0,-2],site.r)
+    ]);
     if(player.isSneaking)return travelCity(player,site);
     return say(player,"Farfield checked you in. Sneak-interact here to board for Bearframe City. The city return desk brings you back.");
   }
-  if(kind===CHEST)return claim(player,site);
+  if(kind===CHEST){
+    noteActivity(player,"Container",def.name+" service stores",site.pos);
+    return claim(player,site);
+  }
   if(def.id==="intrusion_checkpoint"||def.id==="saltline_town"){
     escalateNearbyDirectorate(site.dim,site.pos,16);
   }
@@ -278,13 +732,24 @@ export function installExpedition({validPlayer,spend,attempt}){
       if(isExit){travelSurface(player).catch(promiseError);return;}
       const current=dims(dimension,location),site=matchRegionDevice(current);
       if(site){
-        if(current.typeId===site.def.panel)recordSurvey(player,site.def.id);
-        Promise.resolve(interactRegion(player,site,current.typeId,spend)).catch(promiseError);
+        const terminal=current.typeId===site.def.panel;
+        if(terminal){
+          recordSurvey(player,site.def.id);
+          campaignSignal(player,"read",site.def.id,location);
+        }
+        const result=interactRegion(player,site,current.typeId,spend);
+        if(terminal&&phase(site)>=1){
+          campaignSignal(player,"repair",site.def.id,location);
+          if(site.def.id==="spillway_bunker"&&isRecoverySpillway(site))
+            ensureDispatchBench(site,at);
+        }
+        Promise.resolve(result).catch(promiseError);
       }
     }));
   });
   world.beforeEvents.playerInteractWithEntity.subscribe(event=>{
     const {player,target}=event;
+    if(fieldInteraction(player,target))return;
     const staff=target.getDynamicProperty("bearframe:city_role");
     if(typeof staff!=="number" && target.typeId!=="bearframe:ward_resident")return;
     // Allow Atlas Rigger trade in city when sneaking with alloy
@@ -292,7 +757,15 @@ export function installExpedition({validPlayer,spend,attempt}){
     event.cancel=true;
     system.run(()=>attempt(()=>{
       if(!validPlayer(player)||!target.isValid||player.dimension.id!==target.dimension.id||dist(player.location,target.location)>49)return;
-      if(staff===0&&player.isSneaking){reportSurvey(player);return;}
+      noteActivity(player,"Talk",target.nameTag||target.typeId.split(":")[1].replaceAll("_"," "),target.location);
+      if(staff===0&&player.isSneaking){
+        reportSurvey(player);
+        campaignDialogue(player,target,staff);
+        return;
+      }
+      if(campaignDialogue(player,target,staff))return;
+      if(target.typeId==="bearframe:ward_resident"&&player.dimension.id==="minecraft:overworld")
+        campaignSignal(player,"echo","ward_resident");
       say(player,typeof staff==="number"?CITY_ROLES[staff]?.line??"Mind the airlock."
         :"I remember the auxiliary lamps. Leave my memory housing as it is—damage doesn't mean I'm not still here.");
     }));

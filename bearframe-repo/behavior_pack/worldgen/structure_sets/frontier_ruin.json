@@ -1,0 +1,21 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:structure_set": {
+    "description": {
+      "identifier": "bearframe:frontier_ruin"
+    },
+    "placement": {
+      "type": "minecraft:random_spread",
+      "salt": 904191,
+      "spacing": 42,
+      "separation": 21,
+      "spread_type": "linear"
+    },
+    "structures": [
+      {
+        "structure": "bearframe:frontier_ruin",
+        "weight": 1
+      }
+    ]
+  }
+}

@@ -12,7 +12,7 @@ export const SURVEY_TYPES=[
    repair:"Switchyard isolated. The service stores can be opened.",
    loot:[["minecraft:copper_ingot",4],["minecraft:amethyst_shard",2],["bearframe:legacy_cell",1]],
    escorts:[
-     {type:"bearframe:grid_protocol_keeper",offset:[-2,1,-3],hover:true},
+     {type:"bearframe:grid_protocol_keeper",offset:[-2,0,-3]},
      {type:"bearframe:grid_turret",offset:[-5,0,0],hostile:true}
    ]},
   {id:"echo_ward",name:"Legacy Support Ward",biome:"taiga",spacing:26,salt:773218,
@@ -60,4 +60,15 @@ export const CITY_ROLES = [
    line:"Thirty-five of us handle structured defense under Atlas. Watchtower tracks threats; we hold the line when they knock."},
   {type:"bearframe:vera_artisan",pos:{x:50.5,y:101,z:6.5},name:"Visual Production Artisan",
    line:"Visual Production keeps displays, signage, and interface standards clean. Vera's rule is simple: higher quality, always."}
+,
+{"type": "bearframe:city_steward", "pos": {"x": 82.5, "y": 101, "z": -4.5}, "name": "Commons Reception", "line": "The gardens and reading rooms are open every shift."},
+{"type": "bearframe:vera_artisan", "pos": {"x": 95.5, "y": 101, "z": 8.5}, "name": "Exhibition Steward", "line": "The gallery is open. The panels on display were fabricated here."},
+{"type": "bearframe:field_researcher", "pos": {"x": 21.5, "y": 101, "z": -25.5}, "name": "Farfield Mapping Desk", "line": "We chart the approach and mark the hazards before anyone goes in."},
+{"type": "bearframe:atlas_rigger", "pos": {"x": 34.5, "y": 101, "z": 25.5}, "name": "Operations Fabrication", "line": "This bay handles the equipment that comes back from the surface."},
+  {"type": "bearframe:city_auren", "pos": {"x": 36.5, "y": 101, "z": -6.5}, "name": "Auren", "line": "Systems is monitoring the station from here. If a compartment loses power, we can isolate it without taking the rest of the station offline."},
+  {"type": "bearframe:city_atlas", "pos": {"x": 21.5, "y": 101, "z": 25.5}, "name": "Atlas", "line": "Surface gear comes back here. We fix what we can, reclaim what we cannot. Saves a lot of hauling."},
+  {"type": "bearframe:city_vera", "pos": {"x": 94.5, "y": 101, "z": 10.5}, "name": "Vera", "line": "Welcome to the Visual Production gallery. Walk all the way around the exhibits. I design the backs too."},
+  {"type": "bearframe:city_mira", "pos": {"x": 22.5, "y": 101, "z": -23.5}, "name": "Mira", "line": "Farfield has new routes to survey. Log what you see, mark what is unsafe, and give any Echo you meet room to decide whether to talk."},
+  {"type": "bearframe:city_sentinel", "pos": {"x": 30.5, "y": 101, "z": 0.5}, "name": "Sentinel", "line": "Different department. Same objective. Watchtower is doing a round. Let me know if you see anything out of place."},
+  {"type": "bearframe:city_penney", "pos": {"x": 83.5, "y": 101, "z": -6.5}, "name": "Penney", "line": "The Commons is open. Take a minute in the gardens if you have just come back from the surface."}
 ];

@@ -21,7 +21,6 @@
         "width": 0.64,
         "height": 1.7
       },
-      "minecraft:persistent": {},
       "minecraft:physics": {},
       "minecraft:movement": {
         "value": 0.19
@@ -73,10 +72,25 @@
             }
           }
         ]
+      },
+      "minecraft:despawn": {
+        "despawn_from_distance": {}
       }
     },
     "events": {
-      "bearframe:look": {}
+      "bearframe:look": {},
+      "bearframe:settle": {
+        "add": {
+          "component_groups": [
+            "bearframe:site_resident"
+          ]
+        }
+      }
+    },
+    "component_groups": {
+      "bearframe:site_resident": {
+        "minecraft:persistent": {}
+      }
     }
   }
 }

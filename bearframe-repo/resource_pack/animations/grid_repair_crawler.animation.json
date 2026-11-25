@@ -74,9 +74,9 @@
         },
         "leg5": {
           "rotation": [
-            "math.sin(query.modified_distance_moved * 55) * -18",
-            "math.cos(query.modified_distance_moved * 55) * -12",
-            "math.sin(query.modified_distance_moved * 55) * -8"
+            "math.sin(query.modified_distance_moved * 55) * 18",
+            "math.cos(query.modified_distance_moved * 55) * 12",
+            "math.sin(query.modified_distance_moved * 55) * 8"
           ]
         }
       }

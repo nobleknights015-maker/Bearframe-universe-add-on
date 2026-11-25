@@ -1,0 +1,40 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bearframe:echo_lost",
+      "materials": {
+        "default": "entity"
+      },
+      "textures": {
+        "default": "textures/bearframe/echo_lost"
+      },
+      "geometry": {
+        "default": "geometry.bearframe.echo_lost"
+      },
+      "animations": {
+        "idle": "animation.bearframe.echo_lost.idle",
+        "attack": "animation.bearframe.echo_lost.attack",
+        "walk": "animation.bearframe.echo_lost.walk",
+        "ctrl": "controller.animation.bearframe.locomotion",
+        "look": "animation.bearframe.echo_lost.look"
+      },
+      "scripts": {
+        "initialize": [
+          "variable.attack_time = 0.0;"
+        ],
+        "animate": [
+          "ctrl",
+          "look"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bearframe"
+      ],
+      "spawn_egg": {
+        "base_color": "#8b7f70",
+        "overlay_color": "#e3ba6b"
+      }
+    }
+  }
+}

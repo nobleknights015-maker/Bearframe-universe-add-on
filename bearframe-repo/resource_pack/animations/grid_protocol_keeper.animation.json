@@ -7,34 +7,41 @@
         "body": {
           "position": [
             0,
-            "math.sin(query.life_time * 120) * 1.4",
-            0
-          ],
-          "rotation": [
-            "math.sin(query.life_time * 60) * 3",
-            0,
-            "math.cos(query.life_time * 55) * 3"
-          ]
-        },
-        "scanner": {
-          "rotation": [
-            0,
-            "query.life_time * 95",
+            "math.sin(query.life_time * 55) * 0.45",
             0
           ]
         },
-        "thruster0": {
+        "head": {
           "rotation": [
-            "math.sin(query.life_time * 110) * 6",
             0,
-            -6
+            "math.sin(query.life_time * 30) * 16",
+            0
           ]
         },
-        "thruster1": {
+        "arm0": {
           "rotation": [
-            "math.cos(query.life_time * 110) * 6",
+            "math.sin(query.life_time * 55) * 3",
             0,
-            6
+            -4
+          ]
+        },
+        "arm1": {
+          "rotation": [
+            "math.sin(query.life_time * 55) * -3",
+            0,
+            4
+          ]
+        }
+      }
+    },
+    "animation.bearframe.grid_protocol_keeper.look": {
+      "loop": true,
+      "bones": {
+        "head": {
+          "rotation": [
+            "math.clamp(query.target_x_rotation, -20, 20)",
+            "math.clamp(query.target_y_rotation, -35, 35)",
+            0
           ]
         }
       }
@@ -42,40 +49,95 @@
     "animation.bearframe.grid_protocol_keeper.walk": {
       "loop": true,
       "bones": {
-        "body": {
+        "leg0": {
           "rotation": [
-            12,
+            "math.sin(query.modified_distance_moved * 26) * 24",
             0,
             0
           ]
         },
-        "thruster0": {
+        "leg1": {
           "rotation": [
-            18,
+            "math.sin(query.modified_distance_moved * 26) * -24",
+            0,
+            0
+          ]
+        },
+        "arm0": {
+          "rotation": [
+            "math.sin(query.modified_distance_moved * 26) * -18",
             0,
             -4
           ]
         },
-        "thruster1": {
+        "arm1": {
           "rotation": [
-            18,
+            "math.sin(query.modified_distance_moved * 26) * 18",
             0,
             4
           ]
         },
-        "thruster2": {
+        "body": {
           "rotation": [
-            22,
             0,
-            0
+            0,
+            "math.sin(query.modified_distance_moved * 26) * 2.5"
           ]
         }
       }
     },
     "animation.bearframe.grid_protocol_keeper.attack": {
       "loop": false,
-      "animation_length": 0.35,
+      "animation_length": 0.65,
       "bones": {
+        "arm0": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              -4
+            ],
+            "0.28": [
+              -115,
+              0,
+              -10
+            ],
+            "0.5": [
+              -22,
+              0,
+              -4
+            ],
+            "0.65": [
+              0,
+              0,
+              -4
+            ]
+          }
+        },
+        "arm1": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              4
+            ],
+            "0.28": [
+              -115,
+              0,
+              10
+            ],
+            "0.5": [
+              -22,
+              0,
+              4
+            ],
+            "0.65": [
+              0,
+              0,
+              4
+            ]
+          }
+        },
         "body": {
           "rotation": {
             "0.0": [
@@ -83,12 +145,17 @@
               0,
               0
             ],
-            "0.15": [
-              22,
+            "0.28": [
+              -10,
               0,
               0
             ],
-            "0.35": [
+            "0.5": [
+              14,
+              0,
+              0
+            ],
+            "0.65": [
               0,
               0,
               0

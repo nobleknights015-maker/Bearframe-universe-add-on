@@ -27,13 +27,13 @@ export const RUINS=[
      {type:"bearframe:echo_drifter",offset:[-4,0,-3]}
    ]},
   {id:"saltline_town",name:"Saltline Depot",biome:"desert",spacing:30,salt:861109,
-   panel:"minecraft:cartography_table",actor:"bearframe:directorate_officer",layout:townLayout,
+   panel:"minecraft:cartography_table",actor:"bearframe:ward_resident",layout:townLayout,
    cost:["minecraft:coal",2],loot:[["minecraft:gold_ingot",3],["minecraft:redstone",4],["minecraft:torch",6],["bearframe:salvaged_alloy",2]],
    repair:"The dispatch station is powered. Its loading store is open.",
    note:"The road markings lead from the old sleeping quarters to the freight gantry. Sand buried the outer lanes first.",
    escorts:[
-     {type:"bearframe:nullframe_hunter",offset:[-4,0,-3],hostile:true},
-     {type:"bearframe:hollow_breacher",offset:[-2,0,4],hostile:true}
+     {type:"bearframe:echo_drifter",offset:[-4,0,-3]},
+     {type:"bearframe:grid_repair_crawler",offset:[-2,0,4]}
    ]}
 ];
 export const BUNKER_SIZE={x:36,y:25,z:23};

@@ -1,0 +1,21 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:structure_set": {
+    "description": {
+      "identifier": "bearframe:syndicate_forge"
+    },
+    "placement": {
+      "type": "minecraft:random_spread",
+      "salt": 904198,
+      "spacing": 46,
+      "separation": 23,
+      "spread_type": "linear"
+    },
+    "structures": [
+      {
+        "structure": "bearframe:syndicate_forge",
+        "weight": 1
+      }
+    ]
+  }
+}

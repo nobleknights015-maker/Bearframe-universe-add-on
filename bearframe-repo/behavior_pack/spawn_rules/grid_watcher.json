@@ -3,20 +3,20 @@
   "minecraft:spawn_rules": {
     "description": {
       "identifier": "bearframe:grid_watcher",
-      "population_control": "ambient"
+      "population_control": "animal"
     },
     "conditions": [
       {
         "minecraft:spawns_on_surface": {},
         "minecraft:weight": {
-          "default": 4
+          "default": 5
         },
         "minecraft:herd": {
           "min_size": 1,
           "max_size": 1
         },
         "minecraft:density_limit": {
-          "surface": 2
+          "surface": 1
         },
         "minecraft:biome_filter": {
           "any_of": [
@@ -29,6 +29,16 @@
               "test": "has_biome_tag",
               "operator": "==",
               "value": "swamp"
+            },
+            {
+              "test": "has_biome_tag",
+              "operator": "==",
+              "value": "plains"
+            },
+            {
+              "test": "has_biome_tag",
+              "operator": "==",
+              "value": "mesa"
             }
           ]
         }

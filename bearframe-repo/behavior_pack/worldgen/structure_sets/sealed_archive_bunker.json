@@ -1,0 +1,21 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:structure_set": {
+    "description": {
+      "identifier": "bearframe:sealed_archive_bunker"
+    },
+    "placement": {
+      "type": "minecraft:random_spread",
+      "salt": 1009930,
+      "spacing": 32,
+      "separation": 16,
+      "spread_type": "linear"
+    },
+    "structures": [
+      {
+        "structure": "bearframe:sealed_archive_bunker",
+        "weight": 1
+      }
+    ]
+  }
+}

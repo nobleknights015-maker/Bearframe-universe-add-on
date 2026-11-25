@@ -68,6 +68,22 @@
             }
           }
         ]
+      },
+      "minecraft:behavior.move_to_block": {
+        "priority": 5,
+        "speed_multiplier": 0.8,
+        "search_range": 12,
+        "search_height": 3,
+        "goal_radius": 1.6,
+        "stay_duration": 90,
+        "start_chance": 0.45,
+        "tick_interval": 80,
+        "target_blocks": [
+          "minecraft:smithing_table",
+          "minecraft:lectern",
+          "minecraft:crafting_table",
+          "minecraft:cartography_table"
+        ]
       }
     },
     "events": {

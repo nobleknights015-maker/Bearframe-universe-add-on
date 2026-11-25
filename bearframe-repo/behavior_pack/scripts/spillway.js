@@ -1,3 +1,4 @@
+import {registerChartSite,removeChartBeacon} from "./route_charts.js";
 import {BlockPermutation, BlockTypes, BlockVolume, SignSide, world} from "@minecraft/server";
 import {at} from "./layout.js";
 import {
@@ -95,11 +96,12 @@ function surveySite(datum, origin) {
   if (!clean([0,surface,12],[10,surface+2,24],surfaceFill) ||
       !clean([0,surface+3,12],[10,top,24],surfaceAllowed) ||
       !clean([11,surface,15],[21,surface+1,21],surfaceFill)) return false;
+  if (!clean([48,4,13],[67,11,23],excavationAllowed)) return false;
   if (!clean([22,3,2],[49,13,34],excavationAllowed) ||
       !clean([4,3,15],[21,surface-1,21],excavationAllowed)) return false;
-  if (dim.getPlayers({location:point(2,surface,18),maxDistance:65}).some(player => {
+  if (dim.getPlayers({location:point(2,surface,18),maxDistance:95}).some(player => {
     const {x,y,z}=player.location;
-    return x>=origin.x && x<origin.x+50 && z>=origin.z+2 && z<origin.z+35 &&
+    return x>=origin.x && x<origin.x+SPILLWAY_SIZE.x && z>=origin.z+2 && z<origin.z+35 &&
       y>=origin.y+2 && (y<=origin.y+13 || x<origin.x+22 && y<=origin.y+top && z>=origin.z+12 && z<origin.z+25);
   })) return false;
   return {foundations,approach};
@@ -121,6 +123,8 @@ export function buildSpillway(datum, search=true) {
       const site=surveySite(datum,origin);
       if(!site) continue;
       world.structureManager.place("bearframe:spillway_facility",dim,origin,{includeEntities:false});
+      removeChartBeacon("spillway_bunker",dim.id,datum.location);
+      registerChartSite("spillway_bunker",dim.id,at(origin,SPILLWAY_DATUM));
       // The native beacon may sit several blocks back in the shoulder while the
       // lit panel on the completed site marks the actual approach.
       if (datum.typeId===SPILLWAY_MARKER) datum.setPermutation(datum.permutation.withState(SPILLWAY_BUILT,true));

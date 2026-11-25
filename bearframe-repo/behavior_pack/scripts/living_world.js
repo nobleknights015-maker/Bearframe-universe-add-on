@@ -1,3 +1,5 @@
+import {fieldInteraction} from "./ecology.js";
+import {campaignSignal} from "./campaign.js";
 import {ItemStack,system,world} from "@minecraft/server";
 import {ORBIT} from "./regions.js";
 
@@ -22,7 +24,7 @@ const SCAN_DB={
   },
   "bearframe:grid_protocol_keeper":{
     tag:"Unverified Legacy Machine · Protocol Keeper",
-    note:"A hovering legacy terminal that polls obsolete site permissions. It has no recognized faction signature."
+    note:"A walking legacy custodian that polls obsolete site permissions. It has no recognized faction signature."
   },
   "bearframe:farfield_surveyor":{
     tag:"Bearframe · Exploration (Farfield)",
@@ -200,6 +202,7 @@ export function installLivingWorld({validPlayer,spend,attempt}){
   world.beforeEvents.playerInteractWithEntity.subscribe(event=>{
     const {player,target}=event;
     if(!target?.typeId?.startsWith("bearframe:"))return;
+    if(fieldInteraction(player,target))return;
     const isCityStaff=typeof target.getDynamicProperty("bearframe:city_role")==="number";
     const held=heldItem(player);
     const holdingWrench=held?.typeId==="bearframe:repair_wrench";
@@ -311,6 +314,7 @@ export function installLivingWorld({validPlayer,spend,attempt}){
       system.run(()=>attempt(()=>{
         if(!validPlayer(player)||!target.isValid||distSq(player.location,target.location)>49)return;
         if(!player.isSneaking){
+          if(player.dimension.id==="minecraft:overworld")campaignSignal(player,"echo","echo_drifter");
           return say(player,"§d[Echo Drifter]",pick(DIALOGUES["bearframe:echo_drifter"],Math.floor(system.currentTick/50)));
         }
         const bag=player.getComponent("minecraft:inventory")?.container;

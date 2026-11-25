@@ -1,0 +1,21 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:structure_set": {
+    "description": {
+      "identifier": "bearframe:flooded_pump_bunker"
+    },
+    "placement": {
+      "type": "minecraft:random_spread",
+      "salt": 1009943,
+      "spacing": 37,
+      "separation": 18,
+      "spread_type": "linear"
+    },
+    "structures": [
+      {
+        "structure": "bearframe:flooded_pump_bunker",
+        "weight": 1
+      }
+    ]
+  }
+}

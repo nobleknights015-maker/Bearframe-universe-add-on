@@ -1,0 +1,21 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:structure_set": {
+    "description": {
+      "identifier": "bearframe:overgrown_colony"
+    },
+    "placement": {
+      "type": "minecraft:random_spread",
+      "salt": 1009982,
+      "spacing": 37,
+      "separation": 18,
+      "spread_type": "linear"
+    },
+    "structures": [
+      {
+        "structure": "bearframe:overgrown_colony",
+        "weight": 1
+      }
+    ]
+  }
+}

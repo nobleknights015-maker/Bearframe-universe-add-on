@@ -22,7 +22,6 @@
         "width": 0.88,
         "height": 0.56
       },
-      "minecraft:persistent": {},
       "minecraft:physics": {},
       "minecraft:movement": {
         "value": 0.21
@@ -78,10 +77,40 @@
             }
           }
         ]
+      },
+      "minecraft:behavior.move_to_block": {
+        "priority": 5,
+        "speed_multiplier": 0.8,
+        "search_range": 12,
+        "search_height": 3,
+        "goal_radius": 1.6,
+        "stay_duration": 90,
+        "start_chance": 0.45,
+        "tick_interval": 80,
+        "target_blocks": [
+          "minecraft:anvil",
+          "minecraft:lodestone",
+          "minecraft:blast_furnace"
+        ]
+      },
+      "minecraft:despawn": {
+        "despawn_from_distance": {}
       }
     },
     "events": {
-      "bearframe:look": {}
+      "bearframe:look": {},
+      "bearframe:settle": {
+        "add": {
+          "component_groups": [
+            "bearframe:site_resident"
+          ]
+        }
+      }
+    },
+    "component_groups": {
+      "bearframe:site_resident": {
+        "minecraft:persistent": {}
+      }
     }
   }
 }

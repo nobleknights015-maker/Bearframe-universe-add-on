@@ -1,6 +1,6 @@
 export const SPILLWAY_MARKER = "bearframe:spillway_datum";
 export const SPILLWAY_BUILT = "bearframe:excavated";
-export const SPILLWAY_SIZE = {x: 51, y: 28, z: 37};
+export const SPILLWAY_SIZE = {x: 69, y: 28, z: 37};
 export const SPILLWAY_DATUM = [2, 20, 18];
 export const SPILLWAY_PANEL = [37, 5, 18];
 
