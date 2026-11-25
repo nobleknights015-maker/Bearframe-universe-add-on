@@ -16,13 +16,22 @@
       },
       "bones": [
         {
+          "name": "root",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
           "name": "waist",
           "pivot": [
             0,
             12,
             0
           ],
-          "cubes": []
+          "cubes": [],
+          "parent": "root"
         },
         {
           "name": "body",
@@ -3605,13 +3614,22 @@
       },
       "bones": [
         {
+          "name": "root",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
           "name": "waist",
           "pivot": [
             0.0,
             6.0,
             0.0
           ],
-          "cubes": []
+          "cubes": [],
+          "parent": "root"
         },
         {
           "name": "body",

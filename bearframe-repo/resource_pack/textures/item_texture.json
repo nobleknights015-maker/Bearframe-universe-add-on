@@ -19,6 +19,9 @@
     },
     "bearframe_repair_wrench": {
       "textures": "textures/bearframe/repair_wrench"
+    },
+    "bearframe_field_log_pad": {
+      "textures": "textures/bearframe/field_log_pad"
     }
   }
 }

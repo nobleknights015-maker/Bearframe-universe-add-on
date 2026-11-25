@@ -3,7 +3,7 @@ import {installEcology,retainResident} from "./ecology.js";
 import {installActivityLog} from "./activity_log.js";
 import {campaignSignal,installCampaign} from "./campaign.js";
 import {buildSurfaceSite} from "./surface_sites.js";
-import {SURFACE_DATUM,SURFACE_DONE,LEGACY_DATUM} from "./surface_layout.js";
+import {SURFACE_DATUM,EXTENDED_SURFACE_DATUM,SURFACE_DONE,LEGACY_DATUM} from "./surface_layout.js";
 import {buildSpillway} from "./spillway.js";
 import {SPILLWAY_BUILT,SPILLWAY_MARKER} from "./spillway_layout.js";
 import {recordSurvey} from "./survey_log.js";
@@ -11,7 +11,7 @@ import {greetRegion,installExpedition,prepareBunker,regionAt} from "./expedition
 import {installLivingWorld} from "./living_world.js";
 import {REGION_ANCHOR,ORBIT} from "./regions.js";
 import {APPROACH_MARKER,gradeApproach} from "./approaches.js";
-import {BlockVolume,Difficulty,GameMode,ItemStack,system,world} from "@minecraft/server";
+import {BlockTypes,BlockVolume,Difficulty,GameMode,ItemStack,system,world} from "@minecraft/server";
 import {ACTORS,BREAKER,BULKHEAD,DIRECTION,GATE,POWER_LIGHTS,RECOVERY,ROTATIONS,at} from "./layout.js";
 
 const ANCHOR="bearframe:relay_anchor";
@@ -188,6 +188,8 @@ world.beforeEvents.playerInteractWithEntity.subscribe(event=>{
 });
 
 const cells=new Map();
+const siteMarkers=[ANCHOR,APPROACH_MARKER,REGION_ANCHOR,SPILLWAY_MARKER,SURFACE_DATUM,EXTENDED_SURFACE_DATUM,LEGACY_DATUM];
+let registeredSiteMarkers;
 world.afterEvents.playerLeave.subscribe(({playerId})=>cells.delete(playerId));
 system.runInterval(()=>{
   for(const p of world.getAllPlayers())attempt(()=>{
@@ -199,9 +201,11 @@ system.runInterval(()=>{
     let pending=false;
     const a={x:Math.floor(loc.x)-40,y:Math.max(dim.heightRange.min,Math.floor(loc.y)-18),z:Math.floor(loc.z)-40};
     const b={x:Math.floor(loc.x)+40,y:Math.min(dim.heightRange.max-1,Math.floor(loc.y)+14),z:Math.floor(loc.z)+40};
-    for(const p of dim.getBlocks(new BlockVolume(a,b),{includeTypes:[ANCHOR,APPROACH_MARKER,REGION_ANCHOR,SPILLWAY_MARKER,SURFACE_DATUM,LEGACY_DATUM]},true).getBlockLocationIterator()){
+    registeredSiteMarkers??=siteMarkers.filter(id=>BlockTypes.get(id));
+    if(!registeredSiteMarkers.length)return;
+    for(const p of dim.getBlocks(new BlockVolume(a,b),{includeTypes:registeredSiteMarkers},true).getBlockLocationIterator()){
       const marker=loaded(dim,p);
-      if(marker?.typeId===SURFACE_DATUM||marker?.typeId===LEGACY_DATUM){
+      if(marker?.typeId===SURFACE_DATUM||marker?.typeId===EXTENDED_SURFACE_DATUM||marker?.typeId===LEGACY_DATUM){
         if(!marker.permutation.getState(SURFACE_DONE) && !buildSurfaceSite(marker))pending=true;
         continue;
       }

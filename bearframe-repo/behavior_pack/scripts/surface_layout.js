@@ -3,6 +3,7 @@ import {SURVEY_TYPES} from "./regions.js";
 import {RUINS,TOWN_SIZE} from "./ruins.js";
 
 export const SURFACE_DATUM="bearframe:surface_survey";
+export const EXTENDED_SURFACE_DATUM="bearframe:surface_survey_extended";
 export const SURFACE_DONE="bearframe:sited";
 export const SURFACE_SITES=[
   {id:"maintenance_relay",biome:"plains",spacing:22,salt:681147,size:SIZE,deck:DECK},

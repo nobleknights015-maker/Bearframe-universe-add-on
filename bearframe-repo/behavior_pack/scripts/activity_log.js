@@ -3,7 +3,8 @@ import {system,world} from "@minecraft/server";
 import {ActionFormData} from "@minecraft/server-ui";
 import {read as readCampaign} from "./campaign_state.js";
 import {MAIN,SIDES,CONTRACTS,EVIDENCE} from "./campaign_data.js";
-const PAD="bearframe:field_log";
+const TERMINAL="bearframe:field_log";
+const OPEN_PAD="bearframe:open_field_log";
 const SAVE="bearframe:activity:";
 const loaded=new Map();
 const dirty=new Set();
@@ -153,15 +154,20 @@ async function logForm(player){
 export function placeFieldLog(dim,key,positions){
   if(world.getDynamicProperty(key))return;
   const found=positions.map(p=>dim.isChunkLoaded(p)?dim.getBlock(p):undefined);
-  if(found.some(b=>b?.typeId===PAD)){
+  if(found.some(b=>b?.typeId===TERMINAL)){
     world.setDynamicProperty(key,true);return;
   }
   const target=found.find(b=>b?.isAir&&b.above()?.isAir&&b.below()&&!b.below().isAir&&!b.below().isLiquid);
-  if(target){target.setType(PAD);world.setDynamicProperty(key,true);}
+  if(target){target.setType(TERMINAL);world.setDynamicProperty(key,true);}
 }
 export function installActivityLog(){
+  system.beforeEvents.startup.subscribe(({itemComponentRegistry})=>{
+    itemComponentRegistry.registerCustomComponent(OPEN_PAD,{
+      onUse:({source})=>system.run(()=>{if(source.isValid)logForm(source);})
+    });
+  });
   world.beforeEvents.playerInteractWithBlock.subscribe(event=>{
-    if(event.block.typeId!==PAD)return;
+    if(event.block.typeId!==TERMINAL)return;
     event.cancel=true;
     const {player}=event;
     if(event.isFirstEvent)system.run(()=>logForm(player));

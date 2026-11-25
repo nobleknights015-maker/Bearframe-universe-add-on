@@ -26,6 +26,11 @@
     "result": {
       "item": "bearframe:field_log",
       "count": 1
-    }
+    },
+    "unlock": [
+      {
+        "item": "minecraft:iron_ingot"
+      }
+    ]
   }
 }

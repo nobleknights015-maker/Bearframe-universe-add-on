@@ -2,7 +2,7 @@ import {registerChartSite,removeChartBeacon} from "./route_charts.js";
 import {populateRuin,retainResident} from "./ecology.js";
 import {BlockTypes,BlockVolume,world} from "@minecraft/server";
 import {at} from "./layout.js";
-import {SURFACE_DATUM,SURFACE_DONE,SURFACE_SITES,LEGACY_DATUM,LEGACY_SITES} from "./surface_layout.js";
+import {SURFACE_DATUM,EXTENDED_SURFACE_DATUM,SURFACE_DONE,SURFACE_SITES,LEGACY_DATUM,LEGACY_SITES} from "./surface_layout.js";
 
 const crews={
   "frontier_colony": [
@@ -294,7 +294,7 @@ const crews={
     ]
   ]
 };
-const isDatum=id=>id===SURFACE_DATUM||id===LEGACY_DATUM;
+const isDatum=id=>id===SURFACE_DATUM||id===EXTENDED_SURFACE_DATUM||id===LEGACY_DATUM;
 
 const mineral=["grass_block","dirt","coarse_dirt","rooted_dirt","podzol","stone","andesite","diorite","granite",
   "tuff","gravel","snow","calcite","packed_ice","sand","red_sand","sandstone","red_sandstone","clay","terracotta",
@@ -359,7 +359,7 @@ function survey(dim,base,site,beacon){
     return false;
   })))return;
 
-  const valid=[...soil,...clear,SURFACE_DATUM,LEGACY_DATUM].filter(id=>BlockTypes.get(id));
+  const valid=[...soil,...clear,SURFACE_DATUM,EXTENDED_SURFACE_DATUM,LEGACY_DATUM].filter(id=>BlockTypes.get(id));
   const occupied=dim.getBlocks(new BlockVolume(p(0,floor-2,0),p(width-1,height-1,depth-1)),{excludeTypes:valid},false);
   if(occupied.getCapacity())return;
   // Reject waterlogged foliage and other survey sites in the grade envelope.
