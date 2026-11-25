@@ -2,7 +2,7 @@ import {registerChartSite,installRouteCharts} from "./route_charts.js";
 import {installEcology,retainResident} from "./ecology.js";
 import {installActivityLog} from "./activity_log.js";
 import {campaignSignal,installCampaign} from "./campaign.js";
-import {buildSurfaceSite} from "./surface_sites.js";
+import {buildSurfaceSite,surveyRoamingSite} from "./surface_sites.js";
 import {SURFACE_DATUM,EXTENDED_SURFACE_DATUM,SURFACE_DONE,LEGACY_DATUM} from "./surface_layout.js";
 import {buildSpillway} from "./spillway.js";
 import {SPILLWAY_BUILT,SPILLWAY_MARKER} from "./spillway_layout.js";
@@ -195,13 +195,14 @@ system.runInterval(()=>{
   for(const p of world.getAllPlayers())attempt(()=>{
     if(p.dimension.id!=="minecraft:overworld")return cells.delete(p.id);
     const {dimension:dim,location:loc}=p;
+    registeredSiteMarkers??=siteMarkers.filter(id=>BlockTypes.get(id));
+    surveyRoamingSite(p,system.currentTick,registeredSiteMarkers);
     const key=[loc.x,loc.y,loc.z].map(n=>Math.floor(n/12)).join(",");
     const last=cells.get(p.id);
     if(last?.key===key && (!last.pending || system.currentTick-last.tick<240))return;
     let pending=false;
     const a={x:Math.floor(loc.x)-40,y:Math.max(dim.heightRange.min,Math.floor(loc.y)-18),z:Math.floor(loc.z)-40};
     const b={x:Math.floor(loc.x)+40,y:Math.min(dim.heightRange.max-1,Math.floor(loc.y)+14),z:Math.floor(loc.z)+40};
-    registeredSiteMarkers??=siteMarkers.filter(id=>BlockTypes.get(id));
     if(!registeredSiteMarkers.length)return;
     for(const p of dim.getBlocks(new BlockVolume(a,b),{includeTypes:registeredSiteMarkers},true).getBlockLocationIterator()){
       const marker=loaded(dim,p);

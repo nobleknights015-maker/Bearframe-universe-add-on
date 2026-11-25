@@ -124,7 +124,9 @@
         "melee_spear_use": "animation.zombie.melee_spear_use",
         "melee_spear_hold": "animation.zombie.melee_spear_hold",
         "melee_spear_controller": "controller.animation.humanoid.melee_spear",
-        "baby_zombie_attack_bare_hand": "animation.zombie.baby_attack_bare_hand"
+        "baby_zombie_attack_bare_hand": "animation.zombie.baby_attack_bare_hand",
+        "swimming_arms": "animation.zombie.v1.8.swim_arms",
+        "swimming_custom": "animation.zombie.v1.8.swim_custom"
       },
       "render_controllers": [
         "controller.render.bearframe.vanilla_husk"

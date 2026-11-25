@@ -82,7 +82,9 @@
         "swimming": "animation.zombie.swimming",
         "riding.body": "animation.humanoid.riding.body",
         "baby_zombie_attack_bare_hand": "animation.zombie.baby_attack_bare_hand",
-        "baby_attack_rotations": "animation.drowned.attack.baby_rotations"
+        "baby_attack_rotations": "animation.drowned.attack.baby_rotations",
+        "swimming_arms": "animation.zombie.v1.8.swim_arms",
+        "swimming_custom": "animation.zombie.v1.8.swim_custom"
       },
       "render_controllers": [
         "controller.render.bearframe.vanilla_drowned"

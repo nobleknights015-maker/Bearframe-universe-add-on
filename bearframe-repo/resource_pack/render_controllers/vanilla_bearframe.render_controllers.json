@@ -59,7 +59,7 @@
       }
     },
     "controller.render.bearframe.vanilla_zombie_villager": {
-      "geometry": "Array.bearframe_age[query.is_baby ? 1 : 0]",
+      "geometry": "Geometry.default",
       "materials": [
         {
           "*": "Material.default"
@@ -67,15 +67,7 @@
       ],
       "textures": [
         "Texture.default"
-      ],
-      "arrays": {
-        "geometries": {
-          "Array.bearframe_age": [
-            "Geometry.default",
-            "Geometry.baby"
-          ]
-        }
-      }
+      ]
     },
     "controller.render.bearframe.vanilla_zombie_villager_v2": {
       "geometry": "Array.bearframe_age[query.is_baby ? 1 : 0]",
@@ -135,7 +127,7 @@
       ]
     },
     "controller.render.bearframe.vanilla_villager": {
-      "geometry": "Array.bearframe_age[query.is_baby ? 1 : 0]",
+      "geometry": "Geometry.default",
       "materials": [
         {
           "*": "Material.default"
@@ -143,15 +135,7 @@
       ],
       "textures": [
         "Texture.default"
-      ],
-      "arrays": {
-        "geometries": {
-          "Array.bearframe_age": [
-            "Geometry.default",
-            "Geometry.baby"
-          ]
-        }
-      }
+      ]
     },
     "controller.render.bearframe.vanilla_villager_v2": {
       "geometry": "Array.bearframe_age[query.is_baby ? 1 : 0]",

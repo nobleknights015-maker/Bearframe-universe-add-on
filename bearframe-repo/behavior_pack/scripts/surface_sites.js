@@ -296,7 +296,7 @@ const crews={
 };
 const isDatum=id=>id===SURFACE_DATUM||id===EXTENDED_SURFACE_DATUM||id===LEGACY_DATUM;
 
-const mineral=["grass_block","dirt","coarse_dirt","rooted_dirt","podzol","stone","andesite","diorite","granite",
+const mineral=["grass_block","dirt","coarse_dirt","rooted_dirt","podzol","grass_path","dirt_path","mycelium","moss_block","mud","stone","andesite","diorite","granite",
   "tuff","gravel","snow","calcite","packed_ice","sand","red_sand","sandstone","red_sandstone","clay","terracotta",
   ...["white","orange","yellow","red","brown","light_gray"].map(c=>c+"_terracotta")];
 const cuttable=["short_grass","tall_grass","fern","large_fern","leaf_litter","snow_layer","deadbush","dead_bush","dandelion","poppy",
@@ -328,7 +328,7 @@ function survey(dim,base,site,beacon){
     for(let z=(base.z-2)>>4;z<=((base.z+depth+1)>>4);z++)
       if(!dim.isChunkLoaded({x:x*16,y:base.y+floor,z:z*16}))return;
 
-  const isBeacon=b=>isDatum(b?.typeId)&&b.x===beacon.x&&b.y===beacon.y&&b.z===beacon.z;
+  const isBeacon=b=>isDatum(b?.typeId)&&beacon&&b.x===beacon.x&&b.y===beacon.y&&b.z===beacon.z;
   const foundations=[];
   // The entire platform needs dry ground no more than two blocks below it.
   if(!rect(0,0,width-1,depth-1,(x,z)=>{
@@ -384,23 +384,28 @@ export function buildSurfaceSite(marker, search=true){
   if(!site)return;
   const {dimension:dim,location:loc}=marker;
   registerChartSite(site.id,dim.id,loc,"beacon");
-  for(const [dx,dz] of search?order:[[0,0]]){
+  return placeSurveyedSite(dim,loc,site,search?order:[[0,0]],marker,search);
+}
+
+function placeSurveyedSite(dim,loc,site,offsets,marker,search=true,onPlaced){
+  for(const [dx,dz] of offsets){
     const center={x:loc.x+dx,y:loc.y,z:loc.z+dz};
     if(!dim.isChunkLoaded(center))continue;
     const actual=search?grade(dim,center):loc.y;
-    if(actual===undefined||Math.abs(actual-loc.y)>14)continue;
+    if(actual===undefined||(marker&&Math.abs(actual-loc.y)>14))continue;
     for(const lift of search?[0,1,-1]:[0]){
       const base=at({...center,y:actual+lift},[-(site.size.x>>1),-site.deck,-(site.size.z>>1)]);
-      const foundations=survey(dim,base,site,loc);
+      const foundations=survey(dim,base,site,marker?loc:undefined);
       if(!foundations)continue;
       world.structureManager.place("bearframe:"+site.id+"_site",dim,base,{includeEntities:false});
+      onPlaced?.();
       for(const {pos,type} of foundations){
         const block=dim.getBlock(pos);
         const slab=dim.getBlock({...pos,y:base.y+site.deck});
         if(slab&&!soil.has(slab.typeId)&&!clear.has(slab.typeId)&&block?.typeId===type)
           block.setType("minecraft:stone");
       }
-      if(isDatum(marker.typeId))marker.setPermutation(marker.permutation.withState(SURFACE_DONE,true));
+      if(isDatum(marker?.typeId))marker.setPermutation(marker.permutation.withState(SURFACE_DONE,true));
       // The placement and spawn run synchronously. Mark the successful build
       // before spawning so a failed mob cannot cause a duplicate structure.
       for(const [unit,x,y,z] of crews[site.id]??[]){
@@ -421,4 +426,49 @@ export function buildSurfaceSite(marker, search=true){
       return base;
     }
   }
+}
+
+// Native jigsaws supply biome-specific beacons in fresh chunks. A second path
+// surveys loaded terrain so worlds with absent beacons can still get ruins.
+const roamingSites=[...SURFACE_SITES,...LEGACY_SITES].filter(site=>[
+  "maintenance_relay","frontier_ruin","crashed_skiff","relay_nine","overgrown_colony",
+  "lost_waystation","sealed_archive_bunker","collapsed_transit_bunker",
+  "rootbound_service_bunker","flooded_pump_bunker","farfield_camp","echo_ward"
+].includes(site.id));
+const gridSize=160;
+const offsets=[[0,0],[-14,0],[14,0],[0,-14],[0,14],[-14,-14],[14,14],[-14,14],[14,-14]];
+const retryAt=new Map();
+const passable=new Set([...clear,...soil]);
+const hash=(x,z)=>((Math.imul(x,73856093)^Math.imul(z,19349663))>>>0);
+
+export function surveyRoamingSite(player,now,markerTypes){
+  const {dimension:dim,location:pos}=player;
+  const gx=Math.round(pos.x/gridSize),gz=Math.round(pos.z/gridSize);
+  const seed=hash(gx,gz);
+  const x=gx*gridSize+((seed>>>9)%25)-12;
+  const z=gz*gridSize+((seed>>>17)%25)-12;
+  if(Math.abs(pos.x-x)>44||Math.abs(pos.z-z)>44)return;
+  const key=`bearframe:roaming_site:${gx},${gz}`;
+  if((retryAt.get(key)??0)>now||world.getDynamicProperty(key))return;
+  if(retryAt.size>=256)retryAt.clear();
+  retryAt.set(key,now+240);
+  const loc={x,y:pos.y,z};
+  const top=dim.isChunkLoaded(loc)&&dim.getTopmostBlock(loc);
+  if(!top)return;
+  // Respect a native beacon in this neighborhood before trying alternate sites.
+  if(markerTypes.length&&dim.getBlocks(new BlockVolume(
+    {x:x-44,y:Math.max(dim.heightRange.min,top.y-25),z:z-44},
+    {x:x+44,y:Math.min(dim.heightRange.max-1,top.y+25),z:z+44}
+  ),{includeTypes:markerTypes},true).getCapacity())return;
+  const slot=Math.floor(now/240);
+  const [dx,dz]=offsets[(seed+slot)%offsets.length];
+  const center={x:x+dx,y:top.y,z:z+dz};
+  if(!dim.isChunkLoaded(center))return;
+  const ground=dim.getTopmostBlock(center);
+  if(!ground||!passable.has(ground.typeId))return;
+  const smaller=roamingSites.filter(site=>site.size.x<=49);
+  const site=smaller[(seed+Math.floor(slot/offsets.length))%smaller.length];
+  return placeSurveyedSite(dim,center,site,[[0,0]],undefined,true,()=>{
+    world.setDynamicProperty(key,site.id);
+  });
 }
