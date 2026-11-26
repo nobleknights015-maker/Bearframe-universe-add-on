@@ -7,6 +7,7 @@ import {EVIDENCE,MAIN,SIDES,CONTRACTS} from "./campaign_data.js";
 import {read,write,complete,applySignal,calibrate} from "./campaign_state.js";
 import {goalCount,eligible,acceptSide,finishSide,standing,lockedReason,inventoryCount,deliveryReady,itemName,rpgState,LEADS} from "./rpg_progress.js";
 
+import {SPECIALIZATIONS,rank,train,specialty,offers,specialtyBonus} from "./rpg_training.js";
 const CITY="bearframe:city_orbit";
 const OVERWORLD="minecraft:overworld";
 const ARCHIVE="bearframe:field_archive";
@@ -156,7 +157,7 @@ async function contractMenu(player,target,lead){
   }else if(prior?.active&&r?.active&&r.progress>=q.count){
     const bonus=current.chapter>=MAIN.length&&current.choice==="local"&&q.id==="power"?[["bearframe:salvaged_alloy",1]]:
       current.chapter>=MAIN.length&&current.choice==="publish"&&q.id==="charts"?[["minecraft:torch",6]]:[];
-    if(reward(player,[...q.reward,...bonus],()=>{
+    if(reward(player,[...q.reward,...bonus,...specialtyBonus(current,q.id)],()=>{
       current.contracts[q.id]={active:false,progress:0,seen:[],done:r.done+1};
       write(player,current);
     })){
@@ -175,17 +176,30 @@ function journalText(state){
   });
   return stages+"\n\nField directory · Coordinates appear after your first visit\n"+known.join("\n");
 }
+async function trainingMenu(player,target,lead){
+ const state=read(player),sp=SPECIALIZATIONS[lead],r=rank(state,lead),selected=specialty(state);
+ if(!sp)return;
+ const deals=offers(state,lead);
+ const choice=await show(player,form(sp.name+" · Department services","Rank "+r+"/2 · "+(selected?.lead===lead?"Active specialization":"Not selected")+"\nEarn standing through assignments. Rank 1 unlocks supplies; rank 2 unlocks advanced supplies. Selecting this specialty discounts its exchanges.",[r>=1?"Select "+sp.name:"Rank 1 required",...deals.map(d=>d.payment[1]+" "+itemName(d.payment[0])+" → "+d.reward[1]+" "+itemName(d.reward[0])),"Close"]));
+ if(!atDesk(player,target))return;
+ const fresh=read(player);
+ if(choice===0){if(train(fresh,lead)){write(player,fresh);tell(player,"Specialization selected: "+sp.name);}return;}
+ const deal=deals[choice-1],current=offers(fresh,lead)[choice-1];
+ if(!deal||!current||JSON.stringify(deal)!==JSON.stringify(current))return;
+ if(reward(player,[deal.reward],()=>{},[deal.payment]))noteActivity(player,"Trade",sp.name+" supplies");
+}
 async function openBoard(player,target,lead){
   if(activeForms.has(player.id)||!atDesk(player,target))return;
   activeForms.add(player.id);
   try{
-    const pick=await show(player,form("Farfield Dossier",lead+" · Station briefing",["Main campaign","Department assignments","Repeatable field contracts","Field directory and coordinates","Treasure charts","Department standing"]));
+    const pick=await show(player,form("Farfield Dossier",lead+" · Station briefing",["Main campaign","Department assignments","Repeatable field contracts","Field directory and coordinates","Treasure charts","Department standing","Specialization and supplies"]));
     if(!atDesk(player,target))return;
     if(pick===0)await mainMenu(player,target,lead);
     if(pick===1)await sideMenu(player,target,lead);
     if(pick===2)await contractMenu(player,target,lead);
     if(pick===3)await show(player,form("Field directory",journalText(read(player)),["Close"]));
     if(pick===4)await openCharts(player);
+    if(pick===6)await trainingMenu(player,target,lead);
     if(pick===5){const s=read(player);await show(player,form("Department standing",LEADS.map(name=>{const r=standing(s,name);return name+" · "+r.tier+" ("+r.points+")";}).join("\n")+"\n\nMain debriefs, assignments and up to two contracts per department count.",["Close"]));}
   }catch(error){console.warn("[Bearframe campaign] "+error);}
   finally{activeForms.delete(player.id);}

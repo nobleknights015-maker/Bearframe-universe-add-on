@@ -4,6 +4,8 @@ import {ActionFormData} from "@minecraft/server-ui";
 import {read as readCampaign} from "./campaign_state.js";
 import {MAIN,SIDES,CONTRACTS,EVIDENCE} from "./campaign_data.js";
 import {goalCount,standing,LEADS,itemName,rpgState,inventoryCount} from "./rpg_progress.js";
+import {localRows} from "./local_rpg.js";
+import {specialty} from "./rpg_training.js";
 const TERMINAL="bearframe:field_log";
 const OPEN_PAD="bearframe:open_field_log";
 const SAVE="bearframe:activity:";
@@ -128,6 +130,9 @@ function storyText(state,player){
     [state.chapter<0?"Speak to Mira in the Farfield Annex to begin.":"The Last Dispatch complete."];
   for(const side of SIDES)if(state.side[side.id]===1){s.push("\nAssignment · "+side.title+" · "+side.speaker,...side.goals.map(g=>Math.min(g.count,goalCount(side,state,g))+"/"+g.count+" · "+g.label));for(const [id,n] of side.delivery??[])s.push(Math.min(n,inventoryCount(player.getComponent("minecraft:inventory")?.container,id))+"/"+n+" · Deliver "+itemName(id));}
   for(const c of CONTRACTS)if(state.contracts[c.id]?.active)s.push("Contract · "+c.title+" · "+state.contracts[c.id].progress+"/"+c.count);
+  const raw=player.getDynamicProperty("bearframe:field_requests");
+  if(typeof raw==="string")s.push(...localRows(JSON.parse(raw)));
+  const sp=specialty(state);if(sp)s.push("\nSpecialization · "+sp.name+" · Rank "+sp.rank);
   return s.join("\n");
 }
 function menu(title,body,labels){

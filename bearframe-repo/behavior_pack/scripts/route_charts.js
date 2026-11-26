@@ -6,6 +6,7 @@ import {MAIN,SIDES,CONTRACTS,EVIDENCE} from "./campaign_data.js";
 import {read as readCampaign} from "./campaign_state.js";
 import {goalCount} from "./rpg_progress.js";
 
+import {ALL_LOCAL} from "./local_rpg.js";
 const OVERWORLD="minecraft:overworld";
 const DIRECTORY="bearframe:charted_sites:";
 const SAVED="bearframe:quest_charts";
@@ -204,6 +205,7 @@ function activeLists(player,state){
     grid_wayfarer:["Clear Where You Can",["collapsed_transit_bunker","flooded_pump_bunker"]],
     grid_repair_crawler:["Crawler Service Run",staticTargets("power")],
   };
+  for(const q of ALL_LOCAL)localTypes[q.id]=[q.title,q.sites];
   for(const [id,value] of Object.entries(local)){
     if(!value.active||!localTypes[id])continue;
     const [title,sites]=localTypes[id];
