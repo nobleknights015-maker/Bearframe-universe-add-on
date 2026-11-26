@@ -46,6 +46,30 @@
           ]
         }
       ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "empty",
+          "weight": 74
+        },
+        {
+          "type": "item",
+          "name": "bearframe:field_cutter",
+          "weight": 18
+        },
+        {
+          "type": "item",
+          "name": "bearframe:phase_edge",
+          "weight": 7
+        },
+        {
+          "type": "item",
+          "name": "bearframe:watchtower_lance",
+          "weight": 1
+        }
+      ]
     }
   ]
 }
