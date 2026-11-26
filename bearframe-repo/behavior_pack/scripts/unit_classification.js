@@ -221,8 +221,7 @@ const rows=[
     "grid",
     "conditional",
     "Ghost Grid · Sector Guardian",
-    "bearframe:grid_guardian",
-    "minecraft:iron_golem"
+    "bearframe:grid_guardian"
   ],
   [
     "grid",
@@ -307,6 +306,12 @@ const rows=[
     "always",
     "Hush Pendulum",
     "bearframe:echo_hush_pendulum"
+  ],
+  [
+    "grid",
+    "conditional",
+    "Ghost Grid · Settlement Defense Golem",
+    "minecraft:iron_golem"
   ]
 ];
 export const UNIT_TYPES=Object.freeze(Object.fromEntries(rows.flatMap(([faction,disposition,variant,...ids])=>ids.map(id=>[id,Object.freeze({faction,disposition,variant,key:ids[0]})]))));
