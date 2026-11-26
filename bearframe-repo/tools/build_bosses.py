@@ -1,6 +1,7 @@
 """Build the original Bedrock boss rigs, texture atlases and animation sets."""
 import argparse
 import json
+import math
 import random
 from pathlib import Path
 
@@ -257,6 +258,69 @@ def echo_boss_rig(kind):
     yield bone("leg_r",[x,h,0],c(x-1,2,-1,w-1,h-1,3,"dark"),c(x-1,0,-3,w,2,5,"metal"))
 
 
+def reference_echo_rig(kind):
+    """Translate the reference silhouettes into independently animated Bedrock parts."""
+    c = cube
+    base = list(echo_boss_rig(kind))
+    extras = []
+    for name,parent,pivot,mesh in base:
+        x,y,z = pivot
+        if name == "body":
+            mesh += (c(-3,y+1,-4,6,6,2,"dark"),c(-2,y+2,-5,4,4,1,"glow"),
+                     c(-7,y+6,-3,5,3,5,"metal",[0,0,-21]),
+                     c(3,y+5,-3,5,3,6,"metal",[0,0,19]),
+                     c(-6,y+8,0,4,1,4,"moss"),
+                     c(-3,y-3,-3,1,12,1,"rust",[0,0,17]))
+        if name.startswith("leg_"):
+            side = -1 if name.endswith("_l") else 1
+            mesh += (c(x-2,5,-3,4,5,2,"metal",[0,0,side*13]),
+                     c(x-1,8,-4,2,2,1,"glow"),
+                     c(x-2,0,-5,2,2,3,"metal"),c(x+1,0,-4,2,2,3,"rust"))
+        if name == "drape":
+            mesh += (c(x-4,max(1,y-20),z+1,2,15,1,"cloth",[12,0,-15]),
+                     c(x+4,max(1,y-17),z+1,2,12,1,"cloth",[17,0,15]),
+                     c(x-2,y-10,z+3,1,9,1,"moss",[15,0,8]))
+        if kind == "echo_seam_riven" and name == "arm_r":
+            mesh = mesh[:1] + (c(6,8,-3,7,7,6,"dark"), c(7,9,-4,5,4,1,"glow"),
+                               c(8,1,-4,5,9,3,"rust"),c(12,0,-4,3,9,3,"metal",[0,0,12]),
+                               c(7,2,-4,2,3,3,"metal"),c(7,7,-4,2,3,3,"metal"))
+        if name == "head" and kind in ("echo_seam_riven","echo_hush_pendulum"):
+            mesh += (c(x-4,y+1,-6,4,7,2,"metal",[0,0,-14]),
+                     c(x+1,y+2,-6,3,6,2,"metal",[0,0,11]),
+                     c(x-1,y+1,-7,1,4,1,"glow"))
+        if kind == "echo_veil_regent" and name == "head":
+            mesh += tuple(c(dx,36+(3-abs(dx)//2),1,1,5,2,"rust",[0,0,-dx*5])
+                          for dx in (-6,-3,0,3,6))
+            mesh += (c(-1,31,-7,2,4,1,"glow"),c(-3,32,-7,6,1,1,"glow"))
+        if kind == "echo_veil_regent" and name == "arm_r":
+            mesh += (c(3,33,-3,2,7,3,"metal",[0,0,-23]), c(11,33,-3,2,7,3,"metal",[0,0,23]),
+                     c(5,38,-3,6,2,3,"metal"),c(7,34,-3,3,3,3,"glow"))
+        yield name,parent,pivot,mesh
+
+    if kind in ("echo_hush_pendulum","echo_rubble_rook"):
+        center = 28 if kind == "echo_hush_pendulum" else 25
+        radius = 13 if kind == "echo_hush_pendulum" else 10
+        z = 6
+        for side,start in (("l",102),("r",-42)):
+            plates = []
+            for index in range(5):
+                angle = start + index*24
+                theta = math.radians(angle)
+                x,y = radius*math.cos(theta),center+radius*math.sin(theta)
+                plates.extend((c(round(x)-3,round(y)-2,z,6,4,3,"metal",[0,0,angle+90]),
+                               c(round(x)-2,round(y)-1,z-1,4,2,2,"glow",[0,0,angle+90])))
+            extras.append(bone("relay_"+side,[0,center,z],*plates))
+    if kind == "echo_rubble_rook":
+        # Ground-reaching support limbs under the cloak on the broad salvage frame.
+        for side,sign in (("l",-1),("r",1)):
+            x = 11*sign
+            extras.append(bone("brace_"+side,[7*sign,18,5],
+                               c(x-2,6,5,4,15,4,"dark",[0,0,sign*-26]),
+                               c(x-3,2,7,6,8,5,"metal",[0,0,sign*15]),
+                               c(x-3,0,6,6,3,7,"rust")))
+    yield from extras
+
+
 def texture_and_geometry(spec):
     rng = random.Random(spec["id"])
     atlas = Image.new("RGBA", (SIZE, SIZE))
@@ -351,6 +415,11 @@ def animation_set(spec):
     if sector == "echo_hush_pendulum":
         walk["counterweight"] = {"rotation":["math.sin(query.anim_time * 409) * 46",0,12]}
         walk["head"] = {"rotation":["math.sin(query.anim_time * 818) * 8",-13,17]}
+    for side,sign in (("l",1),("r",-1)):
+        if "relay_"+side in rig:
+            idle["relay_"+side] = {"rotation":[0,sign*9,"math.sin(query.anim_time * 150) * 4"]}
+        if "brace_"+side in rig:
+            walk["brace_"+side] = {"rotation":[f"math.sin(query.anim_time * 281) * {17*sign}",0,0]}
     animations = {"idle":dict(loop=True, animation_length=2.4,bones=idle),
                   "walk":dict(loop=True, animation_length=gait,bones=walk)}
     for idx, (move, poses) in enumerate(spec["moves"]):
@@ -471,7 +540,11 @@ def main():
             spec["rig"] = list(machine_rigs[spec["id"]]())
             spec["palette"] = ["#b9b7a1","#925d37","#54d8f0","#5b7135","#282d30"]
         else:
-            spec["rig"] = list(echo_boss_rig(spec["id"]))
+            spec["rig"] = list(reference_echo_rig(spec["id"]))
+            glow = {"echo_seam_riven":"#49d6e3","echo_veil_regent":"#ce73fa",
+                    "echo_rubble_rook":"#ae5df0","echo_hush_pendulum":"#f47755"}[spec["id"]]
+            spec["palette"] = ["#bdb4a9","#865c40",glow,"#65404e","#2b272b"]
+            spec["color"] = glow
         build(spec)
     active = [{"death":"!query.is_alive"},{"attack0":"query.property('bearframe:boss_move') == 1"},
               {"attack1":"query.property('bearframe:boss_move') == 2"}]

@@ -57,6 +57,20 @@
               0
             ]
           }
+        },
+        "relay_l": {
+          "rotation": [
+            0,
+            9,
+            "math.sin(query.anim_time * 150) * 4"
+          ]
+        },
+        "relay_r": {
+          "rotation": [
+            0,
+            -9,
+            "math.sin(query.anim_time * 150) * 4"
+          ]
         }
       }
     },
@@ -108,6 +122,20 @@
           "rotation": [
             18,
             "math.sin(query.anim_time * 310) * 12",
+            0
+          ]
+        },
+        "brace_l": {
+          "rotation": [
+            "math.sin(query.anim_time * 281) * 17",
+            0,
+            0
+          ]
+        },
+        "brace_r": {
+          "rotation": [
+            "math.sin(query.anim_time * 281) * -17",
+            0,
             0
           ]
         }
