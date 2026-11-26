@@ -1,0 +1,437 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.bearframe.held.field_cutter.first": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -6,
+            0,
+            -7
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.7656
+        }
+      }
+    },
+    "animation.bearframe.held.field_cutter.third": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -7,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.87
+        }
+      }
+    },
+    "animation.bearframe.held.phase_edge.first": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -6,
+            0,
+            -7
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.7215999999999999
+        }
+      }
+    },
+    "animation.bearframe.held.phase_edge.third": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -7,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.82
+        }
+      }
+    },
+    "animation.bearframe.held.watchtower_lance.first": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -6,
+            0,
+            -7
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.7215999999999999
+        }
+      }
+    },
+    "animation.bearframe.held.watchtower_lance.third": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -7,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.82
+        }
+      }
+    },
+    "animation.bearframe.held.foundry_prototype.first": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -6,
+            0,
+            -7
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.7215999999999999
+        }
+      }
+    },
+    "animation.bearframe.held.foundry_prototype.third": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -7,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.82
+        }
+      }
+    },
+    "animation.bearframe.held.palinode_ram.first": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -6,
+            0,
+            -7
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.7215999999999999
+        }
+      }
+    },
+    "animation.bearframe.held.palinode_ram.third": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -7,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.82
+        }
+      }
+    },
+    "animation.bearframe.held.silt_discharge.first": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -6,
+            0,
+            -7
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.7215999999999999
+        }
+      }
+    },
+    "animation.bearframe.held.silt_discharge.third": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -7,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.82
+        }
+      }
+    },
+    "animation.bearframe.held.gantry_rake.first": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -6,
+            0,
+            -7
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.7215999999999999
+        }
+      }
+    },
+    "animation.bearframe.held.gantry_rake.third": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -7,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.82
+        }
+      }
+    },
+    "animation.bearframe.held.cinder_inductor.first": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -6,
+            0,
+            -7
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.7215999999999999
+        }
+      }
+    },
+    "animation.bearframe.held.cinder_inductor.third": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -7,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.82
+        }
+      }
+    },
+    "animation.bearframe.held.seam_splitter.first": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -6,
+            0,
+            -7
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.7215999999999999
+        }
+      }
+    },
+    "animation.bearframe.held.seam_splitter.third": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -7,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.82
+        }
+      }
+    },
+    "animation.bearframe.held.veil_anchor.first": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -6,
+            0,
+            -7
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.7215999999999999
+        }
+      }
+    },
+    "animation.bearframe.held.veil_anchor.third": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -7,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.82
+        }
+      }
+    },
+    "animation.bearframe.held.rook_hammer.first": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -6,
+            0,
+            -7
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.7215999999999999
+        }
+      }
+    },
+    "animation.bearframe.held.rook_hammer.third": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -7,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.82
+        }
+      }
+    },
+    "animation.bearframe.held.hush_pendulum.first": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -6,
+            0,
+            -7
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.6864
+        }
+      }
+    },
+    "animation.bearframe.held.hush_pendulum.third": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -7,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.78
+        }
+      }
+    }
+  }
+}

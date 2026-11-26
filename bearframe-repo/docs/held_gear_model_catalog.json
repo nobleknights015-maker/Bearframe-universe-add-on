@@ -1,0 +1,62 @@
+[
+  {
+    "id": "field_cutter",
+    "cubes": 34,
+    "accent": "#64f4c8"
+  },
+  {
+    "id": "phase_edge",
+    "cubes": 21,
+    "accent": "#59dfff"
+  },
+  {
+    "id": "watchtower_lance",
+    "cubes": 25,
+    "accent": "#f48bff"
+  },
+  {
+    "id": "foundry_prototype",
+    "cubes": 37,
+    "accent": "#ffc951"
+  },
+  {
+    "id": "palinode_ram",
+    "cubes": 27,
+    "accent": "#f45ae4"
+  },
+  {
+    "id": "silt_discharge",
+    "cubes": 28,
+    "accent": "#ffd05a"
+  },
+  {
+    "id": "gantry_rake",
+    "cubes": 46,
+    "accent": "#d478f7"
+  },
+  {
+    "id": "cinder_inductor",
+    "cubes": 69,
+    "accent": "#ff9b36"
+  },
+  {
+    "id": "seam_splitter",
+    "cubes": 25,
+    "accent": "#f478f5"
+  },
+  {
+    "id": "veil_anchor",
+    "cubes": 47,
+    "accent": "#ffd45f"
+  },
+  {
+    "id": "rook_hammer",
+    "cubes": 24,
+    "accent": "#d971e7"
+  },
+  {
+    "id": "hush_pendulum",
+    "cubes": 44,
+    "accent": "#ffcd58"
+  }
+]

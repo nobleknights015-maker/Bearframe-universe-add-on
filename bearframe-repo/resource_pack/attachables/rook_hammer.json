@@ -1,0 +1,39 @@
+{
+  "format_version": "1.20.30",
+  "minecraft:attachable": {
+    "description": {
+      "identifier": "bearframe:rook_hammer",
+      "item": {
+        "bearframe:rook_hammer": "query.is_owner_identifier_any('minecraft:player')"
+      },
+      "materials": {
+        "default": "entity",
+        "enchanted": "entity_alphatest_glint"
+      },
+      "textures": {
+        "default": "textures/bearframe/held/rook_hammer",
+        "enchanted": "textures/misc/enchanted_item_glint"
+      },
+      "geometry": {
+        "default": "geometry.bearframe.held.rook_hammer"
+      },
+      "animations": {
+        "first": "animation.bearframe.held.rook_hammer.first",
+        "third": "animation.bearframe.held.rook_hammer.third"
+      },
+      "scripts": {
+        "animate": [
+          {
+            "first": "context.is_first_person == 1.0"
+          },
+          {
+            "third": "context.is_first_person == 0.0"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.item_default"
+      ]
+    }
+  }
+}
