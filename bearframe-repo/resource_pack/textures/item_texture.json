@@ -61,6 +61,21 @@
     },
     "bearframe_hush_pendulum": {
       "textures": "textures/bearframe/gear/hush_pendulum"
+    },
+    "bearframe_cyber_katana_mk1": {
+      "textures": "textures/bearframe/gear/cyber_katana_mk1"
+    },
+    "bearframe_cyber_katana_mk2": {
+      "textures": "textures/bearframe/gear/cyber_katana_mk2"
+    },
+    "bearframe_cyber_katana_mk3": {
+      "textures": "textures/bearframe/gear/cyber_katana_mk3"
+    },
+    "bearframe_cyber_katana_mk4": {
+      "textures": "textures/bearframe/gear/cyber_katana_mk4"
+    },
+    "bearframe_cyber_katana_mk5": {
+      "textures": "textures/bearframe/gear/cyber_katana_mk5"
     }
   }
 }

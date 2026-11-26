@@ -1,0 +1,132 @@
+[
+  {
+    "id": "cyber_katana_mk1",
+    "name": "MK I · Salvage Cyber Katana",
+    "tier": "Common",
+    "color": "§f",
+    "accent": "#afcfdb",
+    "damage": 4,
+    "durability": 220,
+    "pattern": [
+      "  I",
+      " IA",
+      "S  "
+    ],
+    "ingredients": {
+      "I": "minecraft:iron_ingot",
+      "A": "bearframe:salvaged_alloy",
+      "S": "minecraft:stick"
+    },
+    "repair": "minecraft:iron_ingot",
+    "blade": 14,
+    "width": 2.05,
+    "curve": 0.8,
+    "guard": 3.6,
+    "cubes": 36
+  },
+  {
+    "id": "cyber_katana_mk2",
+    "name": "MK II · Pulse Cyber Katana",
+    "tier": "Uncommon",
+    "color": "§a",
+    "accent": "#68e8a1",
+    "damage": 5,
+    "durability": 430,
+    "pattern": [
+      " R ",
+      "AKA",
+      " C "
+    ],
+    "ingredients": {
+      "R": "minecraft:redstone",
+      "A": "bearframe:salvaged_alloy",
+      "K": "bearframe:cyber_katana_mk1",
+      "C": "minecraft:copper_ingot"
+    },
+    "repair": "bearframe:salvaged_alloy",
+    "blade": 15,
+    "width": 2.2,
+    "curve": 1.1,
+    "guard": 4,
+    "cubes": 38
+  },
+  {
+    "id": "cyber_katana_mk3",
+    "name": "MK III · Phase Cyber Katana",
+    "tier": "Rare",
+    "color": "§b",
+    "accent": "#4cdcf9",
+    "damage": 7,
+    "durability": 850,
+    "pattern": [
+      " D ",
+      "LKL",
+      " A "
+    ],
+    "ingredients": {
+      "D": "minecraft:diamond",
+      "L": "bearframe:legacy_cell",
+      "K": "bearframe:cyber_katana_mk2",
+      "A": "bearframe:salvaged_alloy"
+    },
+    "repair": "bearframe:salvaged_alloy",
+    "blade": 16,
+    "width": 2.35,
+    "curve": 1.35,
+    "guard": 4.4,
+    "cubes": 48
+  },
+  {
+    "id": "cyber_katana_mk4",
+    "name": "MK IV · Rift Cyber Katana",
+    "tier": "Epic",
+    "color": "§d",
+    "accent": "#d480f8",
+    "damage": 8,
+    "durability": 1600,
+    "pattern": [
+      "DLD",
+      "AKA",
+      " L "
+    ],
+    "ingredients": {
+      "D": "minecraft:diamond",
+      "L": "bearframe:legacy_cell",
+      "A": "bearframe:salvaged_alloy",
+      "K": "bearframe:cyber_katana_mk3"
+    },
+    "repair": "bearframe:salvaged_alloy",
+    "blade": 17,
+    "width": 2.45,
+    "curve": 1.65,
+    "guard": 4.9,
+    "cubes": 50
+  },
+  {
+    "id": "cyber_katana_mk5",
+    "name": "MK V · Zenith Cyber Katana",
+    "tier": "Legendary",
+    "color": "§6",
+    "accent": "#ffc85c",
+    "damage": 9,
+    "durability": 0,
+    "pattern": [
+      "NLN",
+      "LKL",
+      "DAD"
+    ],
+    "ingredients": {
+      "N": "minecraft:netherite_ingot",
+      "L": "bearframe:legacy_cell",
+      "K": "bearframe:cyber_katana_mk4",
+      "D": "minecraft:diamond",
+      "A": "bearframe:salvaged_alloy"
+    },
+    "repair": null,
+    "blade": 18,
+    "width": 2.55,
+    "curve": 1.9,
+    "guard": 5.2,
+    "cubes": 52
+  }
+]

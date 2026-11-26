@@ -1,0 +1,3 @@
+# Cyber-katana progression — 0.11.5 candidate
+
+Five craftable tiers from Common salvage to Legendary Zenith. Each upgrade consumes the previous katana plus ingredients in a normal crafting table. Crafting produces a fresh item; enchantments and custom names on the old sword do not transfer. MK V has no durability component, matching existing Legendary gear. Each has separate 16×16 inventory art and original 64×64 material texture, single-edge curved 3D blade, differentiated guard and grip detail, and first/third-person attachable poses. Existing drops and other weapons unchanged. No extra scripts, custom UI, or physics. Static tests validate recipe links, item data, geometry and texture decoding; live hand appearance and crafting require Bedrock QA.

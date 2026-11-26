@@ -117,3 +117,10 @@ item.bearframe:seam_splitter.name=§d[Epic] Seam-Riven Splitblade§r
 item.bearframe:veil_anchor.name=§6[Legendary] Veil Regent Anchor Staff§r
 item.bearframe:rook_hammer.name=§d[Epic] Rubble Rook Breaker§r
 item.bearframe:hush_pendulum.name=§6[Legendary] Hush Pendulum Arc§r
+
+# Craftable cyber-katana series
+item.bearframe:cyber_katana_mk1.name=§f[Common] MK I · Salvage Cyber Katana§r
+item.bearframe:cyber_katana_mk2.name=§a[Uncommon] MK II · Pulse Cyber Katana§r
+item.bearframe:cyber_katana_mk3.name=§b[Rare] MK III · Phase Cyber Katana§r
+item.bearframe:cyber_katana_mk4.name=§d[Epic] MK IV · Rift Cyber Katana§r
+item.bearframe:cyber_katana_mk5.name=§6[Legendary] MK V · Zenith Cyber Katana§r
