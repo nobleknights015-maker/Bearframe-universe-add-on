@@ -1,3 +1,4 @@
+import {discoverBoss} from "./boss_encounters.js";
 import {installBossCombat} from "./boss_combat.js";
 import {ARCHIVE_SITE_IDS} from "./campaign_data.js";
 import {fieldSound} from "./field_audio.js";
@@ -231,11 +232,14 @@ system.runInterval(()=>{
     const a={x:Math.floor(loc.x)-40,y:Math.max(dim.heightRange.min,y-24),z:Math.floor(loc.z)-40};
     const b={x:Math.floor(loc.x)+40,y:Math.min(dim.heightRange.max-1,y+19),z:Math.floor(loc.z)+40};
     if(!registeredSiteMarkers.length)return;
-    for(const p of dim.getBlocks(new BlockVolume(a,b),{includeTypes:registeredSiteMarkers},true).getBlockLocationIterator()){
-      const marker=loaded(dim,p);
+    for(const markerPosition of dim.getBlocks(new BlockVolume(a,b),{includeTypes:registeredSiteMarkers},true).getBlockLocationIterator()){
+      const marker=loaded(dim,markerPosition);
       if(marker?.typeId==="bearframe:field_archive"){
         const id=ARCHIVE_SITE_IDS[marker.permutation.getState("bearframe:record")];
-        if(id)registerChartSite(id,dim.id,marker.location);
+        if(id){
+          registerChartSite(id,dim.id,marker.location);
+          attempt(()=>discoverBoss(id,marker,p));
+        }
         continue;
       }
       if(marker?.typeId===SPILLWAY_MARKER){
@@ -244,12 +248,12 @@ system.runInterval(()=>{
       }
       if(marker?.typeId===APPROACH_MARKER){gradeApproach(marker);continue;}
       if(marker?.typeId===REGION_ANCHOR){
-        const region=regionAt(dim,at(p,[0,2,0]));
+        const region=regionAt(dim,at(markerPosition,[0,2,0]));
         if(region){if(region.def.id!=="spillway_bunker")registerChartSite(region.def.id,dim.id,region.pos);prepareBunker(region);greetRegion(region);}
         continue;
       }
-      const site=resolveSite(dim,at(p,[0,2,0]));
-      if(site){registerChartSite("maintenance_relay",dim.id,at(p,[0,2,0]));activateSite(site);}
+      const site=resolveSite(dim,at(markerPosition,[0,2,0]));
+      if(site){registerChartSite("maintenance_relay",dim.id,at(markerPosition,[0,2,0]));activateSite(site);}
     }
     cells.set(p.id,{key,tick:system.currentTick});
     offerRelayLead(p);

@@ -89,5 +89,94 @@ export const BOSS_MOVES = {
         90
       ]
     }
+  ],
+  "bearframe:grid_gantry_marrow": [
+    {
+      "name": "Load Drop",
+      "shape": "mark",
+      "radius": 11,
+      "windup": 38,
+      "end": 70,
+      "damage": 13,
+      "width": 2.7
+    },
+    {
+      "name": "Gantry Rake",
+      "shape": "cone",
+      "radius": 6.4,
+      "windup": 31,
+      "end": 63,
+      "damage": 10,
+      "dot": 0.05
+    }
+  ],
+  "bearframe:grid_cinder_spindle": [
+    {
+      "name": "Flywheel Burst",
+      "shape": "ring",
+      "radius": 6.2,
+      "windup": 32,
+      "end": 59,
+      "damage": 10,
+      "inner": 1.8,
+      "minRange": 1.8
+    },
+    {
+      "name": "Induction Lance",
+      "shape": "lane",
+      "radius": 12,
+      "windup": 34,
+      "end": 64,
+      "damage": 9,
+      "width": 1.35,
+      "effect": [
+        "slowness",
+        55
+      ]
+    }
+  ],
+  "bearframe:echo_rubble_rook": [
+    {
+      "name": "Barricade Rush",
+      "shape": "lane",
+      "radius": 7.0,
+      "windup": 26,
+      "end": 57,
+      "damage": 11,
+      "width": 1.8,
+      "drive": 0.75
+    },
+    {
+      "name": "Fallen Parapet",
+      "shape": "ring",
+      "radius": 4.6,
+      "windup": 33,
+      "end": 66,
+      "damage": 10
+    }
+  ],
+  "bearframe:echo_hush_pendulum": [
+    {
+      "name": "Deadweight Arc",
+      "shape": "cone",
+      "radius": 5.8,
+      "windup": 28,
+      "end": 60,
+      "damage": 12,
+      "dot": 0.42
+    },
+    {
+      "name": "Missing Beat",
+      "shape": "mark",
+      "radius": 12,
+      "windup": 36,
+      "end": 63,
+      "damage": 8,
+      "width": 2.05,
+      "effect": [
+        "weakness",
+        80
+      ]
+    }
   ]
 };

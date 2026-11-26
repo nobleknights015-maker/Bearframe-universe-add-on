@@ -1,4 +1,4 @@
-"""Build the four original Bedrock boss rigs, texture atlases and animation sets."""
+"""Build the original Bedrock boss rigs, texture atlases and animation sets."""
 import json
 import random
 from pathlib import Path
@@ -143,6 +143,108 @@ bosses = [
 ]
 
 
+def crane_rig():
+    rig = [chassis(cube(-10, 10, -9, 20, 7, 18, "rust"),
+                   cube(-7, 17, -7, 14, 6, 14), cube(-4, 19, -8, 8, 3, 1, "glow")),
+           bone("boom", [0, 21, 2], cube(-3, 20, -20, 6, 6, 24),
+                cube(-4, 18, -18, 8, 3, 14, "cloth")),
+           bone("claw", [0, 20, -18], cube(-8, 13, -22, 5, 10, 4, "rust"),
+                cube(3, 13, -22, 5, 10, 4, "rust"), cube(-7, 12, -21, 14, 3, 3, "glow"),
+                parent="boom")]
+    for side, x in (("l", -13), ("r", 8)):
+        for row, z in (("f", -10), ("b", 6)):
+            rig.append(bone("leg_" + side + row, [x+2, 13, z+2],
+                       cube(x, 0, z, 5, 15, 5), cube(x-1, 0, z-2, 7, 3, 7, "rust")))
+    return rig
+
+
+def spindle_rig():
+    rig = [chassis(cube(-7, 8, -7, 14, 17, 14, "rust"),
+                   cube(-5, 17, -8, 10, 4, 1, "glow"), cube(-4, 3, -4, 8, 7, 8, "dark")),
+           bone("crown", [0, 23, 0], cube(-11, 23, -11, 22, 4, 22),
+                cube(-6, 26, -6, 12, 3, 12, "cloth"), cube(-2, 28, -2, 4, 5, 4, "glow"))]
+    for name, x, z, w, d in (("north",-3,-17,6,10), ("south",-3,7,6,10),
+                            ("west",-17,-3,10,6), ("east",7,-3,10,6)):
+        rig.append(bone(name, [0, 15, 0], cube(x, 13, z, w, 5, d),
+                        cube(x, 11, z, w, 2, d, "glow")))
+    return rig
+
+
+def variant_echo(rook):
+    rig = echo_rig(False)
+    if rook:
+        rig.extend([
+            bone("shield", [-9, 14, -2], cube(-15, 5, -5, 13, 20, 3, "rust"),
+                 cube(-16, 15, -6, 5, 9, 2), cube(-13, 8, -6, 10, 2, 1, "glow"), parent="arm_l"),
+            bone("collar", [0, 22, 0], cube(-10, 20, 1, 19, 5, 5, "cloth")),
+        ])
+    else:
+        rig.extend([
+            bone("counterweight", [8, 16, 0], cube(9, 3, -2, 2, 16, 2, "dark"),
+                 cube(7, 2, -4, 6, 5, 6, "rust"), cube(8, 3, -5, 3, 2, 1, "glow"), parent="arm_r"),
+            bone("hood_tail", [-4, 29, 3], cube(-8, 16, 3, 4, 15, 3, "cloth"),
+                 cube(-7, 9, 4, 2, 9, 2, "rust"), parent="head"),
+        ])
+    return rig
+
+
+bosses.extend([
+    dict(id="grid_gantry_marrow", title="Gantry Marrow", family="ghost_grid", health=215, speed=.19,
+         width=2.0, height=1.9, color="#a5f8a3",
+         palette=["#4f5b52","#786352","#a5f8a3","#415b3b","#293331"], rig=crane_rig(),
+         moves=[
+            attack("Load Drop", "mark", 11, 38, 70, 13,
+                   {"boom": ([-47,-14,0], [23,0,0], [-12,8,0]),
+                    "claw": ([32,0,-9], [-44,0,0], [21,0,0]), "body": ([-13,0,0],[13,0,0],[-4,0,0])}, width=2.7),
+            attack("Gantry Rake", "cone", 6.4, 31, 63, 10,
+                   {"boom": ([-19,-65,14], [7,69,-8], [-17,19,0]),
+                    "claw": ([-28,0,-24], [24,0,21], [-6,0,0]), "body": ([0,-18,9],[0,22,-10],[0,0,0])},
+                   dot=.05),
+         ]),
+    dict(id="grid_cinder_spindle", title="Cinder Spindle", family="ghost_grid", health=178, speed=.27,
+         width=1.8, height=2.1, color="#ffa964",
+         palette=["#565052","#78503d","#ffa964","#3a4d43","#282d2d"], rig=spindle_rig(),
+         moves=[
+            attack("Flywheel Burst", "ring", 6.2, 32, 59, 10,
+                   {"crown": ([20,-95,0],[0,114,0],[0,183,0]), "body": ([0,-26,11],[0,56,-8],[0,105,0]),
+                    **{side: ([0,0,21],[0,0,-27],[0,0,8]) for side in ("north","south","east","west")}},
+                   inner=1.8, minRange=1.8),
+            attack("Induction Lance", "lane", 12, 34, 64, 9,
+                   {"crown": ([-37,0,0],[45,75,0],[13,100,0]),
+                    "body": ([-24,0,0],[16,0,0],[6,0,0]), "north": ([-46,0,0],[14,0,0],[-9,0,0])},
+                   width=1.35, effect=["slowness",55]),
+         ]),
+    dict(id="echo_rubble_rook", title="Rubble Rook", family="echo_frame", health=218, speed=.19,
+         width=1.1, height=2.1, color="#a0c8ff",
+         palette=["#544f63","#816954","#a0c8ff","#464749","#292733"], rig=variant_echo(True),
+         moves=[
+            attack("Barricade Rush", "lane", 7.0, 26, 57, 11,
+                   {"arm_l": ([-76,-16,-40],[-98,16,-13],[-44,-12,-12]),
+                    "shield": ([0,38,0],[0,-10,0],[11,15,0]), "body": ([-7,0,5],[27,0,-10],[-6,0,2])},
+                   width=1.8, drive=.75),
+            attack("Fallen Parapet", "ring", 4.6, 33, 66, 10,
+                   {"arm_l": ([-165,18,-38],[45,-24,24],[12,0,0]),
+                    "shield": ([-24,0,14],[31,0,0],[0,0,0]), "body": ([-17,0,-17],[31,0,15],[8,0,0]),
+                    "head": ([-16,25,0],[23,-17,-15],[-8,0,0])}),
+         ]),
+    dict(id="echo_hush_pendulum", title="Hush Pendulum", family="echo_frame", health=162, speed=.26,
+         width=.95, height=2.15, color="#b9f5ac",
+         palette=["#5d6658","#7b6952","#b9f5ac","#343b35","#252b29"], rig=variant_echo(False),
+         moves=[
+            attack("Deadweight Arc", "cone", 5.8, 28, 60, 12,
+                   {"body": ([-17,-45,-15],[22,68,9],[-4,19,-9]),
+                    "arm_r": ([-126,-31,33],[63,44,31],[26,0,11]),
+                    "counterweight": ([-46,29,0],[47,-32,24],[-25,0,0]),
+                    "hood_tail": ([32,0,0],[-33,0,15],[5,0,0])}, dot=.42),
+            attack("Missing Beat", "mark", 12, 36, 63, 8,
+                   {"body": ([13,0,-22],[-27,0,19],[4,0,-7]), "head": ([-19,-35,18],[19,32,-24],[2,0,9]),
+                    "arm_r": ([41,25,14],[-146,-31,19],[-67,15,0]),
+                    "counterweight": ([36,-14,0],[-37,23,-16],[19,0,0])},
+                   width=2.05, effect=["weakness",80]),
+         ]),
+])
+
+
 def texture_and_geometry(spec):
     rng = random.Random(spec["id"])
     atlas = Image.new("RGBA", (SIZE, SIZE))
@@ -178,7 +280,8 @@ def animation_set(spec):
     sector = spec["id"]
     rig = {entry[0] for entry in spec["rig"]}
     echo = spec["family"] == "echo_frame"
-    gait = 1.1 if sector == "echo_veil_regent" else .67 if echo else 1.25
+    gait = {"echo_veil_regent": 1.1, "echo_rubble_rook": 1.28, "echo_hush_pendulum": .88}.get(
+        sector, .67 if echo else 1.25)
     idle_body = ({"0.0":[0,0,0], "0.8":[2,0,-3], "1.0":[-3,8,5], "1.18":[1,-4,-2], "2.4":[0,0,0]}
                  if echo else [0,0,"math.sin(query.anim_time * 110) * 2"])
     idle = {"body":{"rotation":idle_body}}
@@ -200,11 +303,26 @@ def animation_set(spec):
                     "position":[0,f"math.max(0, {wave}) * {4 if i==1 else 2.7}",0]}
                 foot_wave = f"math.sin(query.anim_time * 640 + {phase}) * 6" if i==1 else "0"
                 walk[f"foot_{i}_{side}"] = {"rotation":[f"{wave} * 13 + {foot_wave}",0,0]}
+    elif sector == "grid_gantry_marrow":
+        idle["boom"] = {"rotation": ["math.sin(query.anim_time * 150) * 5",0,0]}
+        walk["boom"] = {"rotation": [-12,"math.sin(query.anim_time * 280) * 7",0]}
+        for leg, sign in (("lf",1),("lb",-1),("rf",-1),("rb",1)):
+            walk["leg_"+leg] = {"rotation": [f"math.sin(query.anim_time * 288) * {23*sign}",0,0]}
+    elif sector == "grid_cinder_spindle":
+        idle["crown"] = {"rotation":[0,"query.anim_time * 150",0]}
+        walk["crown"] = {"rotation":[0,"query.anim_time * 288",0]}
+        walk["body"] = {"position":[0,2,0],"rotation":[12,0,"math.sin(query.anim_time * 288) * 7"]}
     else:
         walk["body"]["rotation"] = [0,0,"math.sin(query.anim_time * 225) * 4"]
         walk["rotor"] = {"rotation":[-4,"math.sin(query.anim_time * 170) * 6",0]}
         for side, sign in (("l",1),("r",-1)):
             walk["tread_"+side] = {"position":[0,0,f"math.sin(query.anim_time * 230 + {90*sign}) * 0.7"]}
+    if sector == "echo_rubble_rook":
+        walk["arm_l"] = {"rotation":[-39,-8,-14]}
+        walk["body"]["rotation"] = [13,0,"math.sin(query.anim_time * 281) * 8"]
+    if sector == "echo_hush_pendulum":
+        walk["counterweight"] = {"rotation":["math.sin(query.anim_time * 409) * 46",0,12]}
+        walk["head"] = {"rotation":["math.sin(query.anim_time * 818) * 8",-13,17]}
     animations = {"idle":dict(loop=True, animation_length=2.4,bones=idle),
                   "walk":dict(loop=True, animation_length=gait,bones=walk)}
     for idx, (move, poses) in enumerate(spec["moves"]):
