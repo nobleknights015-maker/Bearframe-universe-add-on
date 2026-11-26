@@ -29,47 +29,6 @@ def chassis(*cubes):
     return bone("body", [0, 16, 0], *cubes, parent="root")
 
 
-def spider_legs():
-    for row, z in enumerate((-9, 0, 9)):
-        for side in (-1, 1):
-            suffix = f"{row}_{'l' if side < 0 else 'r'}"
-            yield bone("leg_" + suffix, [side*8, 14, z],
-                       cube(-17 if side < 0 else 7, 12, z-2, 10, 4, 4),
-                       cube(-20 if side < 0 else 15, 7, z-2, 5, 8, 5, "rust"))
-            yield bone("foot_" + suffix, [side*17, 9, z],
-                       cube(-23 if side < 0 else 16, 0, z-2, 7, 11, 4),
-                       cube(-24 if side < 0 else 16, 0, z-3, 8, 3, 6, "rust"),
-                       parent="leg_" + suffix)
-
-
-def echo_rig(regent):
-    return [
-        chassis(cube(-5, 12, -2, 10, 13, 5), cube(-5, 16, -3, 10, 8, 6, "cloth"),
-                cube(-2, 19, -4, 4, 3, 1, "glow")),
-        bone("head", [0, 25, 0], cube(-4, 25, -4, 8, 8, 8, "cloth"),
-             cube(-3, 26, -5, 6, 4, 2, "dark"),
-             cube(-4 if regent else 1, 27, -5.2, 3, 1, 1, "glow"),
-             cube(-6, 29, -1, 2, 3, 3, "rust"),
-             cube(4, 29, -1, 2, 2, 3, "glow"),
-             *([cube(-6, 31, 0, 2, 7, 2, "rust"), cube(3, 32, 1, 2, 5, 2, "metal")] if regent else [])),
-        bone("arm_l", [-6, 23, 0], cube(-9, 13, -2, 4, 11, 4, "cloth"),
-             cube(-10, 17, -3, 5, 6, 5, "rust"),
-             cube(-9, 10, -2, 4, 4, 4, "metal")),
-        bone("arm_r", [6, 23, 0], cube(5, 12, -2, 4, 11, 4),
-             cube(5, 11, -3, 4, 6, 5, "glow"),
-             *([cube(7, 0, 0, 2, 24, 2, "rust"), cube(5, 23, -2, 6, 7, 6, "metal"),
-                cube(7, 25, -3, 2, 3, 1, "glow")] if regent else
-               [cube(7, 5, -4, 2, 16, 2, "glow"), cube(6, 4, -4, 2, 5, 2, "metal")])),
-        bone("leg_l", [-2.5, 12, 0], cube(-5, 0, -2, 4, 13, 4),
-             cube(-5, 0, -4, 4, 3, 6, "rust")),
-        bone("leg_r", [2.5, 12, 0], cube(1, 0, -2, 4, 13, 4, "dark"),
-             cube(1, 0, -4, 4, 3, 6)),
-        bone("drape", [0, 24, 3], cube(-6, 5 if regent else 10, 3, 6, 19 if regent else 14, 2, "cloth"),
-             cube(0, 9 if regent else 15, 3, 6, 15 if regent else 9, 2, "cloth"),
-             cube(-5, 4 if regent else 8, 5, 2, 9, 1, "rust")),
-    ]
-
-
 # Each tuple defines the exact strike frame and animation end in server ticks.
 def attack(name, shape, radius, windup, end, damage, poses, **options):
     return dict(name=name, shape=shape, radius=radius, windup=windup, end=end,
@@ -80,13 +39,6 @@ bosses = [
     dict(id="grid_palinode", title="Palinode-6", family="ghost_grid", health=180, speed=.22,
          width=2.2, height=1.55, color="#60e8da",
          palette=["#55594b", "#766347", "#60e8da", "#3e5137", "#292e29"],
-         rig=[chassis(cube(-11, 10, -13, 22, 9, 26), cube(-9, 18, -10, 18, 5, 20, "rust"),
-                      cube(-10, 20, -6, 6, 4, 16, "cloth")),
-              bone("head", [0, 16, -13], cube(-7, 13, -20, 14, 7, 9),
-                   cube(-5, 15, -21, 10, 2, 1, "glow")),
-              bone("ram", [0, 13, -11], cube(-12, 7, -18, 24, 4, 7, "rust"),
-                   cube(-11, 8, -21, 5, 5, 5), cube(6, 8, -21, 5, 5, 5)),
-              *spider_legs()],
          moves=[
              attack("Piston Ram", "lane", 9, 24, 49, 9,
                     {"body": ([14, 0, 0], [-11, 0, 0], [6, 0, 0]), "ram": ([-34,0,0], [28,0,0], [10,0,0]),
@@ -99,15 +51,6 @@ bosses = [
     dict(id="grid_silt_engine", title="Silt Engine", family="ghost_grid", health=230, speed=.16,
          width=2.5, height=2.6, color="#7be8fa",
          palette=["#454c4c", "#796451", "#7be8fa", "#4c5840", "#262d31"],
-         rig=[chassis(cube(-14, 4, -13, 28, 11, 26), cube(-10, 14, -10, 20, 7, 20, "rust")),
-              bone("tread_l", [-14, 6, 0], cube(-20, 0, -14, 8, 10, 28, "dark")),
-              bone("tread_r", [14, 6, 0], cube(12, 0, -14, 8, 10, 28, "dark")),
-              bone("rotor", [0, 22, 0], cube(-10, 19, -10, 20, 15, 20),
-                   cube(-7, 32, -7, 14, 6, 14, "rust"), cube(-3, 24, -11, 6, 6, 2, "glow")),
-              bone("barrel", [0, 28, -7], cube(-5, 22, -23, 10, 10, 16, "rust"),
-                   cube(-3, 24, -24, 6, 6, 2, "glow"), parent="rotor"),
-              bone("vent_l", [-11, 26, 0], cube(-14, 26, -9, 4, 13, 18, "cloth"), parent="rotor"),
-              bone("vent_r", [11, 26, 0], cube(10, 24, -9, 4, 10, 18, "metal"), parent="rotor")],
          moves=[
              attack("Discharge Beam", "lane", 15, 42, 74, 13,
                     {"rotor": ([0,0,8], [0,0,-10], [0,0,5]), "barrel": ([-13,0,0], [-35,0,0], [8,0,0]),
@@ -120,7 +63,6 @@ bosses = [
     dict(id="echo_seam_riven", title="Seam-Riven", family="echo_frame", health=150, speed=.31,
          width=.9, height=2.15, color="#f698d5",
          palette=["#645c67", "#7a624c", "#f698d5", "#373143", "#231f2b"],
-         rig=echo_rig(False),
          moves=[
              attack("Seam Cut", "cone", 4.6, 19, 43, 9,
                     {"body": ([8,-53,14], [14,62,-24], [0,20,-10]), "arm_r": ([-82,-45,30], [-30,62,46], [25,15,16]),
@@ -133,7 +75,6 @@ bosses = [
     dict(id="echo_veil_regent", title="Veil Regent", family="echo_frame", health=195, speed=.20,
          width=1.0, height=2.45, color="#f7ca79",
          palette=["#635956", "#927747", "#f7ca79", "#4b3834", "#28242b"],
-         rig=echo_rig(True),
          moves=[
              attack("Anchor Sigil", "mark", 13, 43, 75, 10,
                     {"body": ([-11,22,0], [19,-17,-8], [0,10,6]), "arm_l": ([-92,0,-38], [-125,0,-24], [-53,0,-19]),
@@ -146,55 +87,10 @@ bosses = [
 ]
 
 
-def crane_rig():
-    rig = [chassis(cube(-10, 10, -9, 20, 7, 18, "rust"),
-                   cube(-7, 17, -7, 14, 6, 14), cube(-4, 19, -8, 8, 3, 1, "glow")),
-           bone("boom", [0, 21, 2], cube(-3, 20, -20, 6, 6, 24),
-                cube(-4, 18, -18, 8, 3, 14, "cloth")),
-           bone("claw", [0, 20, -18], cube(-8, 13, -22, 5, 10, 4, "rust"),
-                cube(3, 13, -22, 5, 10, 4, "rust"), cube(-7, 12, -21, 14, 3, 3, "glow"),
-                parent="boom")]
-    for side, x in (("l", -13), ("r", 8)):
-        for row, z in (("f", -10), ("b", 6)):
-            rig.append(bone("leg_" + side + row, [x+2, 13, z+2],
-                       cube(x, 0, z, 5, 15, 5), cube(x-1, 0, z-2, 7, 3, 7, "rust")))
-    return rig
-
-
-def spindle_rig():
-    rig = [chassis(cube(-7, 8, -7, 14, 17, 14, "rust"),
-                   cube(-5, 17, -8, 10, 4, 1, "glow"), cube(-4, 3, -4, 8, 7, 8, "dark")),
-           bone("crown", [0, 23, 0], cube(-11, 23, -11, 22, 4, 22),
-                cube(-6, 26, -6, 12, 3, 12, "cloth"), cube(-2, 28, -2, 4, 5, 4, "glow"))]
-    for name, x, z, w, d in (("north",-3,-17,6,10), ("south",-3,7,6,10),
-                            ("west",-17,-3,10,6), ("east",7,-3,10,6)):
-        rig.append(bone(name, [0, 15, 0], cube(x, 13, z, w, 5, d),
-                        cube(x, 11, z, w, 2, d, "glow")))
-    return rig
-
-
-def variant_echo(rook):
-    rig = echo_rig(False)
-    if rook:
-        rig.extend([
-            bone("shield", [-9, 14, -2], cube(-15, 5, -5, 13, 20, 3, "rust"),
-                 cube(-16, 15, -6, 5, 9, 2), cube(-13, 8, -6, 10, 2, 1, "glow"), parent="arm_l"),
-            bone("collar", [0, 22, 0], cube(-10, 20, 1, 19, 5, 5, "cloth")),
-        ])
-    else:
-        rig.extend([
-            bone("counterweight", [8, 16, 0], cube(9, 3, -2, 2, 16, 2, "dark"),
-                 cube(7, 2, -4, 6, 5, 6, "rust"), cube(8, 3, -5, 3, 2, 1, "glow"), parent="arm_r"),
-            bone("hood_tail", [-4, 29, 3], cube(-8, 16, 3, 4, 15, 3, "cloth"),
-                 cube(-7, 9, 4, 2, 9, 2, "rust"), parent="head"),
-        ])
-    return rig
-
-
 bosses.extend([
     dict(id="grid_gantry_marrow", title="Gantry Marrow", family="ghost_grid", health=215, speed=.19,
          width=2.0, height=1.9, color="#a5f8a3",
-         palette=["#4f5b52","#786352","#a5f8a3","#415b3b","#293331"], rig=crane_rig(),
+         palette=["#4f5b52","#786352","#a5f8a3","#415b3b","#293331"],
          moves=[
             attack("Load Drop", "mark", 11, 38, 70, 13,
                    {"boom": ([-47,-14,0], [23,0,0], [-12,8,0]),
@@ -206,7 +102,7 @@ bosses.extend([
          ]),
     dict(id="grid_cinder_spindle", title="Cinder Spindle", family="ghost_grid", health=178, speed=.27,
          width=1.8, height=2.1, color="#ffa964",
-         palette=["#565052","#78503d","#ffa964","#3a4d43","#282d2d"], rig=spindle_rig(),
+         palette=["#565052","#78503d","#ffa964","#3a4d43","#282d2d"],
          moves=[
             attack("Flywheel Burst", "ring", 6.2, 32, 59, 10,
                    {"crown": ([20,-95,0],[0,114,0],[0,183,0]), "body": ([0,-26,11],[0,56,-8],[0,105,0]),
@@ -219,7 +115,7 @@ bosses.extend([
          ]),
     dict(id="echo_rubble_rook", title="Rubble Rook", family="echo_frame", health=218, speed=.19,
          width=1.1, height=2.1, color="#a0c8ff",
-         palette=["#544f63","#816954","#a0c8ff","#464749","#292733"], rig=variant_echo(True),
+         palette=["#544f63","#816954","#a0c8ff","#464749","#292733"],
          moves=[
             attack("Barricade Rush", "lane", 7.0, 26, 57, 11,
                    {"arm_l": ([-76,-16,-40],[-98,16,-13],[-44,-12,-12]),
@@ -232,7 +128,7 @@ bosses.extend([
          ]),
     dict(id="echo_hush_pendulum", title="Hush Pendulum", family="echo_frame", health=162, speed=.26,
          width=.95, height=2.15, color="#b9f5ac",
-         palette=["#5d6658","#7b6952","#b9f5ac","#343b35","#252b29"], rig=variant_echo(False),
+         palette=["#5d6658","#7b6952","#b9f5ac","#343b35","#252b29"],
          moves=[
             attack("Deadweight Arc", "cone", 5.8, 28, 60, 12,
                    {"body": ([-17,-45,-15],[22,68,9],[-4,19,-9]),
@@ -248,139 +144,117 @@ bosses.extend([
 ])
 
 
-def remodel(spec):
-    """Add authored profile pieces, separated hardware and asymmetrical cloth."""
+def silt_rig():
     c = cube
-    slug = spec["id"]
-    layout = {
-        "grid_palinode": [
-            bone("carapace", [0,20,1], c(-8,20,-11,16,3,23),
-                 c(-6,23,-7,12,2,15,"rust"), c(-3,25,-5,6,1,13,"dark"),
-                 c(-9,21,4,2,4,9,"moss"), c(6,23,8,3,2,6,"moss")),
-            bone("optic_pincers", [0,16,-18], c(-11,13,-27,3,4,11,"rust", [0,18,0]),
-                 c(8,13,-25,3,4,10,"metal",[0,-18,0]), c(-4,17,-22,8,1,2,"glow"), parent="head"),
-        ],
-        "grid_silt_engine": [
-            bone("pump_stack", [0,28,8], c(-7,34,5,4,11,5,"rust"),
-                 c(-8,44,4,6,2,7,"dark"), c(5,32,8,4,8,4),
-                 c(4,39,7,6,2,6,"rust"), c(-10,20,7,20,6,7,"moss"), parent="rotor"),
-            bone("collimator", [0,27,-20], c(-8,20,-27,4,14,5,"metal",[0,-12,0]),
-                 c(4,20,-27,4,14,5,"metal",[0,12,0]), c(-5,24,-28,10,5,2,"dark"),
-                 c(-3,25,-29,6,3,1,"glow"), parent="barrel"),
-        ],
-        "grid_gantry_marrow": [
-            bone("gantry", [0,18,3], c(-11,16,5,3,17,4,"rust",[0,0,-14]),
-                 c(8,16,5,3,17,4,"metal",[0,0,14]), c(-12,33,4,24,3,6),
-                 c(-11,35,5,10,2,4,"moss"), c(-7,18,10,14,12,5,"dark")),
-            bone("lifting_hooks", [0,17,-20], c(-8,5,-24,3,10,4,"metal",[0,0,-26]),
-                 c(5,7,-24,3,9,4,"rust",[0,0,30]), c(-5,7,-26,3,3,6,"metal"),
-                 c(2,8,-26,3,3,6), parent="claw"),
-        ],
-        "grid_cinder_spindle": [
-            bone("flywheel", [0,26,0], *[
-                c(-2,25,-21,4,4,18,"rust",[0,yaw,0]) for yaw in range(0,360,45)
-            ], c(-4,30,-4,8,6,8,"dark"), c(-3,34,-3,6,3,6,"glow"), parent="crown"),
-            bone("lower_fins", [0,11,0], *[
-                c(-4,1,-10,8,11,3,"metal",[22,yaw,0]) for yaw in (0,90,180,270)
-            ]),
-        ],
-        "echo_seam_riven": [
-            bone("split_mantle", [0,23,2], c(-11,20,-1,13,6,6,"cloth",[0,0,-15]),
-                 c(-10,5,2,6,17,2,"cloth",[-8,0,15]), c(-6,8,3,3,11,2,"cloth",[5,0,-13]),
-                 c(-8,1,3,2,10,2,"moss",[-9,0,16]), parent="drape"),
-            bone("broken_edge", [7,13,-3], c(7,2,-5,3,15,2,"metal",[0,0,10]),
-                 c(8,0,-5,1,16,1,"glow",[0,0,10]), parent="arm_r"),
-        ],
-        "echo_veil_regent": [
-            bone("veil", [0,30,1], c(-6,30,-4,12,4,9,"cloth"), c(-7,18,-3,3,14,2,"cloth",[0,0,-7]),
-                 c(4,21,-4,3,13,2,"cloth",[0,0,8]), c(-5,30,4,10,3,3,"rust"), parent="head"),
-            bone("court_robe", [0,20,3], c(-9,3,2,7,20,2,"cloth",[8,0,-13]),
-                 c(2,1,2,6,20,2,"cloth",[9,0,10]), c(-2,0,3,4,15,2,"cloth",[-7,0,0]),
-                 c(7,6,3,3,10,2,"moss"), parent="drape"),
-            bone("staff_cage", [8,26,0], c(4,23,-4,9,10,2,"rust",[0,0,28]),
-                 c(4,23,2,9,10,2,"metal",[0,0,-28]), c(7,26,-3,4,4,6,"glow"), parent="arm_r"),
-        ],
-        "echo_rubble_rook": [
-            bone("bastion", [-8,14,-5], c(-18,5,-8,4,22,4,"metal",[0,0,-11]),
-                 c(-15,22,-9,15,4,4,"rust",[0,0,11]), c(-14,10,-9,16,3,2,"metal",[0,0,-21]),
-                 c(-15,2,-8,4,7,4,"rust"), c(-1,3,-8,3,5,4,"rust"),
-                 c(-14,15,-10,5,8,2,"moss"), parent="shield"),
-            bone("backplate", [0,23,3], c(-11,21,1,20,6,8,"cloth",[9,0,8]),
-                 c(4,21,0,7,8,8,"rust",[0,0,16]), c(-8,15,5,8,10,4,"metal",[14,0,0]),
-                 c(-7,16,8,5,7,2,"moss")),
-        ],
-        "echo_hush_pendulum": [
-            bone("trail", [-3,26,3], c(-8,6,4,5,21,2,"cloth",[21,0,10]),
-                 c(-4,4,5,3,15,2,"cloth",[28,0,-8]), c(-9,9,5,2,12,2,"moss",[16,0,14]), parent="hood_tail"),
-            bone("weight_shell", [9,7,0], c(7,4,-2,2,13,2,"rust",[0,0,-8]),
-                 c(7,0,-5,8,7,8,"metal",[0,18,13]), c(8,2,-6,5,3,3,"glow"),
-                 c(8,0,-1,6,2,4,"rust"), parent="counterweight"),
-            bone("hood_cowl", [0,27,1], c(-7,29,-2,4,7,8,"cloth",[0,0,-24]),
-                 c(-5,33,-3,10,4,8,"cloth",[0,0,12]), c(-6,23,1,3,9,6,"moss"), parent="head"),
-        ],
-    }
-    rig = spec["rig"]
-    if slug == "grid_palinode":
-        for index, (name, parent, pivot, mesh) in enumerate(rig):
-            if name.startswith(("leg_", "foot_")):
-                side = -1 if name.endswith("_l") else 1
-                # Taper the broad original feet into a shank and a separate toe.
-                mesh = tuple((*part[:3], [0,0,side*(18 if name.startswith("leg") else -13)])
-                             for part in mesh)
-                rig[index] = (name, parent, pivot, mesh)
-    for index, (name, parent, pivot, mesh) in enumerate(rig):
-        if name.startswith("tread_"):
-            x = mesh[0][0][0]
-            mesh = (*mesh, *(c(x-1,1,z,10,2,2,"rust") for z in range(-13,14,4)))
-            rig[index] = (name, parent, pivot, mesh)
-        if slug in {"echo_rubble_rook", "echo_hush_pendulum"} and name == "arm_r":
-            # These silhouettes carry a shield or counterweight, rather than a second energy blade.
-            rig[index] = (name, parent, pivot, mesh[:2])
-    rig.extend(layout[slug])
-    if spec["family"] == "ghost_grid":
-        spec["palette"] = ["#b9b7a1","#925d37","#54d8f0","#5b7135","#282d30"]
-        # Plating and growth sit on the housings. Exposed drives stay charcoal.
-        for index, (name, parent, pivot, mesh) in enumerate(rig):
-            revised = []
-            for origin, size, material, rotation in mesh:
-                x,y,z = origin
-                w,h,d = size
-                if material == "rust" and name in ("body","head","rotor","gantry","claw"):
-                    material = "metal"
-                revised.append((origin,size,material,rotation))
-                if material == "metal" and w >= 10 and d >= 7 and y >= 12 and not rotation:
-                    revised.extend([
-                        c(x+1,y+h,z+1,max(3,w//3),1,max(3,d//3),"moss"),
-                        c(x+2,y+h-4,z-1,2,5,2,"moss"),
-                        c(x+w-4,y+h,z+d-4,3,1,3,"moss"),
-                    ])
-            rig[index] = (name,parent,pivot,tuple(revised))
-    else:
-        # An opaque visor and broken legacy hardware sit inside each bespoke hood.
-        wear = {
-            "echo_seam_riven": ("#b2a99e","#785645","#bd85b8","#656072","#282631"),
-            "echo_veil_regent": ("#aaa69b","#816e50","#c8a768","#5a544b","#28252a"),
-            "echo_rubble_rook": ("#999d9b","#75533e","#7d9ba9","#56585a","#24282c"),
-            "echo_hush_pendulum": ("#a09f91","#715845","#94a786","#485647","#222823"),
-        }
-        spec["palette"] = list(wear[slug])
-        for index, (name,parent,pivot,mesh) in enumerate(rig):
-            if name == "head":
-                rig[index] = (name,parent,pivot,(
-                    c(-4,25,-3,8,6,7,"dark"), c(-4,26,-4,8,4,1,"dark"),
-                    c(-5,30,-4,10,3,8,"cloth"), c(-6,26,-3,3,6,7,"cloth",[0,0,-9]),
-                    c(3,27,-3,2,5,7,"cloth",[0,0,12]), c(-6,25,1,2,4,2,"moss"),
-                ))
-            if name == "body":
-                rig[index] = (name,parent,pivot,(
-                    c(-3,12,-2,6,12,4,"dark"), c(-6,17,-3,6,7,5,"cloth",[0,0,-11]),
-                    c(1,16,-2,4,8,4,"metal",[0,0,13]), c(-5,14,-2,2,5,2,"rust"),
-                ))
-        rig.append(bone("cloth_rags",[0,21,2],
-                        c(-5,7,3,3,15,1,"cloth",[12,0,13]),
-                        c(2,3 if slug=="echo_veil_regent" else 9,3,3,15,1,"cloth",[18,0,-11]),
-                        c(-6,12,4,2,8,1,"moss",[12,0,13]),parent="drape"))
+    yield chassis(c(-12,4,-13,24,8,30,"dark"),c(-10,11,2,20,6,14),
+                  c(-9,16,7,15,3,8,"moss"),c(-9,7,-19,18,4,8,"rust"))
+    for side,x in (("l",-18),("r",11)):
+        yield bone("tread_"+side,[x+3,5,0],c(x,0,-15,7,9,31,"dark"),
+                   *(c(x-1,1,z,9,2,2,"metal") for z in range(-14,16,5)))
+    yield bone("rotor",[0,15,1],c(-3,13,-2,6,13,7,"rust"),
+               c(-8,23,0,16,7,11),c(-7,29,5,9,3,5,"moss"),
+               c(-5,24,10,10,4,2,"dark"))
+    yield bone("barrel",[0,23,1],c(-2,19,-16,4,5,20,"dark"),
+               c(-8,17,-22,3,10,12,"metal",[0,12,0]),
+               c(5,17,-22,3,10,12,"metal",[0,-12,0]),
+               c(-4,19,-22,8,6,3,"dark"),c(-3,20,-23,6,4,1,"glow"),parent="rotor")
+    for side,x in (("l",-11),("r",7)):
+        yield bone("vent_"+side,[x+2,23,7],c(x,22,2,4,12,13,"rust"),
+                   c(x,33,4,4,2,8,"moss"),c(x+1,29,1,2,2,2,"glow"),parent="rotor")
 
+
+def gantry_rig():
+    c = cube
+    yield chassis(c(-10,12,-6,20,5,16,"dark"),c(-10,17,4,20,4,7),
+                  c(-3,18,8,9,2,4,"moss"))
+    for side,x in (("l",-13),("r",10)):
+        for end,z in (("f",-8),("b",9)):
+            sign = -1 if side=="l" else 1
+            yield bone("leg_"+side+end,[x+1,15,z],
+                       c(x,5,z-2,4,12,4,"metal",[0,0,sign*24]),
+                       c(x+2*sign,0,z-3,3,8,5,"dark",[0,0,-sign*19]),
+                       c(x+3*sign-1,0,z-4,6,2,8,"rust"))
+    yield bone("boom",[0,20,7],c(-3,21,5,6,17,5,"metal",[14,0,0]),
+               c(-3,33,-20,6,5,29,"metal",[-9,0,0]),
+               c(-5,35,1,9,3,8,"moss"),c(-2,28,-12,4,2,18,"dark",[-16,0,0]),
+               c(-2,30,-20,4,2,2,"glow"))
+    yield bone("claw",[0,35,-18],c(-1,21,-18,2,15,2,"dark"),
+               c(-6,17,-23,4,8,5,"metal",[0,0,-29]),
+               c(2,17,-23,4,8,5,"metal",[0,0,29]),
+               c(-4,15,-23,8,2,4,"rust"),parent="boom")
+
+
+def cinder_rig():
+    c = cube
+    yield chassis(c(-5,5,-5,10,22,10,"dark"),c(-3,2,-3,6,7,6,"rust"),
+                  c(-5,15,-6,10,7,2),c(-3,17,-7,6,2,1,"glow"))
+    yield bone("crown",[0,19,0],c(-8,21,-8,16,4,16,"metal",[0,45,0]),
+               c(-3,17,-23,6,6,46,"dark"),c(-23,17,-3,46,6,6,"dark"),
+               c(-5,23,-4,7,2,6,"moss"))
+    for name,x,z,angle in (("north",0,-19,0),("south",0,19,180),("west",-19,0,90),("east",19,0,-90)):
+        yield bone(name,[0,18,0],c(x-4,15,z-4,8,10,8,"metal",[12,angle,0]),
+                   c(x-2,16,z-3,4,3,6,"glow"),c(x-3,24,z-2,5,1,4,"moss"),parent="crown")
+
+
+def echo_boss_rig(kind):
+    c = cube
+    # A separate silhouette and legacy outfit for each former role.
+    if kind == "echo_seam_riven":
+        yield chassis(c(-4,12,-2,7,12,4,"dark"),c(-7,17,-3,7,6,5,"cloth",[0,0,-21]),
+                      c(2,17,-2,3,7,4,"metal",[0,0,17]))
+        yield bone("head",[0,23,0],c(-5,22,-4,8,9,7,"cloth",[0,0,-14]),
+                   c(-3,23,-5,6,4,2,"dark"),c(2,24,-2,2,4,3,"metal"))
+        yield bone("arm_l",[-6,21,0],c(-8,12,-2,3,10,4,"dark",[0,0,-13]),c(-8,10,-2,3,5,4,"rust"))
+        yield bone("arm_r",[5,22,0],c(4,12,-2,3,11,4,"metal"),
+                   c(6,3,-3,2,16,2,"rust",[0,0,13]),c(7,5,-4,1,13,1,"glow",[0,0,13]))
+        yield bone("drape",[-4,22,2],c(-9,7,2,6,15,2,"cloth",[10,0,19]),
+                   c(-9,1,3,3,12,1,"cloth",[19,0,12]),c(-8,8,4,2,6,1,"moss"))
+        stance = (3,4,12)
+    elif kind == "echo_veil_regent":
+        yield chassis(c(-4,14,-2,8,15,4,"dark"),c(-8,23,0,15,6,6,"cloth"),
+                      c(-5,20,-4,10,7,3,"cloth"),c(-6,16,-3,3,5,3,"rust"))
+        yield bone("head",[0,28,0],c(-5,28,-4,10,9,9,"cloth"),
+                   c(-4,29,-5,8,4,2,"dark"),c(-5,28,-6,2,7,2,"cloth"),
+                   c(3,31,-6,2,6,2,"cloth"),c(-6,35,2,12,2,3,"metal",[0,0,12]))
+        yield bone("arm_l",[-7,25,0],c(-10,14,-2,5,12,5,"cloth"),
+                   c(-9,12,-3,3,5,4,"metal"))
+        yield bone("arm_r",[7,25,0],c(5,15,-2,4,11,4,"cloth"),c(7,1,-2,2,30,2,"rust"),
+                   c(5,30,-4,6,7,5,"metal",[0,0,23]),c(7,32,-5,2,3,2,"glow"))
+        yield bone("drape",[0,26,4],c(-10,4,3,8,22,2,"cloth",[10,0,-12]),
+                   c(2,1,3,7,25,2,"cloth",[8,0,12]),c(-2,5,5,4,19,2,"cloth"),
+                   c(-9,9,5,2,12,2,"moss"))
+        stance = (3,3,14)
+    elif kind == "echo_rubble_rook":
+        yield chassis(c(-6,11,-2,12,11,6,"dark"),c(-9,18,0,18,6,8,"cloth",[14,0,8]),
+                      c(2,17,-2,7,8,6,"metal",[0,0,19]))
+        yield bone("head",[1,20,-2],c(-3,20,-6,9,7,8,"cloth",[14,0,0]),
+                   c(-2,21,-7,7,3,2,"dark"),c(5,19,-4,2,5,4,"rust"))
+        yield bone("arm_l",[-8,19,0],c(-11,9,-2,5,11,5,"metal"))
+        yield bone("shield",[-9,13,-3],c(-17,3,-7,15,18,3,"metal",[0,0,-11]),
+                   c(-17,17,-8,13,4,3,"rust",[0,0,14]),c(-17,6,-9,16,3,2,"dark",[0,0,-23]),
+                   c(-17,11,-9,6,4,2,"moss"),parent="arm_l")
+        yield bone("arm_r",[8,19,0],c(6,10,-2,5,10,5,"dark"),
+                   c(8,8,-3,5,5,5,"metal"))
+        yield bone("drape",[0,20,4],c(-9,9,4,12,12,3,"cloth",[26,0,10]),
+                   c(3,5,6,5,12,1,"cloth",[24,0,-12]))
+        stance = (5,5,11)
+    else:
+        yield chassis(c(-4,13,-1,7,12,4,"dark"),c(-7,17,0,12,7,5,"cloth",[0,0,13]),
+                      c(0,14,-2,4,8,3,"metal",[0,0,-12]))
+        yield bone("head",[-2,23,1],c(-7,24,-3,9,8,8,"cloth",[0,0,-22]),
+                   c(-5,24,-4,6,4,2,"dark"),c(-8,22,1,3,8,4,"moss"))
+        yield bone("arm_l",[-6,22,1],c(-8,11,-1,3,12,4,"cloth",[0,0,-9]))
+        yield bone("arm_r",[4,22,0],c(3,13,-2,3,10,4,"rust"),c(3,11,-3,4,4,4,"metal"))
+        yield bone("counterweight",[5,13,-2],c(5,3,-2,1,11,1,"dark"),
+                   c(3,0,-5,8,6,7,"metal",[0,18,12]),c(5,1,-6,4,2,2,"glow"),parent="arm_r")
+        yield bone("hood_tail",[-4,27,3],c(-8,12,4,4,17,2,"cloth",[22,0,12]),
+                   c(-7,7,6,2,13,1,"cloth",[30,0,-12]),parent="head")
+        yield bone("drape",[0,22,3],c(-4,7,3,7,16,2,"cloth",[18,0,-12]),
+                   c(-4,3,5,3,12,1,"cloth"))
+        stance = (3,3,13)
+    x,w,h = stance
+    yield bone("leg_l",[-x,h,0],c(-x-2,3,-2,w,h-2,4,"metal"),c(-x-2,0,-4,w,3,6,"rust"))
+    yield bone("leg_r",[x,h,0],c(x-1,2,-1,w-1,h-1,3,"dark"),c(x-1,0,-3,w,2,5,"metal"))
 
 
 def texture_and_geometry(spec):
@@ -591,11 +465,13 @@ def main():
         print(f"Reference: {profile['clips']} clips, median {density} distinct keyframe times/second")
     for spec in bosses:
         spec["pose_density"] = density
-        if spec["id"] == "grid_palinode":
-            spec["rig"] = list(palinode_ram_rig())
+        machine_rigs = {"grid_palinode": palinode_ram_rig, "grid_silt_engine": silt_rig,
+                        "grid_gantry_marrow": gantry_rig, "grid_cinder_spindle": cinder_rig}
+        if spec["id"] in machine_rigs:
+            spec["rig"] = list(machine_rigs[spec["id"]]())
             spec["palette"] = ["#b9b7a1","#925d37","#54d8f0","#5b7135","#282d30"]
         else:
-            remodel(spec)
+            spec["rig"] = list(echo_boss_rig(spec["id"]))
         build(spec)
     active = [{"death":"!query.is_alive"},{"attack0":"query.property('bearframe:boss_move') == 1"},
               {"attack1":"query.property('bearframe:boss_move') == 2"}]
