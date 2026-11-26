@@ -1,6 +1,8 @@
 import { Difficulty, EntityDamageCause, GameMode, system, world } from "@minecraft/server";
 import { BOSS_MOVES } from "./boss_moves.js";
 
+import { campaignSignal } from "./campaign.js";
+import { creditIds } from "./boss_dossiers.js";
 const ENGAGE_RADIUS = 24;
 const MAX_HEIGHT_DIFFERENCE = 2.5;
 const PARTICLE = "minecraft:endrod";
@@ -123,7 +125,11 @@ function update(entity, state, now) {
   if (state.strike) {
     const strike = state.strike;
     const elapsed = now - strike.started;
-    if (elapsed === strike.move.windup) release(entity, strike, players);
+    if (!strike.released && elapsed >= strike.move.windup && elapsed < strike.move.end) {
+      // Resolve once, even when an update skips the exact windup tick.
+      strike.released = true;
+      release(entity, strike, players);
+    }
     if (elapsed < strike.move.windup && elapsed % 8 === 2) showWarning(entity, strike);
     if (elapsed >= strike.move.end) reset(entity, state, now, strike.enraged ? 15 : 28);
     return;
@@ -155,6 +161,7 @@ function update(entity, state, now) {
 
 export function installBossCombat() {
   const active = new Map();
+  const participants = new Map();
   const register = entity => {
     if (!entity.isValid || !BOSS_MOVES[entity.typeId] || active.has(entity.id)) return;
     const state = { entity, next: 0 };
@@ -163,12 +170,37 @@ export function installBossCombat() {
   };
   world.afterEvents.entitySpawn.subscribe(({ entity }) => register(entity));
   world.afterEvents.entityLoad.subscribe(({ entity }) => register(entity));
-  world.afterEvents.entityDie.subscribe(({ deadEntity }) => active.delete(deadEntity.id));
+  world.afterEvents.entityHurt.subscribe(({hurtEntity,damageSource})=>{
+    if(!BOSS_MOVES[hurtEntity.typeId])return;
+    const p=damageSource.damagingEntity;
+    if(p?.typeId!=="minecraft:player"||!eligible(p))return;
+    const record=participants.get(hurtEntity.id)??new Map();
+    record.set(p.id,system.currentTick);
+    participants.set(hurtEntity.id,record);
+  });
+  world.afterEvents.entityDie.subscribe(({deadEntity,damageSource})=>{
+    if(!BOSS_MOVES[deadEntity.typeId])return;
+    const now=system.currentTick;
+    const record=participants.get(deadEntity.id)??new Map();
+    active.delete(deadEntity.id);participants.delete(deadEntity.id);
+    try{
+      const origin=deadEntity.location,dim=deadEntity.dimension.id;
+      if(dim!=="minecraft:overworld"||world.getDifficulty()===Difficulty.Peaceful)return;
+      const candidates=world.getAllPlayers().filter(eligible);
+      const killer=damageSource.damagingEntity;
+      const recent=[...record].filter(([,tick])=>now-tick<=2400).map(([id])=>id);
+      const ids=new Set(creditIds(recent,killer?.typeId==="minecraft:player"&&eligible(killer)?killer.id:null,candidates.map(p=>({id:p.id,valid:p.isValid,dimension:p.dimension.id,location:p.location})),origin,dim));
+      for(const player of candidates)if(ids.has(player.id)){
+        try{campaignSignal(player,"boss",deadEntity.typeId.split(":")[1],origin);}catch(error){console.warn("[Bearframe boss credit] "+error);}
+      }
+    }catch(error){console.warn("[Bearframe boss death] "+error);}
+  });
   system.runInterval(() => {
     const now = system.currentTick;
     for (const [id, state] of active) {
       if (!state.entity.isValid) {
         active.delete(id);
+        participants.delete(id);
         continue;
       }
       try {

@@ -423,6 +423,7 @@ import {Difficulty,ItemStack,system,world} from "@minecraft/server";
 import {ActionFormData} from "@minecraft/server-ui";
 import {noteActivity} from "./activity_log.js";
 import {applySignal,read as readCampaign,write as writeCampaign} from "./campaign_state.js";
+import {LOCAL_JOBS,localStanding,localEligible,localAccept,localSignal,localAdvance,discountedDeals} from "./local_rpg.js";
 const OVERWORLD="minecraft:overworld";
 const SAVE="bearframe:field_requests";
 const stationed=new Set(["echo_drifter","grid_watcher","echo_route_trader","grid_wayfarer","echo_lost","grid_breach_guard","grid_repair_crawler"]);
@@ -551,7 +552,9 @@ export function fieldProgress(player,event,id,place){
     touched=true;
     say(player,job.quest+" · "+r.progress+"/"+job.count);
   }
-  if(touched)write(player,state);
+  const extra=localSignal(state,event,id,place);
+  for(const text of extra)say(player,text);
+  if(touched||extra.length)write(player,state);
 }
 
 function exchange(player,payment,reward,commit){
@@ -606,6 +609,27 @@ async function dialog(player,title,body,options){
   const result=await f.show(player);
   return result.canceled?undefined:result.selection;
 }
+async function localStory(player,target,key,entry){
+ const state=read(player),jobs=LOCAL_JOBS[key]??[];
+ const options=jobs.filter(q=>localEligible(q,state)||state[q.id]?.done);
+ const n=await dialog(player,entry.name+" · Local stories","These requests come from the people and machines who still use the routes.",[...options.map(q=>q.title+(state[q.id]?.done?" · Closed":state[q.id]?.active?" · Active":"")),"Close"]);
+ if(!nearby(player,target))return;
+ const q=options[n];if(!q)return;
+ const r=read(player)[q.id],step=q.steps[r?.step??0];
+ if(r?.done){await dialog(player,q.title,"Your help is recorded. The route is still yours to visit.",["Close"]);return;}
+ const ready=r?.active&&(step.delivery||r.progress>=step.count);
+ const pick=await dialog(player,q.title,q.intro+"\n\n"+(r?.active?"Stage "+(r.step+1)+"/"+q.steps.length+" · "+step.label+(step.delivery?"":" · "+r.progress+"/"+step.count):"Stages: "+q.steps.length),[!r?.active?"Accept request":ready?"Report / deliver":"Close","Leave"]);
+ if(pick!==0||!nearby(player,target))return;
+ const fresh=read(player);
+ if(!r?.active){if(localAccept(q,fresh)){write(player,fresh);noteActivity(player,"Side case","Accepted "+q.title);}return;}
+ const cur=fresh[q.id];if(!cur?.active||cur.step!==r.step)return;
+ const current=q.steps[cur.step];if(!current.delivery&&cur.progress<current.count)return;
+ const final=cur.step===q.steps.length-1;
+ if(exchange(player,current.delivery,final?q.pay:[],()=>{if(!localAdvance(q,fresh))throw Error("Local stage changed");write(player,fresh);})){
+  if(final){archiveChart(player,"local",q.id,{title:q.title},fresh,cur.seen);noteActivity(player,"Side case","Closed "+q.title);say(player,"Request complete. "+localStanding(fresh,key).tier+" standing.");}
+  else say(player,q.title+" · Next: "+q.steps[cur.step].label);
+ }
+}
 async function interact(player,target){
   if(activeForms.has(player.id)||!nearby(player,target))return;
   activeForms.add(player.id);
@@ -619,13 +643,19 @@ async function interact(player,target){
         say(player,"They remember staying behind when the last signal went out.");
       }
     }
-    const action=await dialog(player,entry.name,entry.intro,["Trade supplies","Local request","Leave"]);
+    const trust=localStanding(read(player),key),policy=readCampaign(player).choice;
+    const response=trust.points>=3?" I remember your help. We can spare a little more now.":trust.points>=1?" Good to see you again.":"";
+    const action=await dialog(player,entry.name,entry.intro+response+"\n\n"+trust.tier+" standing",["Trade supplies","Local request","Local stories","Ask about the dispatch","Leave"]);
     if(!nearby(player,target))return;
     if(action===0){
-      const i=await dialog(player,entry.name,"Exchange",entry.deals.map(([a,n,b,m])=>n+" "+pretty(a)+" → "+m+" "+pretty(b)));
-      if(!nearby(player,target)||!entry.deals[i])return;
-      const [a,n,b,m]=entry.deals[i];
+      const deals=discountedDeals(entry.deals,trust,policy,key);
+      if(trust.points>=3)deals.push(["minecraft:emerald",2,"minecraft:torch",12]);
+      const i=await dialog(player,entry.name,"Exchange · "+trust.tier,deals.map(([a,n,b,m])=>n+" "+pretty(a)+" → "+m+" "+pretty(b)));
+      if(!nearby(player,target)||!deals[i])return;
+      const [a,n,b,m]=deals[i];
       if(exchange(player,[a,n],[[b,m]]))noteActivity(player,"Trade",entry.name+" offered "+m+" "+pretty(b));
+    }else if(action===2){await localStory(player,target,key,entry);
+    }else if(action===3){await dialog(player,entry.name,policy==="local"?"The carrier stays local. We decide when to use it.":policy==="publish"?"The engineering routes are available. Our names stayed offline.":"The old request is still repeating. It does not speak for everyone.",["Close"]);
     }else if(action===1){
       const r=read(player)[key];
       const label=r?.active?(r.progress>=entry.count?"Claim reward":"Back"):entry.once&&r?.done?"Completed":"Accept request";

@@ -3,6 +3,9 @@ import {system,world} from "@minecraft/server";
 import {ActionFormData} from "@minecraft/server-ui";
 import {read as readCampaign} from "./campaign_state.js";
 import {MAIN,SIDES,CONTRACTS,EVIDENCE} from "./campaign_data.js";
+import {goalCount,standing,LEADS,itemName,rpgState,inventoryCount} from "./rpg_progress.js";
+import {localRows} from "./local_rpg.js";
+import {specialty} from "./rpg_training.js";
 const TERMINAL="bearframe:field_log";
 const OPEN_PAD="bearframe:open_field_log";
 const SAVE="bearframe:activity:";
@@ -121,12 +124,15 @@ function fieldText(stats,state){
     lines.unshift("Last "+key.toLowerCase()+" · "+dimension(value.dim)+" · "+value.at.join(", "));
   return lines.join("\n")||"Field and travel records will appear here.";
 }
-function storyText(state){
+function storyText(state,player){
   const q=MAIN[state.chapter];
   const s=q?[q.title,q.intro,...q.goals.map(g=>Math.min(g.count,state.facts[g.key]??0)+"/"+g.count+" · "+g.label),"Debrief with "+q.speaker]:
     [state.chapter<0?"Speak to Mira in the Farfield Annex to begin.":"The Last Dispatch complete."];
-  for(const side of SIDES)if(state.side[side.id]===1)s.push("Side case · "+side.title,...side.goals.map(g=>Math.min(g.count,state.facts[g.key]??0)+"/"+g.count+" · "+g.label));
+  for(const side of SIDES)if(state.side[side.id]===1){s.push("\nAssignment · "+side.title+" · "+side.speaker,...side.goals.map(g=>Math.min(g.count,goalCount(side,state,g))+"/"+g.count+" · "+g.label));for(const [id,n] of side.delivery??[])s.push(Math.min(n,inventoryCount(player.getComponent("minecraft:inventory")?.container,id))+"/"+n+" · Deliver "+itemName(id));}
   for(const c of CONTRACTS)if(state.contracts[c.id]?.active)s.push("Contract · "+c.title+" · "+state.contracts[c.id].progress+"/"+c.count);
+  const raw=player.getDynamicProperty("bearframe:field_requests");
+  if(typeof raw==="string")s.push(...localRows(JSON.parse(raw)));
+  const sp=specialty(state);if(sp)s.push("\nSpecialization · "+sp.name+" · Rank "+sp.rank);
   return s.join("\n");
 }
 function menu(title,body,labels){
@@ -140,12 +146,12 @@ async function logForm(player){
   try{
     drainInventory(player.id);
     flush(player.id);
-    const options=["Recent activity","Lifetime totals","Block and inventory details","Exploration and coordinates","Quest dossier","Treasure charts"];
+    const options=["Recent activity","Lifetime totals","Block and inventory details","Exploration and coordinates","Active quest dossier","Treasure charts","Completed assignments","Department standing"];
     const selection=await menu("Field Log","Personal record for this world",options).show(player);
     if(selection.canceled||!player.isValid)return;
     if(selection.selection===5){await openCharts(player);return;}
     const stats=record(player.id),campaign=readCampaign(player);
-    const pages=[activityText,totalsText,materialsText,s=>fieldText(s,campaign),()=>storyText(campaign)];
+    const pages=[activityText,totalsText,materialsText,s=>fieldText(s,campaign),()=>storyText(campaign,player),null,()=>SIDES.filter(q=>campaign.side[q.id]===2).map(q=>{const outcome=q.outcomes?.find(o=>o.id===rpgState(campaign).decisions[q.id]);return q.title+" · "+q.speaker+"\n"+q.report+(outcome?"\nRecommendation: "+outcome.label:"");}).join("\n\n")||"No completed assignments.",()=>LEADS.map(name=>{const r=standing(campaign,name);return name+" · "+r.tier+" ("+r.points+")";}).join("\n")];
     if(pages[selection.selection])await menu(options[selection.selection],pages[selection.selection](stats),["Close"]).show(player);
   }catch(error){console.warn("[Bearframe Field Log] "+error);}
   finally{forms.delete(player.id);}

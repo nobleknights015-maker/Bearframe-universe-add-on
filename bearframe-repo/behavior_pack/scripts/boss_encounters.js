@@ -1,6 +1,8 @@
 import { Difficulty, GameMode, world } from "@minecraft/server";
 import { BOSS_HABITATS, encounterRoll } from "./boss_habitats.js";
 
+import { read } from "./campaign_state.js";
+import { activeHunt } from "./boss_dossiers.js";
 const SITE_BOSS = "bearframe_site_boss";
 const ARENA_FLOORS = new Set([
   "bearframe:frontier_deck", "bearframe:frontier_dust",
@@ -28,7 +30,7 @@ export function discoverBoss(siteId, marker, player) {
   if (!habitat || world.getDifficulty() === Difficulty.Peaceful ||
       ![GameMode.Survival, GameMode.Adventure].includes(player.getGameMode())) return;
   const { dimension, location } = marker;
-  if (dimension.id !== "minecraft:overworld" || !encounterRoll(siteId, location)) return;
+  if (dimension.id !== "minecraft:overworld" || (!activeHunt(read(player),siteId) && !encounterRoll(siteId, location))) return;
   const siteKey = "bearframe:boss_site:" + [siteId, location.x, location.y, location.z].join(":");
   if (world.getDynamicProperty(siteKey)) return;
   // Native jigsaw pieces can be quarter-turned. Keep attempts on authored flooring.

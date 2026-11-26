@@ -5,12 +5,16 @@ import {BlockPermutation,ItemStack,system,world} from "@minecraft/server";
 import {ActionFormData} from "@minecraft/server-ui";
 import {EVIDENCE,MAIN,SIDES,CONTRACTS} from "./campaign_data.js";
 import {read,write,complete,applySignal,calibrate} from "./campaign_state.js";
+import {goalCount,eligible,acceptSide,finishSide,standing,lockedReason,inventoryCount,deliveryReady,itemName,rpgState,LEADS} from "./rpg_progress.js";
 
+import {SPECIALIZATIONS,rank,train,specialty,offers,specialtyBonus} from "./rpg_training.js";
+import {BOSS_DOSSIERS} from "./boss_dossiers.js";
 const CITY="bearframe:city_orbit";
 const OVERWORLD="minecraft:overworld";
 const ARCHIVE="bearframe:field_archive";
 const activeForms=new Set();
 const tell=(p,text)=>p.sendMessage("§3[Farfield Dossier]§r "+text);
+const MAIN_TALK=[["Why follow the signal?","Mira: A reservation survived. We do not know if anyone still needs it."],["What should I ask the resident?","Mira: Ask what they remember, not what the roster says they should remember."],["What is the Directorate seeking?","Sentinel: An operational key. The checkpoint is recent; the network is not."],["Can I use a repaired terminal?","Atlas: Yes. Confirm the circuit is live. No redundant repair."],["Why separate the channels?","Vera: A useful engineering map does not require a public resident list."],["How do I test the carrier?","Auren: Verify the pump. Beyond the stores, use Return, Intake, Carrier."],["What happens after the policy?","Mira: Tell an Echo what we decided, verify the Switchyard and return. The route isn't ours to command."]];
 const editors={
   0:"Mira",11:"Auren",12:"Atlas",13:"Vera",14:"Mira",15:"Sentinel",16:"Penney",
 };
@@ -22,6 +26,7 @@ export function campaignSignal(player,type,id,place){
   const fresh=applySignal(state,type,id,place);
   write(player,state);
   if(fresh&&type==="read")noteActivity(player,"Field entry",EVIDENCE[id]?.name??id,place);
+  if(fresh&&type==="boss"&&BOSS_DOSSIERS[id]){noteActivity(player,"Campaign","Defeated "+BOSS_DOSSIERS[id].name,place);tell(player,"Encounter logged: "+BOSS_DOSSIERS[id].name+".");}
   if(fresh&&type==="repair")noteActivity(player,"Repair",EVIDENCE[id]?.name??id,place);
   if(type==="echo"&&id==="echo_drifter")noteActivity(player,"Talk","Echo Drifter");
   if(type==="read"&&fresh&&EVIDENCE[id])tell(player,EVIDENCE[id].name+" — "+EVIDENCE[id].text);
@@ -32,29 +37,20 @@ export function campaignSignal(player,type,id,place){
   }
 }
 
-function reward(player,items,commit){
+function reward(player,items,commit,payment=[]){
   const bag=player.getComponent("minecraft:inventory")?.container;
-  if(!bag||bag.emptySlotsCount<items.length){
-    tell(player,"Make room for "+items.length+" reward stacks, then turn this in again.");
-    return false;
-  }
-  const slots=[];
-  for(let i=0;i<bag.size&&slots.length<items.length;i++)if(!bag.getItem(i))slots.push(i);
-  let written=0;
-  try{
-    for(const [id,count] of items){
-      bag.setItem(slots[written],new ItemStack(id,count));
-      written++;
-    }
-    commit();
-  }catch(error){
-    for(let i=0;i<written;i++)bag.setItem(slots[i],undefined);
-    throw error;
-  }
-  return true;
+  if(!bag)return false;
+  const old=Array.from({length:bag.size},(_,i)=>bag.getItem(i)),next=old.slice();
+  for(const [id,count] of payment){let remain=count;for(let i=0;i<next.length&&remain>0;i++){const item=next[i];if(item?.typeId!==id)continue;const take=Math.min(item.amount,remain);remain-=take;if(take===item.amount)next[i]=undefined;else{const copy=item.clone();copy.amount-=take;next[i]=copy;}}if(remain){tell(player,"Bring "+count+" "+itemName(id)+".");return false;}}
+  const slots=[];for(let i=0;i<next.length;i++)if(!next[i])slots.push(i);
+  if(slots.length<items.length){tell(player,"Make room for "+items.length+" reward stacks, then turn this in again.");return false;}
+  for(let i=0;i<items.length;i++)next[slots[i]]=new ItemStack(...items[i]);
+  const changed=[];try{for(let i=0;i<next.length;i++)if(next[i]!==old[i]){changed.push(i);bag.setItem(i,next[i]);}commit();}catch(error){for(const i of changed)bag.setItem(i,old[i]);throw error;}return true;
 }
-function goalText(q,state){
-  return q.goals.map(g=>`${Math.min(g.count,state.facts[g.key]??0)}/${g.count}  ${g.label}`).join("\n");
+function goalText(q,state,player){
+ const lines=q.goals.map(g=>`${Math.min(g.count,goalCount(q,state,g))}/${g.count}  ${g.label}`);
+ const bag=player?.getComponent("minecraft:inventory")?.container;
+ for(const [id,n] of q.delivery??[])lines.push((bag?Math.min(n,inventoryCount(bag,id))+"/"+n:n+" ×")+"  Deliver "+itemName(id));return lines.join("\n")||"Return to your contact.";
 }
 function form(title,body,buttons){
   const f=new ActionFormData().title(title).body(body);
@@ -76,8 +72,8 @@ async function mainMenu(player,target,lead){
   if(state.chapter===-1){
     const start=await show(player,form("The Last Dispatch",MAIN[0].intro,[lead==="Mira"?"Accept Farfield's assignment":"Find Mira in Farfield Mapping","Back"]));
     if(start===0&&atDesk(player,target)&&lead==="Mira"&&read(player).chapter===-1){
-      state.chapter=0;
-      write(player,state);
+      const current=read(player);current.chapter=0;
+      write(player,current);
       noteActivity(player,"Campaign","Accepted The Last Dispatch");
       tell(player,"Assignment accepted. Ask Mira for the dossier or use a field archive for the current objectives.");
     }
@@ -93,8 +89,12 @@ async function mainMenu(player,target,lead){
   const ready=complete(q,state);
   const here=lead===q.speaker;
   const label=ready&&here?(q.choice?"Select dispatch policy":"Debrief with "+lead):"Back";
-  const pick=await show(player,form(q.title,q.intro+"\n\n"+goalText(q,state)+"\n\nDebrief: "+q.speaker,[label]));
-  if(pick!==0||!ready||!here||!atDesk(player,target))return;
+  const talk=MAIN_TALK[state.chapter];
+  const pick=await show(player,form(q.title,q.intro+"\n\n"+goalText(q,state)+"\n\nDebrief: "+q.speaker,[label,...(here&&talk?[talk[0]]:[]),"Open route charts","Close"]));
+  if(!atDesk(player,target))return;
+  if(here&&talk&&pick===1){await show(player,form(q.speaker,talk[1],["Close"]));return;}
+  if(pick===(here&&talk?2:1)){await openCharts(player);return;}
+  if(pick!==0||!ready||!here)return;
   let choice;
   if(q.choice){
     const n=await show(player,form("Dispatch policy",q.report+"\n\nThe engineering map can be shared without the names. A local-only carrier keeps all route control at the site.",["Publish engineering routes","Keep the carrier local","Decide later"]));
@@ -122,22 +122,25 @@ async function mainMenu(player,target,lead){
   }
 }
 async function sideMenu(player,target,lead){
-  const options=SIDES.filter(q=>q.speaker===lead);
-  if(!options.length){tell(player,"This lead has no open side cases.");return;}
-  const now=read(player);
-  const pick=await show(player,form("Side cases · "+lead,"Cases can run alongside the campaign.",options.map(q=>q.title+(now.side[q.id]===2?" ✓":""))));
-  const q=options[pick];
-  if(!q||!atDesk(player,target))return;
-  const state=read(player),stage=state.side[q.id]??0,ready=complete(q,state);
-  const action=await show(player,form(q.title,q.intro+"\n\n"+goalText(q,state),[stage===0?"Accept case":stage===1&&ready?"Turn in case":stage===2?"Case closed":"Back"]));
-  if(action!==0||!atDesk(player,target))return;
-  const current=read(player);
-  if((current.side[q.id]??0)!==stage)return;
-  if(stage===0){current.side[q.id]=1;write(player,current);noteActivity(player,"Side case","Accepted "+q.title);tell(player,"Case accepted: "+q.title);}
-  if(stage===1&&complete(q,current)&&reward(player,q.reward,()=>{current.side[q.id]=2;write(player,current);})){
-    archiveChart(player,"side",q.id,q,current);
-    noteActivity(player,"Side case","Closed "+q.title);
-    tell(player,q.report);
+  const all=SIDES.filter(q=>q.speaker===lead),now=read(player),rep=standing(now,lead);
+  const options=all.filter(q=>now.side[q.id]||eligible(q,now)),locked=all.filter(q=>!options.includes(q));
+  const pick=await show(player,form("Assignments · "+lead,rep.tier+" standing · "+rep.points+"\nRecovered evidence counts. New combat orders count only after acceptance.",[...options.map(q=>q.title+(now.side[q.id]===2?" · Closed":now.side[q.id]===1?" · Active":" · Available")),...(locked.length?["Future assignments"]:[]),"Close"]));
+  if(!atDesk(player,target))return;
+  if(pick===options.length&&locked.length){await show(player,form("Future assignments",locked.map(q=>q.title+" — "+lockedReason(q,now)).join("\n\n"),["Close"]));return;}
+  const q=options[pick];if(!q)return;
+  const s=read(player),stage=s.side[q.id]??0,ready=complete(q,s)&&deliveryReady(q,player.getComponent("minecraft:inventory")?.container);
+  const previous=q.outcomes?.find(o=>o.id===rpgState(s).decisions[q.id]);
+  const body=stage===2?q.report+(previous?"\n\n"+previous.report:""):q.intro+"\n\n"+goalText(q,s,player)+(q.delivery?.length?"\n\nSupplies are exchanged only at debrief.":"");
+  const action=await show(player,form(q.title,body,[stage===0?"Accept assignment":stage===1&&ready?"Debrief and claim":stage===2?"Close":"Back","Open route charts","Close"]));
+  if(!atDesk(player,target))return;if(action===1){await openCharts(player);return;}if(action!==0||stage===2)return;
+  if(stage===0){const current=read(player);if(acceptSide(q,current)){write(player,current);noteActivity(player,"Side case","Accepted "+q.title);tell(player,lead+": "+q.title+" is in your Field Log.");}return;}
+  if(!ready)return;
+  let chosen;if(q.outcomes){const n=await show(player,form(q.title+" · Recommendation","Choose the type of support to prepare. It determines your supply package and recorded recommendation.",[...q.outcomes.map(o=>o.label),"Decide later"]));chosen=q.outcomes[n];if(!chosen)return;}
+  if(!atDesk(player,target))return;
+  const current=read(player);if(current.side[q.id]!==1||!complete(q,current))return;
+  if(reward(player,[...q.reward,...(chosen?.reward??[])],()=>{if(!finishSide(q,current,chosen?.id))throw Error("Assignment changed");write(player,current);},q.delivery??[])){
+    archiveChart(player,"side",q.id,q,current);noteActivity(player,"Side case","Closed "+q.title);
+    tell(player,lead+": "+q.report+(chosen?" "+chosen.report:""));tell(player,"Department standing: "+standing(current,lead).tier);
   }
 }
 async function contractMenu(player,target,lead){
@@ -156,7 +159,7 @@ async function contractMenu(player,target,lead){
   }else if(prior?.active&&r?.active&&r.progress>=q.count){
     const bonus=current.chapter>=MAIN.length&&current.choice==="local"&&q.id==="power"?[["bearframe:salvaged_alloy",1]]:
       current.chapter>=MAIN.length&&current.choice==="publish"&&q.id==="charts"?[["minecraft:torch",6]]:[];
-    if(reward(player,[...q.reward,...bonus],()=>{
+    if(reward(player,[...q.reward,...bonus,...specialtyBonus(current,q.id)],()=>{
       current.contracts[q.id]={active:false,progress:0,seen:[],done:r.done+1};
       write(player,current);
     })){
@@ -175,17 +178,31 @@ function journalText(state){
   });
   return stages+"\n\nField directory · Coordinates appear after your first visit\n"+known.join("\n");
 }
+async function trainingMenu(player,target,lead){
+ const state=read(player),sp=SPECIALIZATIONS[lead],r=rank(state,lead),selected=specialty(state);
+ if(!sp)return;
+ const deals=offers(state,lead);
+ const choice=await show(player,form(sp.name+" · Department services","Rank "+r+"/2 · "+(selected?.lead===lead?"Active specialization":"Not selected")+"\nEarn standing through assignments. Rank 1 unlocks supplies; rank 2 unlocks advanced supplies. Selecting this specialty discounts its exchanges.",[r>=1?"Select "+sp.name:"Rank 1 required",...deals.map(d=>d.payment[1]+" "+itemName(d.payment[0])+" → "+d.reward[1]+" "+itemName(d.reward[0])),"Close"]));
+ if(!atDesk(player,target))return;
+ const fresh=read(player);
+ if(choice===0){if(train(fresh,lead)){write(player,fresh);tell(player,"Specialization selected: "+sp.name);}return;}
+ const deal=deals[choice-1],current=offers(fresh,lead)[choice-1];
+ if(!deal||!current||JSON.stringify(deal)!==JSON.stringify(current))return;
+ if(reward(player,[deal.reward],()=>{},[deal.payment]))noteActivity(player,"Trade",sp.name+" supplies");
+}
 async function openBoard(player,target,lead){
   if(activeForms.has(player.id)||!atDesk(player,target))return;
   activeForms.add(player.id);
   try{
-    const pick=await show(player,form("Farfield Dossier",lead+" · Station briefing",["Main campaign","Side cases","Repeatable field contracts","Field directory and coordinates","Treasure charts"]));
+    const pick=await show(player,form("Farfield Dossier",lead+" · Station briefing",["Main campaign","Department assignments","Repeatable field contracts","Field directory and coordinates","Treasure charts","Department standing","Specialization and supplies"]));
     if(!atDesk(player,target))return;
     if(pick===0)await mainMenu(player,target,lead);
     if(pick===1)await sideMenu(player,target,lead);
     if(pick===2)await contractMenu(player,target,lead);
     if(pick===3)await show(player,form("Field directory",journalText(read(player)),["Close"]));
     if(pick===4)await openCharts(player);
+    if(pick===6)await trainingMenu(player,target,lead);
+    if(pick===5){const s=read(player);await show(player,form("Department standing",LEADS.map(name=>{const r=standing(s,name);return name+" · "+r.tier+" ("+r.points+")";}).join("\n")+"\n\nMain debriefs, assignments and up to two contracts per department count.",["Close"]));}
   }catch(error){console.warn("[Bearframe campaign] "+error);}
   finally{activeForms.delete(player.id);}
 }
