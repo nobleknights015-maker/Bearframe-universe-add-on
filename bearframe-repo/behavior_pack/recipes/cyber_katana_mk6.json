@@ -1,0 +1,45 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "bearframe:cyber_katana_mk6"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      "NSN",
+      "LKL",
+      "EDE"
+    ],
+    "key": {
+      "N": {
+        "item": "minecraft:netherite_ingot"
+      },
+      "S": {
+        "item": "minecraft:nether_star"
+      },
+      "L": {
+        "item": "bearframe:legacy_cell"
+      },
+      "K": {
+        "item": "bearframe:cyber_katana_mk5"
+      },
+      "E": {
+        "item": "minecraft:echo_shard"
+      },
+      "D": {
+        "item": "minecraft:diamond"
+      }
+    },
+    "unlock": [
+      {
+        "item": "bearframe:cyber_katana_mk5"
+      }
+    ],
+    "result": {
+      "item": "bearframe:cyber_katana_mk6",
+      "count": 1
+    }
+  }
+}

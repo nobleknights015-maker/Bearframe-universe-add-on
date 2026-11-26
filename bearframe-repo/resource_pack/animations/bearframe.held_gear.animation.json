@@ -997,6 +997,42 @@
           "scale": 0.77
         }
       }
+    },
+    "animation.bearframe.held.cyber_katana_mk6.first": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -6,
+            0,
+            -7
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.67
+        }
+      }
+    },
+    "animation.bearframe.held.cyber_katana_mk6.third": {
+      "loop": true,
+      "bones": {
+        "grip": {
+          "rotation": [
+            -7,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 0.77
+        }
+      }
     }
   }
 }

@@ -76,6 +76,9 @@
     },
     "bearframe_cyber_katana_mk5": {
       "textures": "textures/bearframe/gear/cyber_katana_mk5"
+    },
+    "bearframe_cyber_katana_mk6": {
+      "textures": "textures/bearframe/gear/cyber_katana_mk6"
     }
   }
 }
