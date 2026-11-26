@@ -25,6 +25,42 @@
     },
     "bearframe_teleport_tablet": {
       "textures": "textures/bearframe/teleport_tablet"
+    },
+    "bearframe_field_cutter": {
+      "textures": "textures/bearframe/gear/field_cutter"
+    },
+    "bearframe_phase_edge": {
+      "textures": "textures/bearframe/gear/phase_edge"
+    },
+    "bearframe_watchtower_lance": {
+      "textures": "textures/bearframe/gear/watchtower_lance"
+    },
+    "bearframe_foundry_prototype": {
+      "textures": "textures/bearframe/gear/foundry_prototype"
+    },
+    "bearframe_palinode_ram": {
+      "textures": "textures/bearframe/gear/palinode_ram"
+    },
+    "bearframe_silt_discharge": {
+      "textures": "textures/bearframe/gear/silt_discharge"
+    },
+    "bearframe_gantry_rake": {
+      "textures": "textures/bearframe/gear/gantry_rake"
+    },
+    "bearframe_cinder_inductor": {
+      "textures": "textures/bearframe/gear/cinder_inductor"
+    },
+    "bearframe_seam_splitter": {
+      "textures": "textures/bearframe/gear/seam_splitter"
+    },
+    "bearframe_veil_anchor": {
+      "textures": "textures/bearframe/gear/veil_anchor"
+    },
+    "bearframe_rook_hammer": {
+      "textures": "textures/bearframe/gear/rook_hammer"
+    },
+    "bearframe_hush_pendulum": {
+      "textures": "textures/bearframe/gear/hush_pendulum"
     }
   }
 }
