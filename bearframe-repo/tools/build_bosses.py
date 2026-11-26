@@ -337,6 +337,50 @@ def remodel(spec):
             # These silhouettes carry a shield or counterweight, rather than a second energy blade.
             rig[index] = (name, parent, pivot, mesh[:2])
     rig.extend(layout[slug])
+    if spec["family"] == "ghost_grid":
+        spec["palette"] = ["#b9b7a1","#925d37","#54d8f0","#5b7135","#282d30"]
+        # Plating and growth sit on the housings. Exposed drives stay charcoal.
+        for index, (name, parent, pivot, mesh) in enumerate(rig):
+            revised = []
+            for origin, size, material, rotation in mesh:
+                x,y,z = origin
+                w,h,d = size
+                if material == "rust" and name in ("body","head","rotor","gantry","claw"):
+                    material = "metal"
+                revised.append((origin,size,material,rotation))
+                if material == "metal" and w >= 10 and d >= 7 and y >= 12 and not rotation:
+                    revised.extend([
+                        c(x+1,y+h,z+1,max(3,w//3),1,max(3,d//3),"moss"),
+                        c(x+2,y+h-4,z-1,2,5,2,"moss"),
+                        c(x+w-4,y+h,z+d-4,3,1,3,"moss"),
+                    ])
+            rig[index] = (name,parent,pivot,tuple(revised))
+    else:
+        # An opaque visor and broken legacy hardware sit inside each bespoke hood.
+        wear = {
+            "echo_seam_riven": ("#b2a99e","#785645","#bd85b8","#656072","#282631"),
+            "echo_veil_regent": ("#aaa69b","#816e50","#c8a768","#5a544b","#28252a"),
+            "echo_rubble_rook": ("#999d9b","#75533e","#7d9ba9","#56585a","#24282c"),
+            "echo_hush_pendulum": ("#a09f91","#715845","#94a786","#485647","#222823"),
+        }
+        spec["palette"] = list(wear[slug])
+        for index, (name,parent,pivot,mesh) in enumerate(rig):
+            if name == "head":
+                rig[index] = (name,parent,pivot,(
+                    c(-4,25,-3,8,6,7,"dark"), c(-4,26,-4,8,4,1,"dark"),
+                    c(-5,30,-4,10,3,8,"cloth"), c(-6,26,-3,3,6,7,"cloth",[0,0,-9]),
+                    c(3,27,-3,2,5,7,"cloth",[0,0,12]), c(-6,25,1,2,4,2,"moss"),
+                ))
+            if name == "body":
+                rig[index] = (name,parent,pivot,(
+                    c(-3,12,-2,6,12,4,"dark"), c(-6,17,-3,6,7,5,"cloth",[0,0,-11]),
+                    c(1,16,-2,4,8,4,"metal",[0,0,13]), c(-5,14,-2,2,5,2,"rust"),
+                ))
+        rig.append(bone("cloth_rags",[0,21,2],
+                        c(-5,7,3,3,15,1,"cloth",[12,0,13]),
+                        c(2,3 if slug=="echo_veil_regent" else 9,3,3,15,1,"cloth",[18,0,-11]),
+                        c(-6,12,4,2,8,1,"moss",[12,0,13]),parent="drape"))
+
 
 
 def texture_and_geometry(spec):
@@ -370,7 +414,7 @@ def texture_and_geometry(spec):
                         if local_x % 9 == 2 and local_y % 9 in (2,3):
                             shade -= 30
                         if (local_x * 7 + local_y * 3 + x) % 31 < 4 and material != "dark":
-                            tint = (116,82,51)
+                            tint = (128,74,42)
                     else:
                         shade += (8 if local_x % 3 == 0 else -4) - (9 if local_y % 5 == 0 else 0)
                         if material == "cloth" and local_y > h-4 and local_x % 5 < 2:

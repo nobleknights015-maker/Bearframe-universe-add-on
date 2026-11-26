@@ -29,7 +29,7 @@
         "controller.render.bearframe"
       ],
       "spawn_egg": {
-        "base_color": "#635956",
+        "base_color": "#aaa69b",
         "overlay_color": "#f7ca79"
       }
     }
