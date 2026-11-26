@@ -160,7 +160,10 @@
     "width": 3.05,
     "curve": 2.35,
     "guard": 6.4,
-    "cubes": 71,
-    "held_accent": "#ff2945"
+    "cubes": 65,
+    "held_accent": "#ff2945",
+    "pulse_cubes": 24,
+    "pulse_segments": 12,
+    "pulse_seconds": 1.5
   }
 ]

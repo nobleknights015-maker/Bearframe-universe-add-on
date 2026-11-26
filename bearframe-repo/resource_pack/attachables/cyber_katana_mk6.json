@@ -19,7 +19,8 @@
       },
       "animations": {
         "first": "animation.bearframe.held.cyber_katana_mk6.first",
-        "third": "animation.bearframe.held.cyber_katana_mk6.third"
+        "third": "animation.bearframe.held.cyber_katana_mk6.third",
+        "blade_pulse": "animation.bearframe.held.cyber_katana_mk6.blade_pulse"
       },
       "scripts": {
         "animate": [
@@ -28,7 +29,8 @@
           },
           {
             "third": "context.is_first_person == 0.0"
-          }
+          },
+          "blade_pulse"
         ]
       },
       "render_controllers": [
