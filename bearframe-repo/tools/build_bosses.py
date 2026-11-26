@@ -62,7 +62,7 @@ bosses = [
                     effect=["slowness", 70]),
          ]),
     dict(id="echo_seam_riven", title="Seam-Riven", family="echo_frame", health=150, speed=.31,
-         width=.9, height=2.15, color="#f698d5",
+         width=1.05, height=2.45, color="#f698d5",
          palette=["#645c67", "#7a624c", "#f698d5", "#373143", "#231f2b"],
          moves=[
              attack("Seam Cut", "cone", 4.6, 19, 43, 9,
@@ -74,7 +74,7 @@ bosses = [
                     width=1.2, drive=1.2),
          ]),
     dict(id="echo_veil_regent", title="Veil Regent", family="echo_frame", health=195, speed=.20,
-         width=1.0, height=2.45, color="#f7ca79",
+         width=1.1, height=2.75, color="#f7ca79",
          palette=["#635956", "#927747", "#f7ca79", "#4b3834", "#28242b"],
          moves=[
              attack("Anchor Sigil", "mark", 13, 43, 75, 10,
@@ -134,7 +134,7 @@ bosses.extend([
                     "head": ([-16,25,0],[23,-17,-15],[-8,0,0])}),
          ]),
     dict(id="echo_hush_pendulum", title="Hush Pendulum", family="echo_frame", health=162, speed=.26,
-         width=.95, height=2.15, color="#b9f5ac",
+         width=1.05, height=2.6, color="#b9f5ac",
          palette=["#5d6658","#7b6952","#b9f5ac","#343b35","#252b29"],
          moves=[
             attack("Deadweight Arc", "cone", 5.8, 28, 60, 12,
@@ -203,67 +203,6 @@ def cinder_rig():
                    c(x-2,16,z-3,4,3,6,"glow"),c(x-3,24,z-2,5,1,4,"moss"),parent="crown")
 
 
-def echo_boss_rig(kind):
-    c = cube
-    # A separate silhouette and legacy outfit for each former role.
-    if kind == "echo_seam_riven":
-        yield chassis(c(-4,12,-2,7,12,4,"dark"),c(-7,17,-3,7,6,5,"cloth",[0,0,-21]),
-                      c(2,17,-2,3,7,4,"metal",[0,0,17]))
-        yield bone("head",[0,23,0],c(-5,22,-4,8,9,7,"cloth",[0,0,-14]),
-                   c(-3,23,-5,6,4,2,"dark"),c(2,24,-2,2,4,3,"metal"))
-        yield bone("arm_l",[-6,21,0],c(-8,12,-2,3,10,4,"dark",[0,0,-13]),c(-8,10,-2,3,5,4,"rust"))
-        yield bone("arm_r",[5,22,0],c(4,12,-2,3,11,4,"metal"),
-                   c(6,3,-3,2,16,2,"rust",[0,0,13]),c(7,5,-4,1,13,1,"glow",[0,0,13]))
-        yield bone("drape",[-4,22,2],c(-9,7,2,6,15,2,"cloth",[10,0,19]),
-                   c(-9,1,3,3,12,1,"cloth",[19,0,12]),c(-8,8,4,2,6,1,"moss"))
-        stance = (3,4,12)
-    elif kind == "echo_veil_regent":
-        yield chassis(c(-4,14,-2,8,15,4,"dark"),c(-8,23,0,15,6,6,"cloth"),
-                      c(-5,20,-4,10,7,3,"cloth"),c(-6,16,-3,3,5,3,"rust"))
-        yield bone("head",[0,28,0],c(-5,28,-4,10,9,9,"cloth"),
-                   c(-4,29,-5,8,4,2,"dark"),c(-5,28,-6,2,7,2,"cloth"),
-                   c(3,31,-6,2,6,2,"cloth"),c(-6,35,2,12,2,3,"metal",[0,0,12]))
-        yield bone("arm_l",[-7,25,0],c(-10,14,-2,5,12,5,"cloth"),
-                   c(-9,12,-3,3,5,4,"metal"))
-        yield bone("arm_r",[7,25,0],c(5,15,-2,4,11,4,"cloth"),c(7,1,-2,2,30,2,"rust"),
-                   c(5,30,-4,6,7,5,"metal",[0,0,23]),c(7,32,-5,2,3,2,"glow"))
-        yield bone("drape",[0,26,4],c(-10,4,3,8,22,2,"cloth",[10,0,-12]),
-                   c(2,1,3,7,25,2,"cloth",[8,0,12]),c(-2,5,5,4,19,2,"cloth"),
-                   c(-9,9,5,2,12,2,"moss"))
-        stance = (3,3,14)
-    elif kind == "echo_rubble_rook":
-        yield chassis(c(-6,11,-2,12,11,6,"dark"),c(-9,18,0,18,6,8,"cloth",[14,0,8]),
-                      c(2,17,-2,7,8,6,"metal",[0,0,19]))
-        yield bone("head",[1,20,-2],c(-3,20,-6,9,7,8,"cloth",[14,0,0]),
-                   c(-2,21,-7,7,3,2,"dark"),c(5,19,-4,2,5,4,"rust"))
-        yield bone("arm_l",[-8,19,0],c(-11,9,-2,5,11,5,"metal"))
-        yield bone("shield",[-9,13,-3],c(-17,3,-7,15,18,3,"metal",[0,0,-11]),
-                   c(-17,17,-8,13,4,3,"rust",[0,0,14]),c(-17,6,-9,16,3,2,"dark",[0,0,-23]),
-                   c(-17,11,-9,6,4,2,"moss"),parent="arm_l")
-        yield bone("arm_r",[8,19,0],c(6,10,-2,5,10,5,"dark"),
-                   c(8,8,-3,5,5,5,"metal"))
-        yield bone("drape",[0,20,4],c(-9,9,4,12,12,3,"cloth",[26,0,10]),
-                   c(3,5,6,5,12,1,"cloth",[24,0,-12]))
-        stance = (5,5,11)
-    else:
-        yield chassis(c(-4,13,-1,7,12,4,"dark"),c(-7,17,0,12,7,5,"cloth",[0,0,13]),
-                      c(0,14,-2,4,8,3,"metal",[0,0,-12]))
-        yield bone("head",[-2,23,1],c(-7,24,-3,9,8,8,"cloth",[0,0,-22]),
-                   c(-5,24,-4,6,4,2,"dark"),c(-8,22,1,3,8,4,"moss"))
-        yield bone("arm_l",[-6,22,1],c(-8,11,-1,3,12,4,"cloth",[0,0,-9]))
-        yield bone("arm_r",[4,22,0],c(3,13,-2,3,10,4,"rust"),c(3,11,-3,4,4,4,"metal"))
-        yield bone("counterweight",[5,13,-2],c(5,3,-2,1,11,1,"dark"),
-                   c(3,0,-5,8,6,7,"metal",[0,18,12]),c(5,1,-6,4,2,2,"glow"),parent="arm_r")
-        yield bone("hood_tail",[-4,27,3],c(-8,12,4,4,17,2,"cloth",[22,0,12]),
-                   c(-7,7,6,2,13,1,"cloth",[30,0,-12]),parent="head")
-        yield bone("drape",[0,22,3],c(-4,7,3,7,16,2,"cloth",[18,0,-12]),
-                   c(-4,3,5,3,12,1,"cloth"))
-        stance = (3,3,13)
-    x,w,h = stance
-    yield bone("leg_l",[-x,h,0],c(-x-2,3,-2,w,h-2,4,"metal"),c(-x-2,0,-4,w,3,6,"rust"))
-    yield bone("leg_r",[x,h,0],c(x-1,2,-1,w-1,h-1,3,"dark"),c(x-1,0,-3,w,2,5,"metal"))
-
-
 def rook_rig():
     c = cube
 
@@ -326,67 +265,89 @@ def rook_rig():
                    parent="brace_"+tag)
 
 
-def reference_echo_rig(kind):
-    """Translate the reference silhouettes into independently animated Bedrock parts."""
+def tall_echo_rig(kind):
+    """Three separate legacy chassis, with weapons carried by their actual joints."""
     c = cube
-    base = list(echo_boss_rig(kind))
-    extras = []
-    for name,parent,pivot,mesh in base:
-        x,y,z = pivot
-        if name == "body":
-            mesh += (c(-3,y+1,-4,6,6,2,"dark"),c(-2,y+2,-5,4,4,1,"glow"),
-                     c(-7,y+6,-3,5,3,5,"metal",[0,0,-21]),
-                     c(3,y+5,-3,5,3,6,"metal",[0,0,19]),
-                     c(-6,y+8,0,4,1,4,"moss"),
-                     c(-3,y-3,-3,1,12,1,"rust",[0,0,17]))
-        if name.startswith("leg_"):
-            side = -1 if name.endswith("_l") else 1
-            mesh += (c(x-2,5,-3,4,5,2,"metal",[0,0,side*13]),
-                     c(x-1,8,-4,2,2,1,"glow"),
-                     c(x-2,0,-5,2,2,3,"metal"),c(x+1,0,-4,2,2,3,"rust"))
-        if name == "drape":
-            mesh += (c(x-4,max(1,y-20),z+1,2,15,1,"cloth",[12,0,-15]),
-                     c(x+4,max(1,y-17),z+1,2,12,1,"cloth",[17,0,15]),
-                     c(x-2,y-10,z+3,1,9,1,"moss",[15,0,8]))
-        if kind == "echo_seam_riven" and name == "arm_r":
-            mesh = mesh[:1] + (c(6,8,-3,7,7,6,"dark"), c(7,9,-4,5,4,1,"glow"),
-                               c(8,1,-4,5,9,3,"rust"),c(12,0,-4,3,9,3,"metal",[0,0,12]),
-                               c(7,2,-4,2,3,3,"metal"),c(7,7,-4,2,3,3,"metal"))
-        if name == "head" and kind in ("echo_seam_riven","echo_hush_pendulum"):
-            mesh += (c(x-4,y+1,-6,4,7,2,"metal",[0,0,-14]),
-                     c(x+1,y+2,-6,3,6,2,"metal",[0,0,11]),
-                     c(x-1,y+1,-7,1,4,1,"glow"))
-        if kind == "echo_veil_regent" and name == "head":
-            mesh += tuple(c(dx,36+(3-abs(dx)//2),1,1,5,2,"rust",[0,0,-dx*5])
-                          for dx in (-6,-3,0,3,6))
-            mesh += (c(-1,31,-7,2,4,1,"glow"),c(-3,32,-7,6,1,1,"glow"))
-        if kind == "echo_veil_regent" and name == "arm_r":
-            mesh += (c(3,33,-3,2,7,3,"metal",[0,0,-23]), c(11,33,-3,2,7,3,"metal",[0,0,23]),
-                     c(5,38,-3,6,2,3,"metal"),c(7,34,-3,3,3,3,"glow"))
-        yield name,parent,pivot,mesh
+    cleaver = kind == "echo_seam_riven"
+    regent = kind == "echo_veil_regent"
+    h = 0 if cleaver else 3 if regent else 1
+    shoulder = 30+h
+    yield chassis(c(-3,18,-2,6,13+h,5,"dark"), c(-5,22,-3,10,7+h,6,"dark"),
+                  c(-3,23+h,-4,6,4,2,"rust"),c(-2,24+h,-5,4,3,1,"glow"),
+                  c(-6,27+h,-2,5,4,5,"metal",[0,0,23]),
+                  c(2,26+h,-2,5,4,5,"metal",[0,0,-26]),
+                  c(-6,17,-2,12,3,5,"metal"),c(-1,14,-3,2,7,1,"rust"),
+                  c(-5,29+h,0,6,2,4,"cloth",[0,0,-12]),
+                  c(0,27+h,-4,6,2,5,"cloth",[0,0,16]))
+    y = 33+h
+    mask = [c(-3,y-1,-3,6,7,6,"dark"),c(-4,y+4,-4,8,2,8,"cloth"),
+            c(-5,y,-4,2,5,6,"cloth",[0,0,-18]),c(3,y+1,-4,2,4,6,"cloth",[0,0,21])]
+    if cleaver:
+        mask += [c(-4,y+1,-5,4,5,2,"metal",[0,0,-24]),c(0,y,-5,3,5,2,"metal",[0,0,17]),
+                 c(-1,y+1,-6,1,4,1,"glow"),c(4,y+1,-2,2,3,3,"dark"),
+                 c(5,y+1,-3,1,2,1,"glow")]
+    elif regent:
+        mask += [c(-3,y+1,-4,6,4,1,"dark"),c(-1,y+1,-5,2,4,1,"glow"),
+                 c(-3,y+3,-5.1,6,1,1,"glow")]
+        for dx in (-6,-3,0,3,6):
+            mask.extend((c(dx,y+5,0,1,6-abs(dx)//3,2,"rust",[0,0,-dx*5]),
+                         c(dx,y+9-abs(dx)//3,-.1,1,2,2,"glow",[0,0,-dx*5])))
+    else:
+        mask += [c(-3,y+1,-5,3,6,2,"metal",[0,0,-16]),
+                 c(0,y,-5,3,6,2,"metal",[0,0,16]),c(-.5,y+1,-6,1,4,1,"glow")]
+    yield bone("head",[0,y,0],*mask)
+    for tag,side in (("l",-1),("r",1)):
+        x = side*(8 if cleaver else 7)
+        elbow = 20+h+(2 if regent and tag=="r" else 0)
+        yield bone("arm_"+tag,[x,shoulder,0],
+                   c(x-1,elbow-1,-1,3,shoulder-elbow+2,3,"dark",[0,0,side*9]),
+                   c(x-3,shoulder-5,-2,5,6,5,"metal",[0,0,-side*20]),
+                   c(x-2,shoulder,-1,3,1,3,"moss"))
+        yield bone("forearm_"+tag,[x,elbow,-1],
+                   c(x-1,elbow-8,-2,3,8,3,"dark"),
+                   c(x-2,elbow-7,-3,4,6,4,"metal",[0,0,side*12]),
+                   c(x-1,elbow-10,-2,3,3,3,"rust"),parent="arm_"+tag)
+        hip = side*(4 if regent else 5)
+        yield bone("leg_"+tag,[hip,18,0],
+                   c(hip-1,9,-1,3,10,3,"dark",[0,0,side*9]),
+                   c(hip-2,11,-3,4,6,4,"metal",[0,0,side*16]))
+        boot = hip+side
+        yield bone("shin_"+tag,[boot,9,0],
+                   c(boot-1,1,0,3,9,3,"dark"),c(boot-2,2,-2,4,6,3,"metal",[0,0,-side*9]),
+                   c(boot-2,0,-4,5,2,7,"metal"),c(boot,0,-4.5,2,1,3,"rust"),parent="leg_"+tag)
 
-    if kind in ("echo_hush_pendulum","echo_rubble_rook"):
-        center = 28 if kind == "echo_hush_pendulum" else 25
-        radius = 13 if kind == "echo_hush_pendulum" else 10
-        z = 6
-        for side,start in (("l",102),("r",-42)):
+    if cleaver:
+        yield bone("cleaver",[8,11,-2],c(8,7,-3,3,7,3,"dark"),
+                   c(9,0,-4,7,10,3,"rust",[0,0,22]),c(12,1,-5,3,11,2,"metal",[0,0,22]),
+                   c(9,7,-5,4,3,2,"metal"),c(9,2,-5,3,2,2,"metal"),
+                   c(8,9,-5,2,4,1,"glow"),parent="forearm_r")
+    elif regent:
+        yield bone("staff",[9,15,-2],c(9,0,-3,2,38,2,"dark"),
+                   *(c(8,k,-4,4,2,4,"metal") for k in (2,12,22,30,36)),
+                   c(4,35,-4,2,7,4,"metal",[0,0,-28]),
+                   c(14,35,-4,2,7,4,"metal",[0,0,28]),
+                   c(7,41,-4,6,2,4,"rust"),c(8,37,-5,4,4,4,"glow"),
+                   parent="forearm_r")
+    else:
+        yield bone("counterweight",[7,11,-2],c(8,4,-3,1,9,1,"rust"),
+                   c(6,0,-5,6,6,5,"metal",[0,0,11]),c(7,2,-6,4,2,1,"glow"),
+                   parent="forearm_r")
+        for tag,start in (("l",105),("r",-50)):
             plates = []
-            for index in range(5):
-                angle = start + index*24
-                theta = math.radians(angle)
-                x,y = radius*math.cos(theta),center+radius*math.sin(theta)
-                plates.extend((c(round(x)-3,round(y)-2,z,6,4,3,"metal",[0,0,angle+90]),
-                               c(round(x)-2,round(y)-1,z-1,4,2,2,"glow",[0,0,angle+90])))
-            extras.append(bone("relay_"+side,[0,center,z],*plates))
-    if kind == "echo_rubble_rook":
-        # Ground-reaching support limbs under the cloak on the broad salvage frame.
-        for side,sign in (("l",-1),("r",1)):
-            x = 11*sign
-            extras.append(bone("brace_"+side,[7*sign,18,5],
-                               c(x-2,6,5,4,15,4,"dark",[0,0,sign*-26]),
-                               c(x-3,2,7,6,8,5,"metal",[0,0,sign*15]),
-                               c(x-3,0,6,6,3,7,"rust")))
-    yield from extras
+            for angle in range(start,start+121,24):
+                t = math.radians(angle)
+                x,y = round(14*math.cos(t)),round(29+14*math.sin(t))
+                plates += [c(x-3,y-2,7,6,4,4,"metal",[0,0,angle+90]),
+                           c(x-2,y-1,6,4,2,2,"glow",[0,0,angle+90])]
+            yield bone("relay_"+tag,[0,29,7],*plates)
+        yield bone("hood_tail",[-3,36,2],c(-6,25,3,3,14,1,"cloth",[20,0,-12]),
+                   c(-5,22,5,2,11,1,"moss",[23,0,14]),parent="head")
+    top = shoulder - (3 if cleaver else 1)
+    yield bone("drape",[0,top,3],
+               c(-7,top-(13 if cleaver else 23),3,6,13 if cleaver else 23,2,"cloth",[17,0,-14]),
+               c(1,4 if regent else 9,4,5,top-(4 if regent else 9),1,"cloth",[12,0,12]),
+               c(-5,5 if regent else 12,6,2,15,1,"cloth",[20,0,9]),
+               c(3,top-12,5,2,11,1,"moss",[23,0,-11]))
 
 
 def texture_and_geometry(spec):
@@ -490,11 +451,25 @@ def animation_set(spec):
             idle["relay_"+side] = {"rotation":[0,sign*9,"math.sin(query.anim_time * 150) * 4"]}
         if "brace_"+side in rig:
             walk["brace_"+side] = {"rotation":[f"math.sin(query.anim_time * 281) * {17*sign}",0,0]}
+    if "forearm_l" in rig:
+        for side,phase in (("l",0),("r",180)):
+            walk["shin_"+side] = {"rotation":[f"math.max(0, math.sin(query.anim_time * {360/gait} + {phase})) * 26",0,0]}
+            walk["forearm_"+side] = {"rotation":[f"math.sin(query.anim_time * {360/gait} + {phase}) * 9",0,0]}
+        if "staff" in rig:
+            walk["arm_r"] = {"rotation":[-5,0,-6]}
+            walk["forearm_r"] = {"rotation":[4,0,4]}
     animations = {"idle":dict(loop=True, animation_length=2.4,bones=idle),
                   "walk":dict(loop=True, animation_length=gait,bones=walk)}
     for idx, (move, poses) in enumerate(spec["moves"]):
         impact, end = move["windup"]/20, move["end"]/20
         keys = {}
+        if "forearm_l" in rig:
+            wrist = {
+                "echo_seam_riven": ([34,0,0],[-21,0,0],[9,0,0]),
+                "echo_veil_regent": ([52,0,-14],[-15,0,8],[22,0,0]),
+                "echo_hush_pendulum": ([19,0,-15],[-28,0,12],[11,0,0]),
+            }[sector]
+            poses = {**poses,"forearm_r":wrist}
         for name, (coil, strike, recoil) in poses.items():
             assert name in rig, name
             keys[name] = {"rotation":{
@@ -610,7 +585,7 @@ def main():
             spec["rig"] = list(machine_rigs[spec["id"]]())
             spec["palette"] = ["#b9b7a1","#925d37","#54d8f0","#5b7135","#282d30"]
         else:
-            spec["rig"] = list(rook_rig() if spec["id"] == "echo_rubble_rook" else reference_echo_rig(spec["id"]))
+            spec["rig"] = list(rook_rig() if spec["id"] == "echo_rubble_rook" else tall_echo_rig(spec["id"]))
             glow = {"echo_seam_riven":"#49d6e3","echo_veil_regent":"#ce73fa",
                     "echo_rubble_rook":"#ae5df0","echo_hush_pendulum":"#f47755"}[spec["id"]]
             spec["palette"] = ["#bdb4a9","#865c40",glow,"#65404e","#2b272b"]
