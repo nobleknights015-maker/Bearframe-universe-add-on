@@ -1,0 +1,33 @@
+{
+  "format_version": "1.14.0",
+  "sound_definitions": {
+    "bearframe.relay": {
+      "category": "block",
+      "max_distance": 24,
+      "sounds": [
+        "sounds/bearframe/relay"
+      ]
+    },
+    "bearframe.switchyard": {
+      "category": "block",
+      "max_distance": 24,
+      "sounds": [
+        "sounds/bearframe/switchyard"
+      ]
+    },
+    "bearframe.pump": {
+      "category": "block",
+      "max_distance": 24,
+      "sounds": [
+        "sounds/bearframe/pump"
+      ]
+    },
+    "bearframe.dock": {
+      "category": "block",
+      "max_distance": 24,
+      "sounds": [
+        "sounds/bearframe/dock"
+      ]
+    }
+  }
+}

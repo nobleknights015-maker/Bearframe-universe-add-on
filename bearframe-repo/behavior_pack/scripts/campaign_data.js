@@ -1,3 +1,4 @@
+export const ARCHIVE_SITE_IDS=["relay_nine", "frontier_ruin", "crashed_skiff", "sealed_archive_bunker", "collapsed_transit_bunker", "rootbound_service_bunker", "flooded_pump_bunker", "overgrown_colony", "lost_waystation", "nivalis_lab", "shattered_array"];
 const i=(key,count=1)=>[key.includes(":")?key:"minecraft:"+key,count];
 const objective=(key,label,count=1)=>({key,label,count});
 export const EVIDENCE={

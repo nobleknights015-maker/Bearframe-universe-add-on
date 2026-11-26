@@ -1,7 +1,8 @@
-import {registerChartSite,removeChartBeacon} from "./route_charts.js";
+import {hasSurveySiteNearby,missingCampaignSite,registerChartSite,removeChartBeacon} from "./route_charts.js";
+import {surveySpillway} from "./spillway.js";
 import {populateRuin,retainResident} from "./ecology.js";
 import {BlockTypes,BlockVolume,world} from "@minecraft/server";
-import {at} from "./layout.js";
+import {at,DECK,SIZE} from "./layout.js";
 import {SURFACE_DATUM,EXTENDED_SURFACE_DATUM,SURFACE_DONE,SURFACE_SITES,LEGACY_DATUM,LEGACY_SITES} from "./surface_layout.js";
 
 const crews={
@@ -397,7 +398,7 @@ function placeSurveyedSite(dim,loc,site,offsets,marker,search=true,onPlaced){
       const base=at({...center,y:actual+lift},[-(site.size.x>>1),-site.deck,-(site.size.z>>1)]);
       const foundations=survey(dim,base,site,marker?loc:undefined);
       if(!foundations)continue;
-      world.structureManager.place("bearframe:"+site.id+"_site",dim,base,{includeEntities:false});
+      world.structureManager.place("bearframe:"+(site.template??site.id+"_site"),dim,base,{includeEntities:false});
       onPlaced?.();
       for(const {pos,type} of foundations){
         const block=dim.getBlock(pos);
@@ -430,45 +431,70 @@ function placeSurveyedSite(dim,loc,site,offsets,marker,search=true,onPlaced){
 
 // Native jigsaws supply biome-specific beacons in fresh chunks. A second path
 // surveys loaded terrain so worlds with absent beacons can still get ruins.
-const roamingSites=[...SURFACE_SITES,...LEGACY_SITES].filter(site=>[
+const allSurfaceSites=[...SURFACE_SITES,...LEGACY_SITES];
+const roamingSites=allSurfaceSites.filter(site=>[
   "maintenance_relay","frontier_ruin","crashed_skiff","relay_nine","overgrown_colony",
   "lost_waystation","sealed_archive_bunker","collapsed_transit_bunker",
   "rootbound_service_bunker","flooded_pump_bunker","farfield_camp","echo_ward"
 ].includes(site.id));
-const gridSize=160;
-const offsets=[[0,0],[-14,0],[14,0],[0,-14],[0,14],[-14,-14],[14,14],[-14,14],[14,-14]];
+const fieldRelay={id:"maintenance_relay",template:"maintenance_relay_field",size:SIZE,deck:DECK,expanded:true};
+const gridSize=112;
 const retryAt=new Map();
-const passable=new Set([...clear,...soil]);
+const surveyHints=new Map();
+
+function reportSurveyDelay(player,site,now,occupied){
+  if(!site)return;
+  if((surveyHints.get(player.id)??0)>now)return;
+  if(surveyHints.size>=128)surveyHints.clear();
+  surveyHints.set(player.id,now+1200);
+  const name=site.replaceAll("_"," ");
+  player.sendMessage("§b[Farfield]§r Still surveying "+name+". "+(occupied?
+    "This area already has a surveyed ruin. Move toward a new area before trying again.":
+    "Try a wide, dry clearing away from buildings, steep slopes, and water."));
+}
+
+const cardinalOffsets=[[32,0],[0,32],[-32,0],[0,-32],[32,32],[-32,32],[-32,-32],[32,-32]];
 const hash=(x,z)=>((Math.imul(x,73856093)^Math.imul(z,19349663))>>>0);
 
-export function surveyRoamingSite(player,now,markerTypes){
+export function surveyRoamingSite(player,now){
   const {dimension:dim,location:pos}=player;
-  const gx=Math.round(pos.x/gridSize),gz=Math.round(pos.z/gridSize);
-  const seed=hash(gx,gz);
-  const x=gx*gridSize+((seed>>>9)%25)-12;
-  const z=gz*gridSize+((seed>>>17)%25)-12;
-  if(Math.abs(pos.x-x)>44||Math.abs(pos.z-z)>44)return;
-  const key=`bearframe:roaming_site:${gx},${gz}`;
-  if((retryAt.get(key)??0)>now||world.getDynamicProperty(key))return;
+  if(dim.id!=="minecraft:overworld")return;
+  const gx=Math.floor(pos.x/gridSize),gz=Math.floor(pos.z/gridSize);
+  const placementKey=`bearframe:surface_survey_v2:${gx},${gz}`;
+  if((retryAt.get(placementKey)??0)>now)return;
   if(retryAt.size>=256)retryAt.clear();
-  retryAt.set(key,now+240);
-  const loc={x,y:pos.y,z};
-  const top=dim.isChunkLoaded(loc)&&dim.getTopmostBlock(loc);
-  if(!top)return;
-  // Respect a native beacon in this neighborhood before trying alternate sites.
-  if(markerTypes.length&&dim.getBlocks(new BlockVolume(
-    {x:x-44,y:Math.max(dim.heightRange.min,top.y-25),z:z-44},
-    {x:x+44,y:Math.min(dim.heightRange.max-1,top.y+25),z:z+44}
-  ),{includeTypes:markerTypes},true).getCapacity())return;
-  const slot=Math.floor(now/240);
-  const [dx,dz]=offsets[(seed+slot)%offsets.length];
-  const center={x:x+dx,y:top.y,z:z+dz};
-  if(!dim.isChunkLoaded(center))return;
-  const ground=dim.getTopmostBlock(center);
-  if(!ground||!passable.has(ground.typeId))return;
-  const smaller=roamingSites.filter(site=>site.size.x<=49);
-  const site=smaller[(seed+Math.floor(slot/offsets.length))%smaller.length];
-  return placeSurveyedSite(dim,center,site,[[0,0]],undefined,true,()=>{
-    world.setDynamicProperty(key,site.id);
-  });
+  retryAt.set(placementKey,now+60);
+
+  const needed=missingCampaignSite(player);
+  if(world.getDynamicProperty(placementKey)){
+    reportSurveyDelay(player,needed,now,true);
+    return;
+  }
+  const requested=allSurfaceSites.find(site=>site.id===needed);
+  const seed=hash(gx,gz);
+  const preferred=roamingSites[seed%roamingSites.length];
+  const starter=needed==="maintenance_relay"||(!needed&&!hasSurveySiteNearby(fieldRelay.id,pos,144,dim));
+  const site=starter?fieldRelay:requested??preferred;
+  const start=(seed+Math.floor(now/60))%cardinalOffsets.length;
+  for(let i=0;i<4;i++){
+    const [dx,dz]=cardinalOffsets[(start+i)%cardinalOffsets.length];
+    const center={x:Math.floor(pos.x)+dx,y:Math.floor(pos.y),z:Math.floor(pos.z)+dz};
+    if(!dim.isChunkLoaded(center))continue;
+    const y=grade(dim,center);
+    if(y===undefined)continue;
+    const ground={...center,y};
+    const placed=needed==="spillway_bunker"?
+      surveySpillway(dim,ground):placeSurveyedSite(dim,ground,site,[[0,0]]);
+    if(!placed)continue;
+    world.setDynamicProperty(placementKey,needed??site.id);
+    if(needed==="spillway_bunker"){
+      player.sendMessage("§b[Farfield]§r Spillway Facility confirmed. Check your Field Charts for the entrance.");
+    }else{
+      const x=placed.x+(site.size.x>>1),z=placed.z+(site.size.z>>1);
+      const label=site.id===fieldRelay.id?"Maintenance Relay":site.id.replaceAll("_"," ");
+      player.sendMessage(`§b[Farfield]§r Survey confirmed: ${label} at X ${x}, Z ${z}.`);
+    }
+    return placed;
+  }
+  reportSurveyDelay(player,needed,now,false);
 }

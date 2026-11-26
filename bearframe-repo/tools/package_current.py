@@ -26,8 +26,15 @@ def main():
     ):
         raise ValueError("Behavior and resource pack manifests disagree")
 
+    args.output.mkdir(parents=True, exist_ok=True)
+    version_label = ".".join(map(str, version))
+    base_name = f"Bearframe_The_Last_Dispatch_{version_label}"
+    write_archive(args.output / (base_name + ".mcaddon"), PACKS)
+
+
+def write_archive(output, packs):
     members = {}
-    for folder, prefix in PACKS.items():
+    for folder, prefix in packs.items():
         pack = ROOT / folder
         for path in sorted(pack.rglob("*")):
             if not path.is_file():
@@ -40,11 +47,9 @@ def main():
                 json.loads(data.decode("utf-8-sig"))
             elif path.suffix == ".js":
                 subprocess.run(["node", "--input-type=module", "--check"], input=data, check=True)
-            members[f"{prefix}/{relative.as_posix()}"] = data
+            member = (Path(prefix) / relative).as_posix()
+            members[member] = data
 
-    args.output.mkdir(parents=True, exist_ok=True)
-    version_label = ".".join(map(str, version))
-    output = args.output / f"Bearframe_Bedrock_{version_label}_Star_Odyssey.mcaddon"
     with ZipFile(output, "w", ZIP_DEFLATED) as archive:
         for member, data in sorted(members.items()):
             archive.writestr(member, data)

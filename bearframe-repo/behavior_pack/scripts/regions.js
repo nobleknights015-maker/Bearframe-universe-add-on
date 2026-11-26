@@ -9,7 +9,7 @@ export const SURVEY_TYPES=[
    ]},
   {id:"grid_hub",name:"Overgrown Switchyard",biome:"forest",spacing:24,salt:773213,
    panel:"minecraft:lodestone",actor:"bearframe:grid_walker",cost:["minecraft:redstone",2],
-   repair:"Switchyard isolated. The service stores can be opened.",
+   repair:"The points have power. The walker can carry its empty manifest again. The service stores are open.",
    loot:[["minecraft:copper_ingot",4],["minecraft:amethyst_shard",2],["bearframe:legacy_cell",1]],
    escorts:[
      {type:"bearframe:grid_protocol_keeper",offset:[-2,0,-3]},
@@ -24,7 +24,7 @@ export const SURVEY_TYPES=[
    ]},
   {id:"intrusion_checkpoint",name:"Directorate Intrusion Checkpoint",biome:"savanna",spacing:24,salt:773219,
    panel:"minecraft:observer",actor:"bearframe:directorate_guard",cost:["minecraft:copper_ingot",3],
-   repair:"Local gate bypassed. The patrol is still active if it survived.",
+   repair:"Local gate bypassed. Watchtower logged the access route. The patrol can still answer the terminal alarm.",
    loot:[["minecraft:redstone",4],["minecraft:iron_ingot",4],["bearframe:salvaged_alloy",2]],
    escorts:[
      {type:"bearframe:directorate_officer",offset:[-3,0,0]},

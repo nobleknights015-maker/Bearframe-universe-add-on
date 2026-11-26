@@ -1,17 +1,19 @@
 import {populateBuriedSite,retainResident,fieldInteraction} from "./ecology.js";
+import {FIELD_SIGNS} from "./field_signs.js";
+import {fieldSound} from "./field_audio.js";
 import {placeFieldLog,noteActivity} from "./activity_log.js";
-import {campaignSignal,campaignDialogue,ensureDispatchBench} from "./campaign.js";
+import {campaignSignal,campaignDialogue,ensureDispatchBench,relayDebrief,stationReport} from "./campaign.js";
 import {isRecoverySpillway} from "./spillway.js";
 import {recordSurvey,reportSurvey} from "./survey_log.js";
 import {escalateNearbyDirectorate} from "./living_world.js";
-import {BlockVolume,Difficulty,ItemStack,system,world} from "@minecraft/server";
+import {BlockVolume,Difficulty,ItemStack,SignSide,system,world} from "@minecraft/server";
 import {ROTATIONS,at} from "./layout.js";
 import {
   TYPES,REGION_ANCHOR,PIN,CACHE,SEAL,ACTOR,SIGNAL,LANDING,
   ORBIT,CITY_SIZE,CITY_ARRIVAL,CITY_EXIT,CITY_ROLES
 } from "./regions.js";
 
-const CITY_ORIGIN={x:0,y:99,z:-11};
+import {CITY_ORIGIN,DOCK_ROLES,STATION_WINGS} from "./station_layout.js";
 const CHEST="minecraft:barrel";
 const STATUS="bearframe:status";
 const TRANSIT="bearframe:return_berth";
@@ -25,6 +27,9 @@ const center=({x,y,z})=>({x:x+.5,y,z:z+.5});
 const say=(p,s)=>p.sendMessage("§3[Bearframe]§r "+s);
 const transit=new Set();
 let cityReady;
+const DOCK_PRELOAD="bearframe_station_preload";
+let dockUsers=0;
+let dockPreloaded=false;
 const promiseError=error=>console.warn("[Bearframe travel] "+error);
 const phase=site=>Number(site.anchor.permutation.getState(STATUS));
 const setStatus=(site,n)=>site.anchor.setPermutation(site.anchor.permutation.withState(STATUS,n));
@@ -90,11 +95,44 @@ function canSpawnAt(dim,loc,hover=false){
   return Boolean(floor&&!floor.isAir&&!floor.isLiquid);
 }
 
+function prepareFieldSigns(site){
+  const signs=FIELD_SIGNS[site.def.id];
+  if(!signs)return;
+  const key="bearframe:field_signs:"+keyAt(site.pos);
+  if(world.getDynamicProperty(key))return;
+  let loadedAll=true;
+  for(const {offset,type,text} of signs){
+    const block=local(site,offset);
+    if(!block){loadedAll=false;continue;}
+    if(!block.isAir)continue;
+    const floor=block.below();
+    if(!floor||floor.isAir||floor.isLiquid)continue;
+    block.setType(type);
+    const sign=block.getComponent("minecraft:sign");
+    if(!sign)continue;
+    const label=site.def.id==="grid_hub"&&phase(site)>0?onlineSwitchLabel(text):text;
+    sign.setText(label);
+    sign.setText(label,SignSide.Back);
+    sign.setWaxed(true);
+  }
+  if(loadedAll)world.setDynamicProperty(key,true);
+}
+
+const onlineSwitchLabel=text=>text.split("\n").slice(0,2).concat("Carrier online").join("\n");
+
+function bindSwitchyardWalker(site,walker){
+  const key=keyAt(site.pos);
+  walker.setDynamicProperty("bearframe:switchyard_terminal",key);
+  walker.triggerEvent(phase(site)<1?"bearframe:relay_offline":"bearframe:switch_a");
+  world.setDynamicProperty("bearframe:switchyard_bound:"+key,true);
+}
+
 export function greetRegion(site){
   const {def,dim,pos,r}=site;
   const peaceful=world.getDifficulty()===Difficulty.Peaceful;
   const recovery=isRecoverySpillway(site);
   populateBuriedSite(site,at);
+  prepareFieldSigns(site);
   const primaryKey="bearframe:crew:"+keyAt(pos);
   if(!world.getDynamicProperty(primaryKey)){
     const isHostilePrimary=def.actor==="bearframe:hollow_scout"||def.actor==="bearframe:hollow_breacher"||def.actor==="bearframe:grid_turret";
@@ -104,9 +142,17 @@ export function greetRegion(site){
         const entity=dim.spawnEntity(def.actor,center(loc));
         entity.setDynamicProperty("bearframe:region_role",def.id);
         retainResident(entity);
+        if(def.id==="grid_hub")bindSwitchyardWalker(site,entity);
         world.setDynamicProperty(primaryKey,true);
       }
     }
+  }
+  if(def.id==="grid_hub"&&world.getDynamicProperty(primaryKey)&&
+    !world.getDynamicProperty("bearframe:switchyard_bound:"+keyAt(pos))){
+    const legacy=dim.getEntities({type:def.actor,location:pos,maxDistance:14}).find(entity=>
+      entity.getDynamicProperty("bearframe:region_role")===def.id&&
+      !entity.getDynamicProperty("bearframe:switchyard_terminal"));
+    if(legacy)bindSwitchyardWalker(site,legacy);
   }
   // Spawn additional contextual site squad members (multiplayer-safe via per-slot dynamic properties)
   const escorts=recovery?[
@@ -146,6 +192,35 @@ function restoreSite(site,parts){
   }
 }
 
+function respondToRepair(site){
+  const {dim,pos,def}=site;
+  if(def.id==="grid_hub"){
+    for(const walker of dim.getEntities({type:"bearframe:grid_walker",location:pos,maxDistance:20}))
+      if(walker.getDynamicProperty("bearframe:switchyard_terminal")===keyAt(pos))
+        walker.triggerEvent("bearframe:switch_a");
+    for(const {offset,type,text} of FIELD_SIGNS.grid_hub){
+      const block=local(site,offset);
+      const sign=block?.typeId===type&&block.getComponent("minecraft:sign");
+      if(sign&&sign.getText(SignSide.Front)===text){
+        sign.setWaxed(false);
+        sign.setText(onlineSwitchLabel(text));
+        sign.setText(onlineSwitchLabel(text),SignSide.Back);
+        sign.setWaxed(true);
+      }
+    }
+    fieldSound(dim,"switchyard",pos);
+  }else if(def.id==="spillway_bunker"){
+    const sign=local(site,[1,0,-1])?.getComponent("minecraft:sign");
+    if(sign){
+      sign.setWaxed(false);
+      for(const side of [SignSide.Front,SignSide.Back])
+        sign.setText("AUXILIARY PUMP\nPressure stable\nTest bench in workshop",side);
+      sign.setWaxed(true);
+    }
+    fieldSound(dim,"pump",pos);
+  }else fieldSound(dim,"relay",pos);
+}
+
 function claim(player,site){
   if(phase(site)<1)return say(player,"Restore this site's systems before opening the stores.");
   if(phase(site)>1)return say(player,"The site's supplies have already been recovered.");
@@ -170,412 +245,46 @@ function claim(player,site){
 
 async function withArea(dim,from,to,name,task){
   const areas=world.tickingAreaManager;
-  await areas.createTickingArea(name,{dimension:dim,from,to});
-  try{return await task();}
-  finally{areas.removeTickingArea(name);}
+  let timer;
+  try{
+    await Promise.race([
+      areas.createTickingArea(name,{dimension:dim,from,to}),
+      new Promise((_,reject)=>{
+        timer=system.runTimeout(()=>reject(Error("Chunk loading timed out for "+name)),200);
+      })
+    ]);
+    return await task();
+  }finally{
+    if(timer!==undefined)system.clearRun(timer);
+    if(areas.hasTickingArea(name))areas.removeTickingArea(name);
+  }
 }
 
-const STATION_WINGS = [
-  {
-    "id": "orbit_commons",
-    "origin": {
-      "x": 60,
-      "y": 99,
-      "z": -24
-    },
-    "size": [
-      51,
-      12,
-      47
-    ],
-    "roleIds": [
-      7,
-      8,
-      13,
-      16
-    ],
-    "link": [
-      [
-        59,
-        101,
-        -2
-      ],
-      [
-        59,
-        101,
-        -1
-      ],
-      [
-        59,
-        101,
-        0
-      ],
-      [
-        59,
-        101,
-        1
-      ],
-      [
-        59,
-        101,
-        2
-      ],
-      [
-        59,
-        102,
-        -2
-      ],
-      [
-        59,
-        102,
-        -1
-      ],
-      [
-        59,
-        102,
-        0
-      ],
-      [
-        59,
-        102,
-        1
-      ],
-      [
-        59,
-        102,
-        2
-      ],
-      [
-        59,
-        103,
-        -2
-      ],
-      [
-        59,
-        103,
-        -1
-      ],
-      [
-        59,
-        103,
-        0
-      ],
-      [
-        59,
-        103,
-        1
-      ],
-      [
-        59,
-        103,
-        2
-      ],
-      [
-        59,
-        104,
-        -2
-      ],
-      [
-        59,
-        104,
-        -1
-      ],
-      [
-        59,
-        104,
-        0
-      ],
-      [
-        59,
-        104,
-        1
-      ],
-      [
-        59,
-        104,
-        2
-      ]
-    ]
-  },
-  {
-    "id": "orbit_farfield",
-    "origin": {
-      "x": 10,
-      "y": 99,
-      "z": -38
-    },
-    "size": [
-      35,
-      10,
-      27
-    ],
-    "roleIds": [
-      9,
-      14
-    ],
-    "link": [
-      [
-        26,
-        101,
-        -11
-      ],
-      [
-        26,
-        101,
-        -10
-      ],
-      [
-        26,
-        102,
-        -11
-      ],
-      [
-        26,
-        102,
-        -10
-      ],
-      [
-        26,
-        103,
-        -11
-      ],
-      [
-        26,
-        103,
-        -10
-      ],
-      [
-        26,
-        104,
-        -11
-      ],
-      [
-        26,
-        104,
-        -10
-      ],
-      [
-        27,
-        101,
-        -11
-      ],
-      [
-        27,
-        101,
-        -10
-      ],
-      [
-        27,
-        102,
-        -11
-      ],
-      [
-        27,
-        102,
-        -10
-      ],
-      [
-        27,
-        103,
-        -11
-      ],
-      [
-        27,
-        103,
-        -10
-      ],
-      [
-        27,
-        104,
-        -11
-      ],
-      [
-        27,
-        104,
-        -10
-      ],
-      [
-        28,
-        101,
-        -11
-      ],
-      [
-        28,
-        101,
-        -10
-      ],
-      [
-        28,
-        102,
-        -11
-      ],
-      [
-        28,
-        102,
-        -10
-      ],
-      [
-        28,
-        103,
-        -11
-      ],
-      [
-        28,
-        103,
-        -10
-      ],
-      [
-        28,
-        104,
-        -11
-      ],
-      [
-        28,
-        104,
-        -10
-      ]
-    ]
-  },
-  {
-    "id": "orbit_operations",
-    "origin": {
-      "x": 10,
-      "y": 99,
-      "z": 12
-    },
-    "size": [
-      35,
-      10,
-      27
-    ],
-    "roleIds": [
-      10,
-      12
-    ],
-    "link": [
-      [
-        26,
-        101,
-        10
-      ],
-      [
-        26,
-        101,
-        11
-      ],
-      [
-        26,
-        102,
-        10
-      ],
-      [
-        26,
-        102,
-        11
-      ],
-      [
-        26,
-        103,
-        10
-      ],
-      [
-        26,
-        103,
-        11
-      ],
-      [
-        26,
-        104,
-        10
-      ],
-      [
-        26,
-        104,
-        11
-      ],
-      [
-        27,
-        101,
-        10
-      ],
-      [
-        27,
-        101,
-        11
-      ],
-      [
-        27,
-        102,
-        10
-      ],
-      [
-        27,
-        102,
-        11
-      ],
-      [
-        27,
-        103,
-        10
-      ],
-      [
-        27,
-        103,
-        11
-      ],
-      [
-        27,
-        104,
-        10
-      ],
-      [
-        27,
-        104,
-        11
-      ],
-      [
-        28,
-        101,
-        10
-      ],
-      [
-        28,
-        101,
-        11
-      ],
-      [
-        28,
-        102,
-        10
-      ],
-      [
-        28,
-        102,
-        11
-      ],
-      [
-        28,
-        103,
-        10
-      ],
-      [
-        28,
-        103,
-        11
-      ],
-      [
-        28,
-        104,
-        10
-      ],
-      [
-        28,
-        104,
-        11
-      ]
-    ]
+function clearDockPreload(dim){
+  try{dim.runCommand("tickingarea remove "+DOCK_PRELOAD);}catch{}
+}
+
+// A transient ticket alone may wait indefinitely when the orbital dimension
+// has no players. Keep one shared preload until all arrivals release it.
+async function withDockPreload(dim,task){
+  if(dockUsers===0){
+    clearDockPreload(dim);
+    if(!dim.isChunkLoaded(CITY_ARRIVAL)){
+      const result=dim.runCommand("tickingarea add 0 99 0 15 107 15 "+DOCK_PRELOAD+" true");
+      if(!result.successCount)throw Error("Could not preload the station dock");
+      dockPreloaded=true;
+    }
   }
-];
+  dockUsers++;
+  try{return await task();}
+  finally{
+    dockUsers--;
+    if(dockUsers===0&&dockPreloaded){
+      clearDockPreload(dim);
+      dockPreloaded=false;
+    }
+  }
+}
 
 function ensureCityCrew(dim,index) {
   const role=CITY_ROLES[index];
@@ -632,7 +341,7 @@ async function buildOrbit(){
       world.structureManager.place("bearframe:orbital_city",dim,from,{includeEntities:false});
       world.setDynamicProperty(CITY_BUILT,true);
     }
-    for(const index of [0,1,2,3,4,5,6,11,15])ensureCityCrew(dim,index);
+    for(const index of DOCK_ROLES)ensureCityCrew(dim,index);
     placeFieldLog(dim,"bearframe:log:station",[
       {x:4,y:101,z:3},{x:5,y:101,z:3},{x:4,y:101,z:-3}
     ]);
@@ -641,7 +350,10 @@ async function buildOrbit(){
 }
 
 export function ensureCity(){
-  if(!cityReady)cityReady=buildOrbit().catch(error=>{cityReady=undefined;throw error;});
+  if(!cityReady){
+    const dim=world.getDimension(ORBIT);
+    cityReady=withDockPreload(dim,buildOrbit).catch(error=>{cityReady=undefined;throw error;});
+  }
   return cityReady;
 }
 
@@ -651,45 +363,88 @@ function standing(dim,point){
   return feet?.isAir && feet.above()?.isAir && floor && !floor.isAir && !floor.isLiquid;
 }
 
-export async function travelCity(player,site){
+export function travelCity(player,site){
+  const origin=center(at(site.pos,LANDING,site.r));
+  return dockAtStation(player,origin,()=>dist(player.location,site.pos)<=49);
+}
+
+async function dockAtStation(player,origin,canDepart){
+  const surface=player.dimension;
+  if(surface.id!=="minecraft:overworld")return;
   if(transit.has(player.id))return;
   transit.add(player.id);
   try{
-    await ensureCity();
-    const dim=world.getDimension(ORBIT), origin=center(at(site.pos,LANDING,site.r));
-    await withArea(dim,{x:0,y:99,z:-12},{x:10,y:107,z:12},"bearframe-dock-in-"+player.id,()=>{
-      if(!player.isValid || player.dimension.id!==site.dim.id || dist(player.location,site.pos)>49)return;
-      if(!standing(dim,CITY_ARRIVAL))return say(player,"The orbital arrival bay is obstructed.");
-      player.setDynamicProperty(TRANSIT,JSON.stringify(origin));
-      if(!player.tryTeleport(CITY_ARRIVAL,{dimension:dim,checkForBlocks:true})){
-        player.setDynamicProperty(TRANSIT,undefined);
-        return say(player,"Docking failed. Try the camp terminal again.");
-      }
-      say(player,"Bearframe City. Sneak-interact with Mira in the Farfield Annex to begin The Last Dispatch. Use the Return Desk in the arrival bay to go back.");
+    const dim=world.getDimension(ORBIT);
+    await withDockPreload(dim,async()=>{
+      await ensureCity();
+      await withArea(dim,{x:0,y:99,z:-12},{x:10,y:107,z:12},"bearframe-dock-in-"+player.id,()=>{
+        if(!player.isValid||player.dimension.id!==surface.id)return;
+        if(!canDepart())return say(player,"Docking canceled. Stay near your departure point and try again.");
+        const arrival=[CITY_ARRIVAL,...[-1,1,2].map(dz=>({...CITY_ARRIVAL,z:CITY_ARRIVAL.z+dz}))]
+          .find(point=>standing(dim,point)&&player.tryTeleport(point,{dimension:dim,checkForBlocks:true}));
+        if(!arrival)return say(player,"The orbital arrival bay is obstructed.");
+        player.setDynamicProperty(TRANSIT,JSON.stringify(origin));
+        fieldSound(dim,"dock",arrival);
+        say(player,"Bearframe City. Sneak-interact with Mira in the Farfield Annex to begin The Last Dispatch. Use the Return Desk in the arrival bay to go back.");
+      });
     });
   }finally{transit.delete(player.id);}
 }
 
+export async function useStationTablet(player){
+  const dim=player.dimension;
+  if(dim.id===ORBIT)return travelSurface(player);
+  if(dim.id!=="minecraft:overworld")return say(player,"Use the tablet on the surface or at Bearframe Station.");
+  const {x,y,z}=player.location;
+  const origin=center({x:Math.floor(x),y:Math.floor(y),z:Math.floor(z)});
+  if(!standing(dim,origin))return say(player,"Stand on clear, solid ground to record a return berth.");
+  await dockAtStation(player,origin,()=>dist(player.location,origin)<=49&&standing(dim,origin));
+}
+
+
+const returnOffsets=Array.from({length:17},(_,i)=>i-8)
+  .flatMap(x=>Array.from({length:17},(_,i)=>[x,i-8]))
+  .sort(([ax,az],[bx,bz])=>ax*ax+az*az-bx*bx-bz*bz);
+const unsafeSurface=new Set(["minecraft:magma","minecraft:campfire","minecraft:soul_campfire",
+  "minecraft:cactus","minecraft:powder_snow","minecraft:fire","minecraft:soul_fire"]);
+
+function emergencySurface(dim,point){
+  for(const [dx,dz] of returnOffsets){
+    const column={x:Math.floor(point.x)+dx,z:Math.floor(point.z)+dz};
+    const top=dim.getTopmostBlock(column);
+    if(!top||top.isLiquid||unsafeSurface.has(top.typeId)||top.y+2>=dim.heightRange.max)continue;
+    const candidate=center({...column,y:top.y+1});
+    if(standing(dim,candidate))return candidate;
+  }
+}
+
 export async function travelSurface(player){
-  if(transit.has(player.id))return;
+  if(transit.has(player.id)||player.dimension.id!==ORBIT)return;
   const berth=player.getDynamicProperty(TRANSIT);
-  if(typeof berth!=="string")return say(player,"No surface berth recorded.");
-  const point=JSON.parse(berth), dim=world.getDimension("overworld");
+  const dim=world.getDimension("overworld");
+  const spawn=world.getDefaultSpawnLocation();
+  let point;
+  if(typeof berth==="string"){
+    try{point=JSON.parse(berth);}catch{point=undefined;}
+  }
+  const recorded=point&&[point.x,point.y,point.z].every(Number.isFinite)?point:undefined;
+  const move=(destination,exact)=>withArea(dim,
+    {...destination,x:destination.x-8,z:destination.z-8},
+    {...destination,x:destination.x+8,z:destination.z+8},
+    "bearframe-dock-out-"+player.id,()=>{
+      if(!player.isValid||player.dimension.id!==ORBIT)return false;
+      const safe=exact&&standing(dim,destination)?destination:emergencySurface(dim,destination);
+      if(!safe||!player.tryTeleport(safe,{dimension:dim,checkForBlocks:true}))return false;
+      player.setDynamicProperty(TRANSIT,undefined);
+      say(player,exact&&safe===destination?"Surface berth reached.":
+        exact?"Original berth blocked. Landed on clear ground nearby.":"Emergency descent complete near world spawn.");
+      return true;
+    });
   transit.add(player.id);
   try{
-    await withArea(dim,{...point,x:point.x-3,z:point.z-3},{...point,x:point.x+3,z:point.z+3},"bearframe-dock-out-"+player.id,()=>{
-      if(!player.isValid || player.dimension.id!==ORBIT)return;
-      let safe;
-      for(const [x,z] of [[0,0],[1,0],[-1,0],[0,1],[0,-1],[2,0],[-2,0],[0,2],[0,-2]]){
-        const p={...point,x:point.x+x,z:point.z+z};
-        if(standing(dim,p)){safe=p;break;}
-      }
-      if(!safe)return say(player,"Surface berth is blocked. The station will hold your departure.");
-      if(player.tryTeleport(safe,{dimension:dim,checkForBlocks:true})){
-        player.setDynamicProperty(TRANSIT,undefined);
-        say(player,"Surface berth reached.");
-      }
-    });
+    if(recorded&&await move(recorded,true))return;
+    if(player.isValid&&player.dimension.id===ORBIT&&!(await move(spawn,false)))
+      say(player,"No clear emergency landing found. Your berth is saved. Try the Return Desk again.");
   }finally{transit.delete(player.id);}
 }
 
@@ -709,17 +464,38 @@ export function interactRegion(player,site,kind,spend){
   if(def.id==="intrusion_checkpoint"||def.id==="saltline_town"){
     escalateNearbyDirectorate(site.dim,site.pos,16);
   }
-  if(phase(site)>=1)return say(player,def.note??def.name+" is running. Check the stores beyond the gate.");
+  if(phase(site)>=1){
+    if(def.id==="foundry_annex"&&player.isSneaking){
+      const bag=player.getComponent("minecraft:inventory")?.container;
+      if(!bag?.emptySlotsCount)return say(player,"Open one slot for the Annex stock.");
+      const paid=spend(player,"minecraft:coal",1,()=>bag.addItem(new ItemStack("minecraft:iron_ingot",2)));
+      return say(player,paid?"The handler delivered two iron ingots.":"The handler needs one coal to process two iron ingots.");
+    }
+    return say(player,def.note??def.name+" is running. Check the stores beyond the gate.");
+  }
   const {seal,signal}=offsets(site);
   const parts=[...seal,signal].map(p=>local(site,p));
   if(parts.slice(0,2).some(b=>!b||!MOORINGS.includes(b.typeId))||parts[2]?.typeId!=="minecraft:coal_block")
     return say(player,"This site's hardware is blocked, altered, or outside loaded terrain.");
   const [item,n]=def.cost;
-  return say(player,spend(player,item,n,()=>restoreSite(site,parts))
-    ?def.repair:`${def.name} needs ${n} ${item.slice(10).replaceAll("_"," ")}.`);
+  if(!spend(player,item,n,()=>restoreSite(site,parts)))
+    return say(player,`${def.name} needs ${n} ${item.slice(10).replaceAll("_"," ")}.`);
+  try{respondToRepair(site);}catch(error){promiseError(error);}
+  return say(player,def.repair);
 }
 
 export function installExpedition({validPlayer,spend,attempt}){
+  system.beforeEvents.startup.subscribe(({itemComponentRegistry})=>{
+    itemComponentRegistry.registerCustomComponent("bearframe:station_transit",{
+      onUse:({source:player})=>system.run(()=>{
+        if(!validPlayer(player))return;
+        useStationTablet(player).catch(error=>{
+          promiseError(error);
+          if(player.isValid)say(player,"Station transit failed. Try again in a moment.");
+        });
+      })
+    });
+  });
   world.beforeEvents.playerInteractWithBlock.subscribe(event=>{
     const {player,block}=event;
     const isExit=block.dimension.id===ORBIT && block.typeId==="minecraft:lodestone" && keyAt(block.location)===keyAt(CITY_EXIT);
@@ -729,7 +505,13 @@ export function installExpedition({validPlayer,spend,attempt}){
     const {dimension,location}=block;
     system.run(()=>attempt(()=>{
       if(!validPlayer(player)||player.dimension.id!==dimension.id||dist(player.location,location)>49)return;
-      if(isExit){travelSurface(player).catch(promiseError);return;}
+      if(isExit){
+        travelSurface(player).catch(error=>{
+          promiseError(error);
+          if(player.isValid)say(player,"The surface could not be loaded. Try the Return Desk again.");
+        });
+        return;
+      }
       const current=dims(dimension,location),site=matchRegionDevice(current);
       if(site){
         const terminal=current.typeId===site.def.panel;
@@ -764,8 +546,14 @@ export function installExpedition({validPlayer,spend,attempt}){
         return;
       }
       if(campaignDialogue(player,target,staff))return;
-      if(target.typeId==="bearframe:ward_resident"&&player.dimension.id==="minecraft:overworld")
+      if(stationReport(player,staff)||(staff===14&&relayDebrief(player)))return;
+      if(target.typeId==="bearframe:ward_resident"&&player.dimension.id==="minecraft:overworld"){
         campaignSignal(player,"echo","ward_resident");
+        if(target.getDynamicProperty("bearframe:region_role")==="echo_ward"){
+          say(player,"You can look at the service records. Please leave the core housings closed. We keep our own names here.");
+          return;
+        }
+      }
       say(player,typeof staff==="number"?CITY_ROLES[staff]?.line??"Mind the airlock."
         :"I remember the auxiliary lamps. Leave my memory housing as it is—damage doesn't mean I'm not still here.");
     }));

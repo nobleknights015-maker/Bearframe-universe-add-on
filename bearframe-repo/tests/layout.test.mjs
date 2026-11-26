@@ -1,52 +1,57 @@
 import assert from "node:assert/strict";
-import {readFileSync} from "node:fs";
 import test from "node:test";
-import nbt from "prismarine-nbt";
-import {ACTORS,BREAKER,DECK,DIRECTION,GATE,RECOVERY,SIZE,at} from "../behavior_pack/scripts/layout.js";
-const root=new URL("../behavior_pack/",import.meta.url);
-const origin={x:10,y:DECK+1,z:8};
-const template=nbt.simplify(nbt.parseUncompressed(readFileSync(new URL("structures/bearframe/maintenance_relay_site.mcstructure",root)),"little"));
-const data=template.structure.block_indices[0], palette=template.structure.palette.default.block_palette;
-function cell(x,y,z){return palette[data[(x*SIZE.y+y)*SIZE.z+z]]?.name;}
-function named(p){const loc=at(origin,p);return cell(loc.x,loc.y,loc.z);}
-test("relay deck keeps two buried footing layers and no deep artificial fill",()=>{
-  assert.deepEqual(template.size,[SIZE.x,SIZE.y,SIZE.z]);
-  for(let x=0;x<SIZE.x;x++)for(let z=0;z<SIZE.z;z++){
-    assert.notEqual(cell(x,DECK,z),"minecraft:air");
-    for(let y=DECK-2;y<DECK;y++)assert(cell(x,y,z),`missing footing at ${x}/${y}/${z}`);
-    for(let y=0;y<DECK-2;y++)assert.equal(cell(x,y,z),undefined);
-  }
+import {ACTORS,BREAKER,BULKHEAD,DIRECTION,GATE,POWER_LIGHTS,RECOVERY} from "../behavior_pack/scripts/layout.js";
+import {SURFACE_SITES} from "../behavior_pack/scripts/surface_layout.js";
+import {loadStructure,terminalLookup,walkableCells} from "./structure-fixture.mjs";
+
+const site=SURFACE_SITES.find(s=>s.id==="maintenance_relay");
+const template=loadStructure(site.id+"_site");
+const {position,at}=terminalLookup(template,"bearframe:relay_anchor");
+const absolute=([x,y,z])=>[position[0]+x,position[1]+y,position[2]+z];
+
+test("relay template fits its surveyed footprint and preserves deep terrain",()=>{
+  assert.deepEqual(template.size,[site.size.x,site.size.y,site.size.z]);
+  for(let x=0;x<site.size.x;x++)for(let z=0;z<site.size.z;z++)
+    for(let y=0;y<site.deck-2;y++)assert.equal(template.cell(x,y,z),undefined);
 });
-test("mechanics resolve authored terminal, marker, breaker, gate, locker, and three standing slots",()=>{
-  assert.equal(named([0,0,0]),"minecraft:lectern");
-  assert.equal(named([0,-2,0]),"bearframe:relay_anchor");
-  assert.equal(named(DIRECTION),"minecraft:lodestone");
-  assert.equal(named(BREAKER),"minecraft:cut_copper");
-  assert(GATE.every(p=>named(p)==="minecraft:iron_bars"));
-  assert.equal(named(RECOVERY),"minecraft:barrel");
+
+test("relay hardware and actor slots match the runtime layout",()=>{
+  assert.equal(at([0,0,0])?.name,"minecraft:lectern");
+  assert.equal(at(DIRECTION)?.name,"minecraft:lodestone");
+  assert.equal(at(BREAKER)?.name,"minecraft:cut_copper");
+  assert.equal(at(BULKHEAD)?.name,"minecraft:cobblestone");
+  for(const p of POWER_LIGHTS)assert.equal(at(p)?.name,"minecraft:coal_block");
+  for(const p of GATE)assert.equal(at(p)?.name,"minecraft:iron_bars");
+  assert.equal(at(RECOVERY)?.name,"minecraft:barrel");
   for(const [x,y,z] of Object.values(ACTORS)){
-    assert.equal(named([x,y,z]),"minecraft:air");
-    assert.equal(named([x,y+1,z]),"minecraft:air");
+    assert.equal(at([x,y,z])?.name,"minecraft:air");
+    assert.equal(at([x,y+1,z])?.name,"minecraft:air");
+    assert(at([x,y-1,z])?.name && at([x,y-1,z]).name!=="minecraft:air");
   }
 });
-test("both exits and the west path reach the terminal; east locker stays behind the locked partition",()=>{
-  const good=(x,z,open)=>{
-    const state=(y)=>open&&x===14&&z===8?"minecraft:air":cell(x,y,z);
-    return state(DECK+1)==="minecraft:air"&&state(DECK+2)==="minecraft:air";
-  };
-  function visited(open){
-    const queue=[[0,8]],seen=new Set();
-    while(queue.length){
-      const [x,z]=queue.pop(), key=`${x},${z}`;
-      if(x<0||x>=SIZE.x||z<0||z>=SIZE.z||seen.has(key)||!good(x,z,open))continue;
-      seen.add(key);
-      queue.push([x+1,z],[x-1,z],[x,z+1],[x,z-1]);
-    }
-    return seen;
-  }
-  const before=visited(false);
-  assert(before.has("11,8"));
-  assert(before.has("5,0")&&before.has("5,16"));
-  assert(!before.has("16,8"));
-  assert(visited(true).has("16,8"));
+
+test("relay approach reaches the terminal and repairing the gate grants locker access",()=>{
+  const starts=template.find("bearframe:approach_anchor").map(([x,y,z])=>[x,y+3,z]);
+  assert(starts.length>0);
+  const before=walkableCells(template,starts);
+  const terminal=absolute([-1,0,0]).join(",");
+  const locker=absolute([6,0,0]).join(",");
+  assert(before.has(terminal),"Lectern unreachable");
+  assert(!before.has(locker),"Locker accessible before repair");
+  assert(walkableCells(template,starts,GATE.map(absolute)).has(locker),"Locker unreachable after repair");
+});
+
+test("compact discovery relay has a reachable terminal and working circuit",()=>{
+  const compact=loadStructure("maintenance_relay_field");
+  const {position,at}=terminalLookup(compact,"bearframe:relay_anchor");
+  assert.deepEqual(compact.size,[21,19,17]);
+  assert.equal(at([0,0,0])?.name,"minecraft:lectern");
+  assert.equal(at(BREAKER)?.name,"minecraft:cut_copper");
+  assert.equal(at(BULKHEAD)?.name,"minecraft:cobblestone");
+  for(const p of POWER_LIGHTS)assert.equal(at(p)?.name,"minecraft:coal_block");
+  assert.equal(at(RECOVERY)?.name,"minecraft:barrel");
+  for(const p of GATE)assert.equal(at(p)?.name,"minecraft:iron_bars");
+  const [x,y,z]=position;
+  const starts=compact.find("bearframe:approach_anchor").map(([x,y,z])=>[x,y+3,z]);
+  assert(walkableCells(compact,starts).has([x-1,y,z].join(",")));
 });

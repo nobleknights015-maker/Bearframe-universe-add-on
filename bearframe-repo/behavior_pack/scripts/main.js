@@ -1,4 +1,6 @@
-import {registerChartSite,installRouteCharts} from "./route_charts.js";
+import {ARCHIVE_SITE_IDS} from "./campaign_data.js";
+import {fieldSound} from "./field_audio.js";
+import {offerRelayLead,registerChartSite,installRouteCharts} from "./route_charts.js";
 import {installEcology,retainResident} from "./ecology.js";
 import {installActivityLog} from "./activity_log.js";
 import {campaignSignal,installCampaign} from "./campaign.js";
@@ -124,7 +126,8 @@ function useRelay(player,site,kind){
       try{breaker.setType("minecraft:waxed_cut_copper");advance(site,1);}
       catch(error){breaker.setPermutation(former);throw error;}
     });
-    return info(player,paid?"Breaker fitted. Clear the cobblestone at the copper service line and return with 1 redstone dust.":"Breaker open. Bring 2 copper ingots to repair it.");
+    if(paid)attempt(()=>dim.playSound("random.click",terminal,{volume:.65,pitch:.75}));
+    return info(player,paid?"Breaker seated. Follow the copper line to the rubble, clear it, then bring one redstone dust back here.":"The breaker is missing its contact plates. Bring two copper ingots.");
   }
   if(state===1){
     const debris=loaded(dim,at(terminal,BULKHEAD,rotation));
@@ -134,10 +137,31 @@ function useRelay(player,site,kind){
       lights.some(b=>!b || !["minecraft:coal_block","minecraft:sea_lantern"].includes(b.typeId)) ||
       breaker?.typeId!=="minecraft:waxed_cut_copper")return info(player,"Station hardware is obstructed or outside loaded terrain.");
     const paid=spend(player,"minecraft:redstone",1,()=>restorePower(site));
-    return info(player,paid?"Circuit restored. The service wing is open. Check the recovery locker.":"Bring 1 redstone dust to reconnect the circuit.");
+    if(!paid)return info(player,"The line is clear. Bring one redstone dust to bridge the signal contact.");
+    campaignSignal(player,"repair","maintenance_relay",terminal);
+    announceRelayPower(site);
+    return;
   }
-  return info(player,"Power stable. The locker is in the service wing beyond the bars.");
+  campaignSignal(player,"repair","maintenance_relay",terminal);
+  return info(player,"The service wing has power. The relay keeps repeating: Keep one bunk warm. Reservation still open.");
 }
+
+function announceRelayPower(site){
+  const {dim,terminal}=site;
+  for(const walker of dim.getEntities({type:ACTOR_TYPES.walker,location:terminal,maxDistance:12})){
+    if(walker.getDynamicProperty("bearframe:relay_walker")===relayKey(terminal))
+      attempt(()=>walker.triggerEvent("bearframe:relay_online"));
+  }
+  fieldSound(dim,"relay",at(terminal,GATE[0],site.rotation));
+  system.runTimeout(()=>attempt(()=>{
+    if(!dim.isChunkLoaded(terminal))return;
+    attempt(()=>dim.playSound("random.orb",terminal,{volume:.55,pitch:.65}));
+    for(const listener of dim.getPlayers({location:terminal,maxDistance:16}))
+      info(listener,"Relay transmission: Keep one bunk warm. Reservation still open.");
+  }),14);
+}
+
+const relayKey=({x,y,z})=>[x,y,z].join(",");
 
 function activateSite(site){
   const {dim,terminal,rotation}=site;
@@ -147,8 +171,13 @@ function activateSite(site){
     if(role==="scout"&&world.getDifficulty()===Difficulty.Peaceful)continue;
     const key=`bearframe:resident:${terminal.x},${terminal.y},${terminal.z}:${role}`;
     if(world.getDynamicProperty(key))continue;
-    retainResident(dim.spawnEntity(ACTOR_TYPES[role],{x:pos.x+.5,y:pos.y,z:pos.z+.5}));
+    const resident=dim.spawnEntity(ACTOR_TYPES[role],{x:pos.x+.5,y:pos.y,z:pos.z+.5});
     world.setDynamicProperty(key,true);
+    retainResident(resident);
+    if(role==="walker"){
+      resident.setDynamicProperty("bearframe:relay_walker",relayKey(terminal));
+      if(phase(site)<2)resident.triggerEvent("bearframe:relay_offline");
+    }
   }
 }
 
@@ -173,11 +202,10 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event=>{
 
 world.beforeEvents.playerInteractWithEntity.subscribe(event=>{
   const {player,target}=event;
-  if(target.typeId!==ACTOR_TYPES.engineer)return;
+  if(target.typeId!==ACTOR_TYPES.engineer||target.dimension.id===ORBIT)return;
   event.cancel=true;
   system.run(()=>attempt(()=>{
     if(!validPlayer(player)||!target.isValid||dist(player.location,target.location)>49)return;
-    if(target.dimension.id===ORBIT)return;
     if(!player.isSneaking)return info(player,"I'm with Farfield. Start at the lectern. Sneak-interact to trade 2 charcoal for a torch kit.");
     const bag=component(player);
     if(!bag || bag.emptySlotsCount===0)return info(player,"Free one slot for four torches.");
@@ -196,13 +224,18 @@ system.runInterval(()=>{
     if(p.dimension.id!=="minecraft:overworld")return cells.delete(p.id);
     const {dimension:dim,location:loc}=p;
     registeredSiteMarkers??=siteMarkers.filter(id=>BlockTypes.get(id));
-    surveyRoamingSite(p,system.currentTick,registeredSiteMarkers);
     const key=[loc.x,loc.y,loc.z].map(n=>Math.floor(n/12)).join(",");
     const last=cells.get(p.id);
-    if(last?.key===key && (!last.pending || system.currentTick-last.tick<240))return;
+    if(last?.key===key && (!last.pending || system.currentTick-last.tick<240)){
+      if(surveyRoamingSite(p,system.currentTick))cells.delete(p.id);
+      offerRelayLead(p);
+      return;
+    }
     let pending=false;
-    const a={x:Math.floor(loc.x)-40,y:Math.max(dim.heightRange.min,Math.floor(loc.y)-18),z:Math.floor(loc.z)-40};
-    const b={x:Math.floor(loc.x)+40,y:Math.min(dim.heightRange.max-1,Math.floor(loc.y)+14),z:Math.floor(loc.z)+40};
+    const top=dim.isChunkLoaded(loc)?dim.getTopmostBlock(loc)?.y:undefined;
+    const y=Math.floor(top!==undefined&&loc.y>top+18?top:loc.y);
+    const a={x:Math.floor(loc.x)-40,y:Math.max(dim.heightRange.min,y-24),z:Math.floor(loc.z)-40};
+    const b={x:Math.floor(loc.x)+40,y:Math.min(dim.heightRange.max-1,y+19),z:Math.floor(loc.z)+40};
     if(!registeredSiteMarkers.length)return;
     for(const p of dim.getBlocks(new BlockVolume(a,b),{includeTypes:registeredSiteMarkers},true).getBlockLocationIterator()){
       const marker=loaded(dim,p);
@@ -225,13 +258,21 @@ system.runInterval(()=>{
       if(site){registerChartSite("maintenance_relay",dim.id,at(p,[0,2,0]));activateSite(site);}
     }
     cells.set(p.id,{key,pending,tick:system.currentTick});
+    if(surveyRoamingSite(p,system.currentTick))cells.delete(p.id);
+    offerRelayLead(p);
   });
 },60);
+
+world.afterEvents.playerSpawn.subscribe(({player,initialSpawn})=>{
+  if(!initialSpawn||!validPlayer(player)||player.getDynamicProperty("bearframe:farfield_intro"))return;
+  player.setDynamicProperty("bearframe:farfield_intro",true);
+  info(player,"Farfield is taking volunteers. Find a Survey Camp and sneak-use its map table, or craft a Teleport Tablet at a crafting table. Ask Mira for your first assignment aboard Bearframe Station.");
+});
 
 installExpedition({validPlayer,spend,attempt});
 installLivingWorld({validPlayer,spend,attempt});
 
-installCampaign(["relay_nine", "frontier_ruin", "crashed_skiff", "sealed_archive_bunker", "collapsed_transit_bunker", "rootbound_service_bunker", "flooded_pump_bunker", "overgrown_colony", "lost_waystation", "nivalis_lab", "shattered_array"]);
+installCampaign(ARCHIVE_SITE_IDS);
 
 installActivityLog();
 

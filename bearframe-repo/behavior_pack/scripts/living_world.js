@@ -3,6 +3,9 @@ import {campaignSignal} from "./campaign.js";
 import {ItemStack,system,world} from "@minecraft/server";
 import {ORBIT} from "./regions.js";
 
+const CALIBRATED_SCANNER="bearframe:calibrated_scanner";
+const CALIBRATED_WRENCH="bearframe:calibrated_wrench";
+
 const directorateCadres = new Set(["bearframe:directorate_officer","bearframe:directorate_guard"]);
 
 const SCAN_DB={
@@ -181,11 +184,12 @@ export function installLivingWorld({validPlayer,spend,attempt}){
     attempt(()=>{
       if(!validPlayer(player))return;
       const dim=player.dimension;
-      const nearby=dim.getEntities({location:player.location,maxDistance:18})
+      const range=player.getDynamicProperty(CALIBRATED_SCANNER)?30:18;
+      const nearby=dim.getEntities({location:player.location,maxDistance:range})
         .filter(e=>e.typeId.startsWith("bearframe:") && e.typeId!=="bearframe:grid_bolt")
         .sort((a,b)=>distSq(player.location,a.location)-distSq(player.location,b.location));
       if(!nearby.length){
-        return say(player,"§b[Farfield Scanner]","No synthetic signatures or autonomous machines within 18 blocks.");
+        return say(player,"§b[Farfield Scanner]",`No synthetic signatures or autonomous machines within ${range} blocks.`);
       }
       const target=nearby[0];
       const entry=SCAN_DB[target.typeId]??{tag:target.typeId,note:"Unclassified Bearframe-universe entity."};
@@ -207,6 +211,22 @@ export function installLivingWorld({validPlayer,spend,attempt}){
     const held=heldItem(player);
     const holdingWrench=held?.typeId==="bearframe:repair_wrench";
 
+    if(isCityStaff&&target.typeId==="bearframe:atlas_rigger"&&player.isSneaking&&
+      (holdingWrench||held?.typeId==="bearframe:field_scanner")){
+      event.cancel=true;
+      system.run(()=>attempt(()=>{
+        if(!validPlayer(player)||!target.isValid||player.dimension.id!==target.dimension.id||
+          distSq(player.location,target.location)>36)return;
+        const key=holdingWrench?CALIBRATED_WRENCH:CALIBRATED_SCANNER;
+        const tool=holdingWrench?"Maintenance Wrench":"Diagnostic Scanner";
+        if(player.getDynamicProperty(key))return say(player,"§6[Atlas Rigger]",tool+" certification is already on your record.");
+        const paid=spend(player,"bearframe:salvaged_alloy",3,()=>player.setDynamicProperty(key,true));
+        say(player,"§6[Atlas Rigger]",paid?tool+" recalibrated. The certification applies to your replacements too.":
+          "Bring three Salvaged Chassis Alloy for "+tool+" calibration.");
+      }));
+      return;
+    }
+
     // Handle Atlas Maintenance Wrench field repair on damaged friendly/stabilized units
     if(holdingWrench && player.isSneaking && (
       target.typeId.startsWith("bearframe:atlas_") ||
@@ -225,7 +245,7 @@ export function installLivingWorld({validPlayer,spend,attempt}){
           return say(player,"§6[Atlas Wrench]","Chassis integrity is already nominal.");
         }
         const paid=spend(player,"minecraft:iron_nugget",1,()=>{
-          hp.setCurrentValue(Math.min(hp.effectiveMax,hp.currentValue+8));
+          hp.setCurrentValue(Math.min(hp.effectiveMax,hp.currentValue+(player.getDynamicProperty(CALIBRATED_WRENCH)?14:8)));
         });
         if(!paid)return say(player,"§6[Atlas Wrench]","Carry 1 iron nugget to patch chassis damage.");
         try{target.dimension.spawnParticle("minecraft:villager_happy",{x:target.location.x,y:target.location.y+1.4,z:target.location.z});}catch{}
@@ -293,7 +313,8 @@ export function installLivingWorld({validPlayer,spend,attempt}){
         if(!validPlayer(player)||!target.isValid||distSq(player.location,target.location)>49)return;
         if(!player.isSneaking){
           const line=pick(DIALOGUES["bearframe:atlas_rigger"],Math.floor(system.currentTick/40));
-          return say(player,"§6[Atlas Rigger]",line);
+          return say(player,"§6[Atlas Rigger]",isCityStaff?
+            "Hold a Scanner or Wrench and sneak-interact to calibrate it for three Salvaged Chassis Alloy. Empty-handed, I can reclaim ingots.":line);
         }
         const bag=player.getComponent("minecraft:inventory")?.container;
         if(!bag||bag.emptySlotsCount<2)return say(player,"§6[Atlas Rigger]","Free 2 inventory slots for reclaimed iron and copper.");
