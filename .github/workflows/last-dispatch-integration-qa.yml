@@ -1,0 +1,50 @@
+name: Last Dispatch integration QA
+on:
+  push:
+    branches: ['feature/last-dispatch-rpg-boss-integration']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: last-dispatch-integration-qa
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: bearframe-repo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install test dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Full regression suite
+        run: npm test
+      - name: Package verified candidate
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          version=[0,11,0]
+          for folder in ('behavior_pack','resource_pack'):
+              path=Path(folder)/'manifest.json'
+              data=json.loads(path.read_text())
+              data['header']['version']=version
+              for module in data['modules']:
+                  module['version']=version
+              for dep in data.get('dependencies',[]):
+                  if dep.get('uuid')=='57aabde7-cd63-5995-b00d-a69f983ba905':
+                      dep['version']=version
+              path.write_text(json.dumps(data,indent=2)+'\n')
+          PY
+          python3 tools/package_current.py dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Last-Dispatch-0.11.0-test-candidate
+          path: bearframe-repo/dist/*.mcaddon
+          if-no-files-found: error
+          retention-days: 7
