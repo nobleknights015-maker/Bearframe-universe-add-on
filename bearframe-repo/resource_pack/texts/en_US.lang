@@ -87,3 +87,11 @@ item.bearframe:field_log_pad.name=Field Log Pad
 item.bearframe:teleport_tablet.name=Teleport Tablet
 
 tile.bearframe:field_lantern.name=Bearframe Field Lantern
+entity.bearframe:grid_palinode.name=Palinode-6
+item.spawn_egg.entity.bearframe:grid_palinode.name=Spawn Palinode-6
+entity.bearframe:grid_silt_engine.name=Silt Engine
+item.spawn_egg.entity.bearframe:grid_silt_engine.name=Spawn Silt Engine
+entity.bearframe:echo_seam_riven.name=Seam-Riven
+item.spawn_egg.entity.bearframe:echo_seam_riven.name=Spawn Seam-Riven
+entity.bearframe:echo_veil_regent.name=Veil Regent
+item.spawn_egg.entity.bearframe:echo_veil_regent.name=Spawn Veil Regent

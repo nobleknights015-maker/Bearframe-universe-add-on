@@ -1,0 +1,37 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bearframe:grid_palinode",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/bearframe/grid_palinode"
+      },
+      "geometry": {
+        "default": "geometry.bearframe.grid_palinode"
+      },
+      "animations": {
+        "idle": "animation.bearframe.grid_palinode.idle",
+        "walk": "animation.bearframe.grid_palinode.walk",
+        "attack0": "animation.bearframe.grid_palinode.attack0",
+        "attack1": "animation.bearframe.grid_palinode.attack1",
+        "death": "animation.bearframe.grid_palinode.death",
+        "boss": "controller.animation.bearframe.boss"
+      },
+      "scripts": {
+        "animate": [
+          "boss"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bearframe"
+      ],
+      "spawn_egg": {
+        "base_color": "#55594b",
+        "overlay_color": "#60e8da"
+      }
+    }
+  }
+}

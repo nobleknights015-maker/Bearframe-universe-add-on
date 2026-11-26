@@ -1,3 +1,4 @@
+import {installBossCombat} from "./boss_combat.js";
 import {ARCHIVE_SITE_IDS} from "./campaign_data.js";
 import {fieldSound} from "./field_audio.js";
 import {offerRelayLead,registerChartSite,installRouteCharts} from "./route_charts.js";
@@ -271,3 +272,5 @@ installActivityLog();
 installEcology();
 
 installRouteCharts();
+
+installBossCombat();

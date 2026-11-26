@@ -1,0 +1,80 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.bearframe.boss": {
+      "states": {
+        "default": {
+          "animations": [
+            "idle"
+          ],
+          "transitions": [
+            {
+              "death": "!query.is_alive"
+            },
+            {
+              "attack0": "query.property('bearframe:boss_move') == 1"
+            },
+            {
+              "attack1": "query.property('bearframe:boss_move') == 2"
+            },
+            {
+              "walk": "query.is_moving"
+            }
+          ],
+          "blend_transition": 0.1
+        },
+        "walk": {
+          "animations": [
+            "walk"
+          ],
+          "transitions": [
+            {
+              "death": "!query.is_alive"
+            },
+            {
+              "attack0": "query.property('bearframe:boss_move') == 1"
+            },
+            {
+              "attack1": "query.property('bearframe:boss_move') == 2"
+            },
+            {
+              "default": "!query.is_moving"
+            }
+          ],
+          "blend_transition": 0.1
+        },
+        "attack0": {
+          "animations": [
+            "attack0"
+          ],
+          "transitions": [
+            {
+              "death": "!query.is_alive"
+            },
+            {
+              "default": "query.property('bearframe:boss_move') == 0"
+            }
+          ]
+        },
+        "attack1": {
+          "animations": [
+            "attack1"
+          ],
+          "transitions": [
+            {
+              "death": "!query.is_alive"
+            },
+            {
+              "default": "query.property('bearframe:boss_move') == 0"
+            }
+          ]
+        },
+        "death": {
+          "animations": [
+            "death"
+          ]
+        }
+      }
+    }
+  }
+}
