@@ -1,3 +1,4 @@
+import {creditedPlayer} from "./combat_credit.js";
 import {archiveChart} from "./route_charts.js";
 const HABITATS={
   "sealed_archive_bunker": {
@@ -689,8 +690,8 @@ export function installEcology(){
     system.run(()=>interact(player,target));
   });
   world.afterEvents.entityDie.subscribe(({deadEntity,damageSource})=>{
-    if(deadEntity.dimension.id!==OVERWORLD||!dangerous.has(deadEntity.typeId.split(":")[1]))return;
-    const p=damageSource.damagingEntity;
+    if(deadEntity.dimension.id!==OVERWORLD||!deadEntity.typeId.startsWith("bearframe:")||!dangerous.has(deadEntity.typeId.split(":")[1]))return;
+    const p=creditedPlayer(damageSource);
     if(p?.typeId==="minecraft:player")fieldProgress(p,"hazard",deadEntity.typeId);
   });
 }

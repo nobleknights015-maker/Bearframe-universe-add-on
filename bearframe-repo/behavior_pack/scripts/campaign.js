@@ -1,3 +1,4 @@
+import {creditedPlayer} from "./combat_credit.js";
 import {archiveChart,openCharts,registerChartSite} from "./route_charts.js";
 import {fieldProgress} from "./ecology.js";
 import {noteActivity} from "./activity_log.js";
@@ -298,7 +299,7 @@ export function installCampaign(archiveIds){
   });
   world.afterEvents.entityDie.subscribe(({deadEntity,damageSource})=>{
     if(deadEntity.dimension.id!==OVERWORLD||!/^bearframe:(hollow_|nullframe_hunter)/.test(deadEntity.typeId))return;
-    const killer=damageSource.damagingEntity;
+    const killer=creditedPlayer(damageSource);
     if(killer?.typeId==="minecraft:player")campaignSignal(killer,"kill",deadEntity.typeId);
   });
 }

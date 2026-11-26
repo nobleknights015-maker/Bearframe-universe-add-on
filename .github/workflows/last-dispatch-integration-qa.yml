@@ -26,25 +26,11 @@ jobs:
         run: npm test
       - name: Package verified candidate
         run: |
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-          version=[0,11,9]
-          for folder in ('behavior_pack','resource_pack'):
-              path=Path(folder)/'manifest.json'
-              data=json.loads(path.read_text())
-              data['header']['version']=version
-              for module in data['modules']:
-                  module['version']=version
-              for dep in data.get('dependencies',[]):
-                  if dep.get('uuid')=='57aabde7-cd63-5995-b00d-a69f983ba905':
-                      dep['version']=version
-              path.write_text(json.dumps(data,indent=2)+'\n')
-          PY
           python3 tools/package_current.py dist
+          python3 tools/verify_package.py dist/Bearframe_The_Last_Dispatch_0.11.10.mcaddon
       - uses: actions/upload-artifact@v4
         with:
-          name: Last-Dispatch-0.11.9-boss-energy-test-candidate
+          name: Last-Dispatch-0.11.10-integrated-test-candidate
           path: bearframe-repo/dist/*.mcaddon
           if-no-files-found: error
           retention-days: 7

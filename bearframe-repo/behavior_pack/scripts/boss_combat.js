@@ -1,3 +1,4 @@
+import {creditedPlayer} from "./combat_credit.js";
 import { Difficulty, EntityDamageCause, GameMode, system, world } from "@minecraft/server";
 import { BOSS_MOVES } from "./boss_moves.js";
 
@@ -175,10 +176,10 @@ export function installBossCombat() {
   world.afterEvents.entityLoad.subscribe(({ entity }) => register(entity));
   world.afterEvents.entityHurt.subscribe(({hurtEntity,damageSource})=>{
     if(!BOSS_MOVES[hurtEntity.typeId])return;
-    const p=damageSource.damagingEntity;
+    const p=creditedPlayer(damageSource);
     if(p?.typeId!=="minecraft:player"||!eligible(p))return;
     const state=active.get(hurtEntity.id);
-    if(state){state.origin=hurtEntity.location;state.dimension=hurtEntity.dimension.id;state.claim=hurtEntity.getDynamicProperty("bearframe:boss_claim")??state.claim;}
+    if(state){try{state.origin=hurtEntity.location;state.dimension=hurtEntity.dimension.id;state.claim=hurtEntity.getDynamicProperty("bearframe:boss_claim")??state.claim;}catch{}}
     const record=participants.get(hurtEntity.id)??new Map();
     record.set(p.id,system.currentTick);
     participants.set(hurtEntity.id,record);
@@ -196,7 +197,7 @@ export function installBossCombat() {
       if(typeof key==="string"&&key.startsWith("bearframe:boss_site:"))world.setDynamicProperty(key,defeatedClaim(now));
       if(dim!=="minecraft:overworld"||world.getDifficulty()===Difficulty.Peaceful)return;
       const candidates=world.getAllPlayers().filter(eligible);
-      const killer=damageSource.damagingEntity;
+      const killer=creditedPlayer(damageSource);
       const recent=[...record].filter(([,tick])=>now-tick<=2400).map(([id])=>id);
       const ids=new Set(creditIds(recent,killer?.typeId==="minecraft:player"&&eligible(killer)?killer.id:null,candidates.map(p=>({id:p.id,valid:p.isValid,dimension:p.dimension.id,location:p.location})),origin,dim));
       for(const player of candidates)if(ids.has(player.id)){
