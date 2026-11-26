@@ -8,7 +8,7 @@
       {
         "element": {
           "element_type": "minecraft:single_pool_element",
-          "location": "bearframe/lost_waystation"
+          "location": "bearframe/lost_waystation_site_district"
         },
         "weight": 1
       }

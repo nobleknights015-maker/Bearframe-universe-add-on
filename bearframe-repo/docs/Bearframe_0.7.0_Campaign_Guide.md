@@ -19,7 +19,7 @@ When Farfield confirms a nearby Maintenance Relay, its first signal sets a beari
 
 ### Expedition services
 
-- **Find a missing site.** Open Treasure Charts from the Field Log and select an active objective. If the site has no confirmed entrance, request a Farfield survey. Explore dry terrain so the survey can try placement. A successful request sets a bearing. Some sites still require their native biome and terrain conditions, and a beacon is only a survey candidate.
+- **Find a missing site.** Open Treasure Charts from the Field Log and select an active objective. If the site has no confirmed entrance, request a Farfield survey. Explore the listed biome to find the structures Bedrock put into newly generated chunks. Farfield confirms the waypoint when you reach a site. Survey requests track discoveries and do not create structures.
 - **Read the surroundings.** The Switchyard signs mark two destinations for the walker. The Support Ward labels which cabinet serves only lighting. The Directorate checkpoint terminal alerts local officers. Repairing the Spillway pump updates its placard and opens the route to calibration.
 - **Revisit Atlas services.** Hold the Diagnostic Scanner or Maintenance Wrench and sneak-interact with a station Atlas Rigger. Each calibration costs three Salvaged Chassis Alloy and is saved with the player. The scanner reaches 30 blocks and the wrench repairs up to 14 integrity per nugget. Sneak-use the powered Foundry Annex terminal with one coal to process two iron ingots.
 - **Check in with the departments.** Regular interaction with staff now has responses keyed to your expedition record. Sneak-interact with a lead when you want their dossier and assignments.

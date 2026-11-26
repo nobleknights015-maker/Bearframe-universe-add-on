@@ -8,7 +8,7 @@
       {
         "element": {
           "element_type": "minecraft:single_pool_element",
-          "location": "bearframe/shelter_bunker"
+          "location": "bearframe/shelter_bunker_district"
         },
         "weight": 1
       }

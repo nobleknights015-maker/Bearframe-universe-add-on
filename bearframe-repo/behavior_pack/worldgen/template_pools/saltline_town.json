@@ -8,7 +8,7 @@
       {
         "element": {
           "element_type": "minecraft:single_pool_element",
-          "location": "bearframe/saltline_town"
+          "location": "bearframe/saltline_town_site_district"
         },
         "weight": 1
       }

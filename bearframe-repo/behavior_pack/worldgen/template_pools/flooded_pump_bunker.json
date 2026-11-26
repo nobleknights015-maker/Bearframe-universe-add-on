@@ -8,7 +8,7 @@
       {
         "element": {
           "element_type": "minecraft:single_pool_element",
-          "location": "bearframe/flooded_pump_bunker"
+          "location": "bearframe/flooded_pump_bunker_site_district"
         },
         "weight": 1
       }

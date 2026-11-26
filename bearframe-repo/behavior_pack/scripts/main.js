@@ -4,10 +4,8 @@ import {offerRelayLead,registerChartSite,installRouteCharts} from "./route_chart
 import {installEcology,retainResident} from "./ecology.js";
 import {installActivityLog} from "./activity_log.js";
 import {campaignSignal,installCampaign} from "./campaign.js";
-import {buildSurfaceSite,surveyRoamingSite} from "./surface_sites.js";
-import {SURFACE_DATUM,EXTENDED_SURFACE_DATUM,SURFACE_DONE,LEGACY_DATUM} from "./surface_layout.js";
-import {buildSpillway} from "./spillway.js";
-import {SPILLWAY_BUILT,SPILLWAY_MARKER} from "./spillway_layout.js";
+import {prepareGeneratedSpillway} from "./spillway.js";
+import {SPILLWAY_MARKER} from "./spillway_layout.js";
 import {recordSurvey} from "./survey_log.js";
 import {greetRegion,installExpedition,prepareBunker,regionAt} from "./expedition.js";
 import {installLivingWorld} from "./living_world.js";
@@ -216,7 +214,7 @@ world.beforeEvents.playerInteractWithEntity.subscribe(event=>{
 });
 
 const cells=new Map();
-const siteMarkers=[ANCHOR,APPROACH_MARKER,REGION_ANCHOR,SPILLWAY_MARKER,SURFACE_DATUM,EXTENDED_SURFACE_DATUM,LEGACY_DATUM];
+const siteMarkers=[ANCHOR,APPROACH_MARKER,REGION_ANCHOR,SPILLWAY_MARKER,"bearframe:field_archive"];
 let registeredSiteMarkers;
 world.afterEvents.playerLeave.subscribe(({playerId})=>cells.delete(playerId));
 system.runInterval(()=>{
@@ -226,12 +224,7 @@ system.runInterval(()=>{
     registeredSiteMarkers??=siteMarkers.filter(id=>BlockTypes.get(id));
     const key=[loc.x,loc.y,loc.z].map(n=>Math.floor(n/12)).join(",");
     const last=cells.get(p.id);
-    if(last?.key===key && (!last.pending || system.currentTick-last.tick<240)){
-      if(surveyRoamingSite(p,system.currentTick))cells.delete(p.id);
-      offerRelayLead(p);
-      return;
-    }
-    let pending=false;
+    if(last?.key===key && system.currentTick-last.tick<240)return;
     const top=dim.isChunkLoaded(loc)?dim.getTopmostBlock(loc)?.y:undefined;
     const y=Math.floor(top!==undefined&&loc.y>top+18?top:loc.y);
     const a={x:Math.floor(loc.x)-40,y:Math.max(dim.heightRange.min,y-24),z:Math.floor(loc.z)-40};
@@ -239,26 +232,25 @@ system.runInterval(()=>{
     if(!registeredSiteMarkers.length)return;
     for(const p of dim.getBlocks(new BlockVolume(a,b),{includeTypes:registeredSiteMarkers},true).getBlockLocationIterator()){
       const marker=loaded(dim,p);
-      if(marker?.typeId===SURFACE_DATUM||marker?.typeId===EXTENDED_SURFACE_DATUM||marker?.typeId===LEGACY_DATUM){
-        if(!marker.permutation.getState(SURFACE_DONE) && !buildSurfaceSite(marker))pending=true;
+      if(marker?.typeId==="bearframe:field_archive"){
+        const id=ARCHIVE_SITE_IDS[marker.permutation.getState("bearframe:record")];
+        if(id)registerChartSite(id,dim.id,marker.location);
         continue;
       }
       if(marker?.typeId===SPILLWAY_MARKER){
-        registerChartSite("spillway_bunker",dim.id,marker.location,"beacon");
-        if(!marker.permutation.getState(SPILLWAY_BUILT) && !buildSpillway(marker))pending=true;
+        prepareGeneratedSpillway(marker,regionAt);
         continue;
       }
       if(marker?.typeId===APPROACH_MARKER){gradeApproach(marker);continue;}
       if(marker?.typeId===REGION_ANCHOR){
         const region=regionAt(dim,at(p,[0,2,0]));
-        if(region){registerChartSite(region.def.id,dim.id,region.pos);prepareBunker(region);greetRegion(region);}
+        if(region){if(region.def.id!=="spillway_bunker")registerChartSite(region.def.id,dim.id,region.pos);prepareBunker(region);greetRegion(region);}
         continue;
       }
       const site=resolveSite(dim,at(p,[0,2,0]));
       if(site){registerChartSite("maintenance_relay",dim.id,at(p,[0,2,0]));activateSite(site);}
     }
-    cells.set(p.id,{key,pending,tick:system.currentTick});
-    if(surveyRoamingSite(p,system.currentTick))cells.delete(p.id);
+    cells.set(p.id,{key,tick:system.currentTick});
     offerRelayLead(p);
   });
 },60);

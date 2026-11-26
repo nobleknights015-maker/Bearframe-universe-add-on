@@ -8,7 +8,7 @@
       {
         "element": {
           "element_type": "minecraft:single_pool_element",
-          "location": "bearframe/maintenance_relay"
+          "location": "bearframe/maintenance_relay_site_district"
         },
         "weight": 1
       }

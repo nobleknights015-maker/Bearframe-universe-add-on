@@ -11,7 +11,7 @@
     "start_height": {
       "type": "constant",
       "value": {
-        "absolute": -21
+        "absolute": -42
       }
     },
     "heightmap_projection": "world_surface",

@@ -1,0 +1,129 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:structure_set": {
+    "description": {
+      "identifier": "bearframe:farfield_landmarks"
+    },
+    "placement": {
+      "type": "minecraft:random_spread",
+      "salt": 681147,
+      "spacing": 54,
+      "separation": 24,
+      "spread_type": "linear"
+    },
+    "structures": [
+      {
+        "structure": "bearframe:cinder_works",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:coalition_city",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:collapsed_rail_settlement",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:collapsed_transit_bunker",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:colony_waystation",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:crashed_skiff",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:echo_ward",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:farfield_camp",
+        "weight": 3
+      },
+      {
+        "structure": "bearframe:flooded_pump_bunker",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:foundry_annex",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:frontier_colony",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:frontier_ruin",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:grid_hub",
+        "weight": 3
+      },
+      {
+        "structure": "bearframe:intrusion_checkpoint",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:lost_waystation",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:maintenance_relay",
+        "weight": 3
+      },
+      {
+        "structure": "bearframe:nivalis_lab",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:overgrown_colony",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:rainline_town",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:relay_nine",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:rootbound_service_bunker",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:saltline_town",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:sealed_archive_bunker",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:shattered_array",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:shelter_bunker",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:spillway_bunker",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:syndicate_forge",
+        "weight": 1
+      },
+      {
+        "structure": "bearframe:verdantis_station",
+        "weight": 1
+      }
+    ]
+  }
+}

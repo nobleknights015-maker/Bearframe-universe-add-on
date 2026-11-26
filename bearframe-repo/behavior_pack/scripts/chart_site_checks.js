@@ -37,9 +37,12 @@ export function chartSiteAvailable(dim,id,pos){
   }else if(id==="spillway_bunker"){
     const marker=block(pos);
     if(marker?.typeId===SPILLWAY_MARKER&&marker.permutation.getState(SPILLWAY_BUILT)){
-      const panel=at(pos,SPILLWAY_PANEL.map((v,i)=>v-SPILLWAY_DATUM[i]));
-      const entry=at(pos,[2,0,0]);
-      found=terminal(panel)&&[entry,at(entry,[0,1,0])].every(p=>block(p)?.isAir);
+      const delta=SPILLWAY_PANEL.map((v,i)=>v-SPILLWAY_DATUM[i]);
+      found=ROTATIONS.some((_,r)=>{
+        if(!terminal(at(pos,delta,r)))return false;
+        const entry=at(pos,[2,0,0],r);
+        return [entry,at(entry,[0,1,0])].every(p=>block(p)?.isAir);
+      });
     }else found=terminal(pos);
   }else if(id==="maintenance_relay"||index>=0){
     found=terminal(pos);

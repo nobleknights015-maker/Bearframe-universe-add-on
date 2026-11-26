@@ -30,13 +30,12 @@ for(const [i,def] of RUINS.entries())if(i!==0)test(def.id+" has a traversable ro
 
 import {SPILLWAY_DATUM,SPILLWAY_FLIGHT,SPILLWAY_MARKER,SPILLWAY_PANEL,SPILLWAY_SIGNS} from "../behavior_pack/scripts/spillway_layout.js";
 
-test("Spillway starts as a one-block datum with no jigsaw terrain sculpting",()=>{
+test("Spillway generates the full facility with its entrance at surface level",()=>{
  const load=(part)=>new URL(`../behavior_pack/${part}`,import.meta.url);
- const jigsaw=JSON.parse(readFileSync(load("worldgen/structures/spillway_bunker.json")))[ "minecraft:jigsaw" ];
- const beacon=nbt.simplify(nbt.parseUncompressed(readFileSync(load("structures/bearframe/spillway_bunker.mcstructure")),"little"));
- assert.deepEqual(beacon.size,[1,1,1]);
- assert.equal(beacon.structure.palette.default.block_palette[0].name,SPILLWAY_MARKER);
- assert.equal(jigsaw.terrain_adaptation,"none");
+ const jigsaw=JSON.parse(readFileSync(load("worldgen/structures/spillway_bunker.json")))["minecraft:jigsaw"];
+ const pool=JSON.parse(readFileSync(load("worldgen/template_pools/spillway_bunker.json")))["minecraft:template_pool"];
+ assert.equal(pool.elements[0].element.location,"bearframe/spillway_facility_district");
+ assert.equal(jigsaw.start_height.value.absolute,-SPILLWAY_DATUM[1]-22);
 });
 
 test("Spillway preserves five-wide, unobstructed stairs and links every dry room to the entrance",()=>{

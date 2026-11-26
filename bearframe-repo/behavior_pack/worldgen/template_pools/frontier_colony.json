@@ -8,7 +8,7 @@
       {
         "element": {
           "element_type": "minecraft:single_pool_element",
-          "location": "bearframe/frontier_colony"
+          "location": "bearframe/frontier_colony_site_district"
         },
         "weight": 1
       }

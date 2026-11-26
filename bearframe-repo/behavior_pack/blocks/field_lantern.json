@@ -1,0 +1,38 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:block": {
+    "description": {
+      "identifier": "bearframe:field_lantern",
+      "menu_category": {
+        "category": "construction"
+      }
+    },
+    "components": {
+      "minecraft:geometry": "geometry.bearframe.field_lantern",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "bearframe_field_lantern",
+          "render_method": "opaque"
+        }
+      },
+      "minecraft:light_emission": 14,
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 3.0
+      },
+      "minecraft:selection_box": {
+        "origin": [
+          -4,
+          0,
+          -4
+        ],
+        "size": [
+          8,
+          11,
+          8
+        ]
+      },
+      "minecraft:collision_box": false,
+      "minecraft:display_name": "tile.bearframe:field_lantern.name"
+    }
+  }
+}

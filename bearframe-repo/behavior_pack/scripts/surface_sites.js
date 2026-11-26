@@ -433,11 +433,14 @@ function placeSurveyedSite(dim,loc,site,offsets,marker,search=true,onPlaced){
 // surveys loaded terrain so worlds with absent beacons can still get ruins.
 const allSurfaceSites=[...SURFACE_SITES,...LEGACY_SITES];
 const roamingSites=allSurfaceSites.filter(site=>[
-  "maintenance_relay","frontier_ruin","crashed_skiff","relay_nine","overgrown_colony",
+  "grid_hub","intrusion_checkpoint","foundry_annex","frontier_ruin","crashed_skiff","relay_nine","overgrown_colony",
   "lost_waystation","sealed_archive_bunker","collapsed_transit_bunker",
   "rootbound_service_bunker","flooded_pump_bunker","farfield_camp","echo_ward"
 ].includes(site.id));
 const fieldRelay={id:"maintenance_relay",template:"maintenance_relay_field",size:SIZE,deck:DECK,expanded:true};
+const compactSites=new Map(allSurfaceSites.filter(site=>
+  ["farfield_camp","grid_hub","echo_ward","intrusion_checkpoint","foundry_annex"].includes(site.id)
+).map(site=>[site.id,{...site,template:site.id+"_field",size:SIZE,deck:DECK,expanded:true}]));
 const gridSize=112;
 const retryAt=new Map();
 const surveyHints=new Map();
@@ -472,9 +475,14 @@ export function surveyRoamingSite(player,now){
   }
   const requested=allSurfaceSites.find(site=>site.id===needed);
   const seed=hash(gx,gz);
-  const preferred=roamingSites[seed%roamingSites.length];
-  const starter=needed==="maintenance_relay"||(!needed&&!hasSurveySiteNearby(fieldRelay.id,pos,144,dim));
-  const site=starter?fieldRelay:requested??preferred;
+  const starter=needed==="maintenance_relay"||(!needed&&
+    !player.getDynamicProperty("bearframe:first_roaming_relay")&&
+    !player.getDynamicProperty("bearframe:relay_lead_received")&&
+    !hasSurveySiteNearby(fieldRelay.id,pos,144,dim));
+  const first=[compactSites.get("farfield_camp"),compactSites.get("grid_hub"),
+    compactSites.get("echo_ward"),compactSites.get("intrusion_checkpoint"),compactSites.get("foundry_annex")];
+  const cycle=Math.floor(now/60);
+  const preferred=roamingSites[(seed+cycle)%roamingSites.length];
   const start=(seed+Math.floor(now/60))%cardinalOffsets.length;
   for(let i=0;i<4;i++){
     const [dx,dz]=cardinalOffsets[(start+i)%cardinalOffsets.length];
@@ -483,10 +491,13 @@ export function surveyRoamingSite(player,now){
     const y=grade(dim,center);
     if(y===undefined)continue;
     const ground={...center,y};
+    const selected=starter?fieldRelay:requested??(i===0?preferred:first[(seed+cycle+i)%first.length]);
+    const site=compactSites.get(selected.id)??selected;
     const placed=needed==="spillway_bunker"?
       surveySpillway(dim,ground):placeSurveyedSite(dim,ground,site,[[0,0]]);
     if(!placed)continue;
     world.setDynamicProperty(placementKey,needed??site.id);
+    if(site.id===fieldRelay.id)player.setDynamicProperty("bearframe:first_roaming_relay",true);
     if(needed==="spillway_bunker"){
       player.sendMessage("§b[Farfield]§r Spillway Facility confirmed. Check your Field Charts for the entrance.");
     }else{

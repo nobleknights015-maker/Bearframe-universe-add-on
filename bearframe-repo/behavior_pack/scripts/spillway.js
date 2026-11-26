@@ -1,6 +1,7 @@
 import {registerChartSite,removeChartBeacon} from "./route_charts.js";
 import {BlockPermutation, BlockTypes, BlockVolume, SignSide, world} from "@minecraft/server";
 import {at} from "./layout.js";
+import {PIN,REGION_ANCHOR,TYPES} from "./regions.js";
 import {
   SPILLWAY_BUILT, SPILLWAY_DATUM, SPILLWAY_FLIGHT, SPILLWAY_MARKER, SPILLWAY_PANEL, SPILLWAY_ROOMS, SPILLWAY_SIZE, SPILLWAY_SIGNS,
 } from "./spillway_layout.js";
@@ -27,9 +28,9 @@ function columnRect([x1,z1,x2,z2], visit) {
   return true;
 }
 
-function prepareSigns(dim, origin) {
+function prepareSigns(dim, origin, rotation=0) {
   for (const {pos, text} of SPILLWAY_SIGNS) {
-    const sign = dim.getBlock(at(origin,pos))?.getComponent("minecraft:sign");
+    const sign = dim.getBlock(at(origin,pos,rotation))?.getComponent("minecraft:sign");
     if (!sign) continue;
     sign.setText(text);
     sign.setText(text, SignSide.Back);
@@ -145,8 +146,42 @@ function placeSpillway(dim,beacon,search,datum) {
 }
 
 export function isRecoverySpillway(site) {
-  if (site.def.id !== "spillway_bunker" || site.r !== 0) return false;
+  if (site.def.id !== "spillway_bunker") return false;
   const delta = SPILLWAY_DATUM.map((value,i) => value-SPILLWAY_PANEL[i]);
-  const loc = at(site.pos,delta);
+  const loc = at(site.pos,delta,site.r);
   return site.dim.isChunkLoaded(loc) && site.dim.getBlock(loc)?.typeId === SPILLWAY_MARKER;
+}
+
+
+export function prepareGeneratedSpillway(marker,regionAt){
+  const {dimension:dim,location:beacon}=marker;
+  const delta=SPILLWAY_PANEL.map((value,i)=>value-SPILLWAY_DATUM[i]);
+  const candidates=[0,1,2,3].map(r=>({r,pos:at(beacon,delta,r)}));
+  const region=TYPES.findIndex(def=>def.id==="spillway_bunker");
+  const loaded=pos=>dim.isChunkLoaded(pos)?dim.getBlock(pos):undefined;
+  if(marker.permutation.getState(SPILLWAY_BUILT)&&candidates.every(({pos})=>dim.isChunkLoaded(pos))){
+    const panels=candidates.filter(({pos})=>loaded(pos)?.typeId===TYPES[region].panel);
+    if(panels.length===1){
+      const {r,pos}=panels[0];
+      const anchor=loaded(at(pos,[0,-2,0]));
+      const pin=loaded(at(pos,PIN,r));
+      const existingAnchor=anchor?.typeId===REGION_ANCHOR&&anchor.permutation.getState("bearframe:region")===region;
+      // Restore only missing fixture blocks at a unique pump linked to this datum.
+      if((anchor?.isAir||existingAnchor)&&(pin?.isAir||pin?.typeId==="minecraft:lodestone")){
+        if(anchor.isAir)anchor.setPermutation(BlockPermutation.resolve(REGION_ANCHOR,{"bearframe:region":region,"bearframe:status":0}));
+        if(pin.isAir)pin.setType("minecraft:lodestone");
+      }
+    }
+  }
+  for(const {r,pos} of candidates){
+    const site=regionAt(dim,pos);
+    if(site?.def.id!=="spillway_bunker"||site.r!==r)continue;
+    if(!marker.permutation.getState(SPILLWAY_BUILT)){
+      const origin=at(beacon,SPILLWAY_DATUM.map(value=>-value),r);
+      prepareSigns(dim,origin,r);
+      marker.setPermutation(marker.permutation.withState(SPILLWAY_BUILT,true));
+    }
+    registerChartSite(site.def.id,dim.id,beacon);
+    return;
+  }
 }

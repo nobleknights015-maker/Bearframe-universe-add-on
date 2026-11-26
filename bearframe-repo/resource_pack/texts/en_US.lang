@@ -85,3 +85,5 @@ item.spawn_egg.entity.bearframe:grid_breach_guard.name=Spawn Grid Breach Guardia
 item.bearframe:field_log_pad.name=Field Log Pad
 
 item.bearframe:teleport_tablet.name=Teleport Tablet
+
+tile.bearframe:field_lantern.name=Bearframe Field Lantern

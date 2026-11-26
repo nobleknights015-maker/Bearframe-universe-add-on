@@ -8,7 +8,7 @@
       {
         "element": {
           "element_type": "minecraft:single_pool_element",
-          "location": "bearframe/collapsed_rail_settlement"
+          "location": "bearframe/collapsed_rail_settlement_site_district"
         },
         "weight": 1
       }

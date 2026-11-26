@@ -251,7 +251,7 @@ async function waypoint(player,dest){
   if(!player.isValid)return;
   if(requestable&&result===(dest.p?1:0)){
     player.setDynamicProperty(REQUEST,dest.id);
-    player.sendMessage(GOLD+"Survey requested for "+dest.name+". "+(biomeHints[dest.biome]??"Look for broad, dry ground.")+" Farfield will report a confirmed entrance.");
+    player.sendMessage(GOLD+"Survey requested for "+dest.name+". "+(biomeHints[dest.biome]??"Look for broad, dry ground.")+" Farfield will report the entrance once you get close enough to verify it.");
   }else if(dest.p&&result===0){
     save(player,TRACK,dest);
     followed.set(player.id,{dest,near:false});

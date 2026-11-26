@@ -49,6 +49,9 @@
     },
     "bearframe_field_log_display": {
       "textures": "textures/bearframe/log/bearframe_field_log_display"
+    },
+    "bearframe_field_lantern": {
+      "textures": "textures/bearframe/field_lantern"
     }
   }
 }

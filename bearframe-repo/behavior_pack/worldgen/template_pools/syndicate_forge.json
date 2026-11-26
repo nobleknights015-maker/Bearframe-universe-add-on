@@ -8,7 +8,7 @@
       {
         "element": {
           "element_type": "minecraft:single_pool_element",
-          "location": "bearframe/syndicate_forge"
+          "location": "bearframe/syndicate_forge_site_district"
         },
         "weight": 1
       }

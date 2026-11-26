@@ -8,7 +8,7 @@
       {
         "element": {
           "element_type": "minecraft:single_pool_element",
-          "location": "bearframe/sealed_archive_bunker"
+          "location": "bearframe/sealed_archive_bunker_site_district"
         },
         "weight": 1
       }

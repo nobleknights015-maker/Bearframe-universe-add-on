@@ -8,7 +8,7 @@
       {
         "element": {
           "element_type": "minecraft:single_pool_element",
-          "location": "bearframe/nivalis_lab"
+          "location": "bearframe/nivalis_lab_site_district"
         },
         "weight": 1
       }

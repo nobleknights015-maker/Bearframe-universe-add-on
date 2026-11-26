@@ -14,6 +14,7 @@ import {
 } from "./regions.js";
 
 import {CITY_ORIGIN,DOCK_ROLES,STATION_WINGS} from "./station_layout.js";
+import {GATEWAY_CREW,GATEWAY_PARTS} from "./gateway_layout.js";
 const CHEST="minecraft:barrel";
 const STATUS="bearframe:status";
 const TRANSIT="bearframe:return_berth";
@@ -286,13 +287,13 @@ async function withDockPreload(dim,task){
   }
 }
 
-function ensureCityCrew(dim,index) {
+function ensureCityCrew(dim,index,pos=CITY_ROLES[index].pos) {
   const role=CITY_ROLES[index];
   const key="bearframe:city_crew:"+index;
   if(world.getDynamicProperty(key))return;
-  const cell={x:Math.floor(role.pos.x),y:Math.floor(role.pos.y),z:Math.floor(role.pos.z)};
+  const cell={x:Math.floor(pos.x),y:Math.floor(pos.y),z:Math.floor(pos.z)};
   if(!canSpawnAt(dim,cell,false))return;
-  const e=dim.spawnEntity(role.type,role.pos);
+  const e=dim.spawnEntity(role.type,pos);
   e.nameTag=role.name;
   e.setDynamicProperty("bearframe:city_role",index);
   world.setDynamicProperty(key,true);
@@ -331,16 +332,40 @@ async function buildStationWings(dim) {
   }
 }
 
+const GATEWAY_BUILT="bearframe:gateway_built";
+
+async function buildGateway(dim){
+  if(!world.getDynamicProperty(GATEWAY_BUILT)){
+    for(const part of GATEWAY_PARTS){
+      const {id,origin,size:[w,h,d]}=part;
+      const key="bearframe:gateway_part:"+id;
+      if(world.getDynamicProperty(key))continue;
+      const to=at(origin,[w-1,h-1,d-1]);
+      await withArea(dim,origin,to,key,()=>{
+        const occupied=dim.getBlocks(new BlockVolume(origin,to),{excludeTypes:["minecraft:air"]},true);
+        if(occupied.getCapacity())throw Error("Gateway hull volume is occupied: "+id);
+        world.structureManager.place("bearframe:"+id,dim,origin,{includeEntities:false});
+        world.setDynamicProperty(key,true);
+      });
+    }
+    world.setDynamicProperty(GATEWAY_BUILT,true);
+  }
+  await withArea(dim,{x:0,y:99,z:-11},{x:48,y:106,z:11},"bearframe-gateway-crew",()=>{
+    for(const [index,pos] of GATEWAY_CREW.entries())ensureCityCrew(dim,index,pos);
+    placeFieldLog(dim,"bearframe:log:station",[
+      {x:4,y:101,z:3},{x:5,y:101,z:3},{x:4,y:101,z:-3}
+    ]);
+  });
+}
+
 async function buildOrbit(){
   const dim=world.getDimension(ORBIT);
+  if(!world.getDynamicProperty(CITY_BUILT)||world.getDynamicProperty(GATEWAY_BUILT)){
+    await buildGateway(dim);
+    return;
+  }
   const from=CITY_ORIGIN,to=at(from,[CITY_SIZE.x-1,CITY_SIZE.y-1,CITY_SIZE.z-1]);
   await withArea(dim,from,to,"bearframe-city-build",()=>{
-    if(!world.getDynamicProperty(CITY_BUILT)){
-      const placed=dim.getBlocks(new BlockVolume(from,to),{excludeTypes:["minecraft:air"]},true);
-      if(placed.getCapacity())throw Error("Orbital dock volume is occupied.");
-      world.structureManager.place("bearframe:orbital_city",dim,from,{includeEntities:false});
-      world.setDynamicProperty(CITY_BUILT,true);
-    }
     for(const index of DOCK_ROLES)ensureCityCrew(dim,index);
     placeFieldLog(dim,"bearframe:log:station",[
       {x:4,y:101,z:3},{x:5,y:101,z:3},{x:4,y:101,z:-3}
@@ -385,7 +410,7 @@ async function dockAtStation(player,origin,canDepart){
         if(!arrival)return say(player,"The orbital arrival bay is obstructed.");
         player.setDynamicProperty(TRANSIT,JSON.stringify(origin));
         fieldSound(dim,"dock",arrival);
-        say(player,"Bearframe City. Sneak-interact with Mira in the Farfield Annex to begin The Last Dispatch. Use the Return Desk in the arrival bay to go back.");
+        say(player,"Bearframe City. Sneak-interact with Mira at Farfield Dispatch to begin The Last Dispatch. Use the Return Desk in the arrival bay to go back.");
       });
     });
   }finally{transit.delete(player.id);}

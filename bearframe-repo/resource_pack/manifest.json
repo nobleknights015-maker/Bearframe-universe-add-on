@@ -2,12 +2,12 @@
   "format_version": 2,
   "header": {
     "name": "Bearframe: The Last Dispatch | Resources",
-    "description": "Bearframe models, materials, and audio. Select Compatibility for mixed add-on worlds.",
+    "description": "Bundled Bearframe models, sci-fi materials, and custom audio.",
     "uuid": "57aabde7-cd63-5995-b00d-a69f983ba905",
     "version": [
       0,
       10,
-      1
+      13
     ],
     "min_engine_version": [
       1,
@@ -22,30 +22,8 @@
       "version": [
         0,
         10,
-        1
+        13
       ]
-    }
-  ],
-  "subpacks": [
-    {
-      "folder_name": "compatible",
-      "name": "Compatibility",
-      "memory_tier": 0
-    },
-    {
-      "folder_name": "bearframe_mobs",
-      "name": "Bearframe mob visuals",
-      "memory_tier": 1
-    },
-    {
-      "folder_name": "star_odyssey",
-      "name": "Star Odyssey materials (requires Star Odyssey)",
-      "memory_tier": 2
-    },
-    {
-      "folder_name": "star_odyssey_mobs",
-      "name": "Star Odyssey materials + Bearframe mobs (requires Star Odyssey)",
-      "memory_tier": 3
     }
   ]
 }
