@@ -22,6 +22,9 @@
     },
     "bearframe_field_log_pad": {
       "textures": "textures/bearframe/field_log_pad"
+    },
+    "bearframe_teleport_tablet": {
+      "textures": "textures/bearframe/teleport_tablet"
     }
   }
 }

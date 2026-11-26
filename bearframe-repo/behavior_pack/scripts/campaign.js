@@ -189,6 +189,33 @@ async function openBoard(player,target,lead){
   }catch(error){console.warn("[Bearframe campaign] "+error);}
   finally{activeForms.delete(player.id);}
 }
+export function stationReport(player,staff){
+  const {facts,choice}=read(player);
+  const lines={
+    0:facts["read:grid_hub"]?"Farfield Dispatch: The relay and Switchyard records are linked. Check the dossier for the next assignment.":undefined,
+    11:facts["repair:spillway_bunker"]?"Auren: Spillway pressure is holding. The workshop test bench is clear to use.":undefined,
+    12:facts["repair:foundry_annex"]?"Atlas: The Annex is running. Bring coal to its terminal for another batch of stock. The station rigger can calibrate the Scanner or Wrench with salvaged alloy.":undefined,
+    13:facts["read:sealed_archive_bunker"]?"Vera: I can chart the service routes with the ledger sealed. The residents' names stay where they belong.":undefined,
+    15:facts["read:intrusion_checkpoint"]?"Sentinel: I logged their patrol route. Assume they still have people near the checkpoint until we hear otherwise.":undefined,
+    16:choice==="local"?"Penney: The Commons has a copy of the maintenance schedule. The residents decide who gets the rest.":
+      choice==="publish"?"Penney: Travelers can ask for the engineering map here. I kept the room roster out of the public copy.":
+      facts["talk:echo"]?"Penney: I reserved a quiet table in the Commons. If any of the ward residents want to visit, they can choose when.":undefined
+  };
+  if(!lines[staff])return false;
+  tell(player,lines[staff]);
+  return true;
+}
+
+export function relayDebrief(player){
+  const state=read(player);
+  if(state.chapter>0||!state.facts["read:maintenance_relay"])return false;
+  if(state.facts["repair:maintenance_relay"]){
+    tell(player,"Mira: You got the relay transmitting again. That reservation was still open. Check the Switchyard for the other end of the signal. The field charts have the survey notes.");
+  }else{
+    tell(player,"Mira: A shelter reservation with no one checked in. Keep a copy of that log. The Switchyard may tell us where the signal was going.");
+  }
+  return true;
+}
 export function campaignDialogue(player,target,staff){
   const lead=editors[staff];
   if(!lead||!player.isSneaking)return false;

@@ -5,13 +5,24 @@ An abandoned relay still asks someone to keep a bunk warm. Farfield sends you to
 
 ### Start the campaign
 
-1. Find **Farfield Survey Camp** in the Overworld. Sneak-interact with its cartography table to board for Bearframe Station.
+1. Find **Farfield Survey Camp** in the Overworld and sneak-interact with its cartography table, or craft a **Teleport Tablet** and activate it from solid ground. Both routes lead to Bearframe Station.
 2. Enter the **Farfield Annex**, find **Mira**, and sneak-interact with her. Open **Main campaign**, then accept the assignment.
 3. At any department lead, sneak-interact for the dossier. Use the main tab to see the chapter, objectives, and debrief contact. The field directory gives each site's biome and records exact coordinates after you inspect it. Regular interaction still gives the lead's ordinary dialogue.
 4. On the surface, interact with existing named terminals or the new **Farfield Record Readers**. Sneak-interact with a record reader to show the current main objectives in chat. If an objective says *repair or verify*, interact with the terminal after the circuit is live. Network repairs are shared by everyone in the world. Individual players get credit when they inspect the working terminal.
 5. Return to the indicated lead for each debrief. Leave room for the reward stacks. The station return desk uses your recorded surface berth.
 
 This campaign fits the existing survival world. You can gather tools, build, trade, open the existing randomized chests, and advance side cases while following the main story. The directory gives guidance for undiscovered sites. It does not know an undiscovered structure's coordinates. The larger sites keep their existing natural-generation rules, so how far you travel will vary by seed.
+
+### First field signal
+
+When Farfield confirms a nearby Maintenance Relay, its first signal sets a bearing and saves the location in Treasure Charts. From the relay lectern, fit the breaker with two copper ingots, clear the rubble at the copper line, and reconnect with one redstone dust. The power state is shared. A second explorer can read the active relay and get their own repair verification. Speak normally to Mira in the Farfield Annex for her response and sneak-interact to open the dossier.
+
+### Expedition services
+
+- **Find a missing site.** Open Treasure Charts from the Field Log and select an active objective. If the site has no confirmed entrance, request a Farfield survey. Explore dry terrain so the survey can try placement. A successful request sets a bearing. Some sites still require their native biome and terrain conditions, and a beacon is only a survey candidate.
+- **Read the surroundings.** The Switchyard signs mark two destinations for the walker. The Support Ward labels which cabinet serves only lighting. The Directorate checkpoint terminal alerts local officers. Repairing the Spillway pump updates its placard and opens the route to calibration.
+- **Revisit Atlas services.** Hold the Diagnostic Scanner or Maintenance Wrench and sneak-interact with a station Atlas Rigger. Each calibration costs three Salvaged Chassis Alloy and is saved with the player. The scanner reaches 30 blocks and the wrench repairs up to 14 integrity per nugget. Sneak-use the powered Foundry Annex terminal with one coal to process two iron ingots.
+- **Check in with the departments.** Regular interaction with staff now has responses keyed to your expedition record. Sneak-interact with a lead when you want their dossier and assignments.
 
 ### What is playable
 

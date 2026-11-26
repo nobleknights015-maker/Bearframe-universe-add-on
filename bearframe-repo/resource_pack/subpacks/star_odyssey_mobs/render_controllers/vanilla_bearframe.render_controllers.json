@@ -1,0 +1,383 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.bearframe.vanilla_zombie": {
+      "geometry": "Array.bearframe_age[query.is_baby ? 1 : 0]",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ],
+      "arrays": {
+        "geometries": {
+          "Array.bearframe_age": [
+            "Geometry.default",
+            "Geometry.baby"
+          ]
+        }
+      }
+    },
+    "controller.render.bearframe.vanilla_husk": {
+      "geometry": "Array.bearframe_age[query.is_baby ? 1 : 0]",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ],
+      "arrays": {
+        "geometries": {
+          "Array.bearframe_age": [
+            "Geometry.default",
+            "Geometry.baby"
+          ]
+        }
+      }
+    },
+    "controller.render.bearframe.vanilla_drowned": {
+      "geometry": "Array.bearframe_age[query.is_baby ? 1 : 0]",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ],
+      "arrays": {
+        "geometries": {
+          "Array.bearframe_age": [
+            "Geometry.default",
+            "Geometry.baby"
+          ]
+        }
+      }
+    },
+    "controller.render.bearframe.vanilla_zombie_villager": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_zombie_villager_v2": {
+      "geometry": "Array.bearframe_age[query.is_baby ? 1 : 0]",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ],
+      "arrays": {
+        "geometries": {
+          "Array.bearframe_age": [
+            "Geometry.default",
+            "Geometry.baby"
+          ]
+        }
+      }
+    },
+    "controller.render.bearframe.vanilla_skeleton": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_stray": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_bogged": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ],
+      "part_visibility": [
+        {
+          "fungi": "!query.is_sheared"
+        }
+      ]
+    },
+    "controller.render.bearframe.vanilla_villager": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_villager_v2": {
+      "geometry": "Array.bearframe_age[query.is_baby ? 1 : 0]",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Array.professions[query.is_baby ? 15 : math.clamp(query.variant, 0, 14)]"
+      ],
+      "arrays": {
+        "textures": {
+          "Array.professions": [
+            "Texture.trade_0",
+            "Texture.trade_1",
+            "Texture.trade_2",
+            "Texture.trade_3",
+            "Texture.trade_4",
+            "Texture.trade_5",
+            "Texture.trade_6",
+            "Texture.trade_7",
+            "Texture.trade_8",
+            "Texture.trade_9",
+            "Texture.trade_10",
+            "Texture.trade_11",
+            "Texture.trade_12",
+            "Texture.trade_13",
+            "Texture.trade_14",
+            "Texture.default"
+          ]
+        },
+        "geometries": {
+          "Array.bearframe_age": [
+            "Geometry.default",
+            "Geometry.baby"
+          ]
+        }
+      }
+    },
+    "controller.render.bearframe.vanilla_wandering_trader": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_pillager": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_vindicator": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_evocation_illager": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_parched": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_wither_skeleton": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_piglin": {
+      "geometry": "Array.bearframe_age[query.is_baby ? 1 : 0]",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ],
+      "arrays": {
+        "geometries": {
+          "Array.bearframe_age": [
+            "Geometry.default",
+            "Geometry.baby"
+          ]
+        }
+      }
+    },
+    "controller.render.bearframe.vanilla_piglin_brute": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_zombie_pigman": {
+      "geometry": "Array.bearframe_age[query.is_baby ? 1 : 0]",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ],
+      "arrays": {
+        "geometries": {
+          "Array.bearframe_age": [
+            "Geometry.default",
+            "Geometry.baby"
+          ]
+        }
+      }
+    },
+    "controller.render.bearframe.vanilla_witch": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_iron_golem": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_enderman": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_vex": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_allay": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_warden": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_creaking": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.bearframe.vanilla_ravager": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    }
+  }
+}

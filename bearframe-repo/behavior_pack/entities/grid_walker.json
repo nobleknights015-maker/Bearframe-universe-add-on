@@ -78,7 +78,118 @@
       }
     },
     "events": {
-      "bearframe:look": {}
+      "bearframe:look": {},
+      "bearframe:relay_offline": {
+        "add": {
+          "component_groups": [
+            "bearframe:relay_waiting"
+          ]
+        }
+      },
+      "bearframe:relay_online": {
+        "remove": {
+          "component_groups": [
+            "bearframe:relay_waiting"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "bearframe:relay_active"
+          ]
+        }
+      },
+      "bearframe:switch_a": {
+        "sequence": [
+          {
+            "remove": {
+              "component_groups": [
+                "bearframe:relay_waiting",
+                "bearframe:switch_b"
+              ]
+            }
+          },
+          {
+            "add": {
+              "component_groups": [
+                "bearframe:switch_a"
+              ]
+            }
+          }
+        ]
+      },
+      "bearframe:switch_b": {
+        "sequence": [
+          {
+            "remove": {
+              "component_groups": [
+                "bearframe:relay_waiting",
+                "bearframe:switch_a"
+              ]
+            }
+          },
+          {
+            "add": {
+              "component_groups": [
+                "bearframe:switch_b"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "component_groups": {
+      "bearframe:relay_waiting": {
+        "minecraft:movement": {
+          "value": 0
+        }
+      },
+      "bearframe:relay_active": {
+        "minecraft:movement": {
+          "value": 0.18
+        }
+      },
+      "bearframe:switch_a": {
+        "minecraft:movement": {
+          "value": 0.18
+        },
+        "minecraft:behavior.move_to_block": {
+          "priority": 4,
+          "target_blocks": [
+            "minecraft:birch_standing_sign"
+          ],
+          "search_range": 14,
+          "search_height": 2,
+          "goal_radius": 1.75,
+          "tick_interval": 15,
+          "on_reach": [
+            {
+              "event": "bearframe:switch_b",
+              "target": "self"
+            }
+          ]
+        }
+      },
+      "bearframe:switch_b": {
+        "minecraft:movement": {
+          "value": 0.18
+        },
+        "minecraft:behavior.move_to_block": {
+          "priority": 4,
+          "target_blocks": [
+            "minecraft:spruce_standing_sign"
+          ],
+          "search_range": 14,
+          "search_height": 2,
+          "goal_radius": 1.75,
+          "tick_interval": 15,
+          "on_reach": [
+            {
+              "event": "bearframe:switch_a",
+              "target": "self"
+            }
+          ]
+        }
+      }
     }
   }
 }

@@ -1,5 +1,7 @@
+import {chartSiteAvailable} from "./chart_site_checks.js";
 import {system,world} from "@minecraft/server";
 import {ActionFormData} from "@minecraft/server-ui";
+import {SURFACE_SITES,LEGACY_SITES} from "./surface_layout.js";
 import {MAIN,SIDES,CONTRACTS,EVIDENCE} from "./campaign_data.js";
 import {read as readCampaign} from "./campaign_state.js";
 
@@ -7,13 +9,15 @@ const OVERWORLD="minecraft:overworld";
 const DIRECTORY="bearframe:charted_sites:";
 const SAVED="bearframe:quest_charts";
 const TRACK="bearframe:tracked_chart";
+const REQUEST="bearframe:survey_request";
 const ROAMING="bearframe:field_requests";
+const supportedSurvey=new Set(["spillway_bunker",...[...SURFACE_SITES,...LEGACY_SITES].map(site=>site.id)]);
 const GOLD="§6[Field Charts]§r ";
 const open=new Set();
 const followed=new Map();
 const bearings=["N","NE","E","SE","S","SW","W","NW"];
 const arrows=["↑","↗","→","↘","↓","↙","←","↖"];
-const MAP_ICON="textures/items/map_filled";
+const MAP_ICON="textures/bearframe/field_log_pad";
 const biomeHints={
   "Plains":"Scan exposed plains from a rise, then follow the valley edge.",
   "Forest":"Search clearings and dry banks inside forest country.",
@@ -47,7 +51,11 @@ export function registerChartSite(id,dim,pos,status="ready"){
   const near=list.findIndex(e=>dist(p,e.p)<(status==="ready"?40:18));
   if(near>=0){
     const old=list[near];
-    if(old.status==="ready"||status==="beacon")return;
+    if(status==="beacon")return;
+    if(old.status==="ready"){
+      const dimension=world.getDimension?.(dim);
+      if(!dimension?.isChunkLoaded||chartSiteAvailable(dimension,id,loc(old.p)))return;
+    }
     list.splice(near,1);
   }
   list.unshift({p,status});
@@ -59,31 +67,73 @@ export function removeChartBeacon(id,dim,pos){
   const current=list.filter(e=>e.status!=="beacon"||dist(p,e.p)>2);
   if(current.length!==list.length)save(world,key,current);
 }
+export function hasSurveySiteNearby(id,position,radius,dimension){
+  return load(world,DIRECTORY+id,[]).some(entry=>entry.status==="ready"&&
+    dist(entry.p,point(position))<=radius&&chartSiteAvailable(dimension,id,loc(entry.p)));
+}
+
+const available=(player,id,p)=>player.dimension.id!==OVERWORLD||!player.dimension.isChunkLoaded||
+  !p||chartSiteAvailable(player.dimension,id,loc(p));
+
 function solution(id,player,state,visitedOnly=false){
   const e=sourceOf(id);
   if(!e)return;
-  if(state.sites[id]){
-    const entry=id==="spillway_bunker"?load(world,DIRECTORY+id,[]).find(v=>v.status==="ready"&&dist(v.p,state.sites[id])<=46):undefined;
-    return {id,name:e.name,biome:e.biome,dim:OVERWORLD,p:entry?.p??state.sites[id],status:"visited"};
-  }
-  if(visitedOnly)return;
+  const saved=state.sites[id];
   const list=load(world,DIRECTORY+id,[]);
-  const p=point(player.location);
-  const origin=player.dimension.id===OVERWORLD?p:[0,0,0];
-  const ready=list.filter(v=>v.status==="ready");
-  const entries=ready.length?ready:list;
+  const visit=id==="spillway_bunker"&&saved?
+    list.find(v=>v.status==="ready"&&dist(v.p,saved)<=46)?.p??saved:saved;
+  if(visit&&(visitedOnly||available(player,id,visit)))
+    return {id,name:e.name,biome:e.biome,dim:OVERWORLD,p:visit,status:"visited"};
+  if(visitedOnly)return;
+  const origin=player.dimension.id===OVERWORLD?point(player.location):[0,0,0];
+  const candidates=list.filter(v=>v.status!=="ready"||available(player,id,v.p));
+  const ready=candidates.filter(v=>v.status==="ready");
+  const entries=ready.length?ready:candidates;
   const found=entries.sort((a,b)=>dist(a.p,origin)-dist(b.p,origin))[0];
   return {id,name:e.name,biome:e.biome,dim:OVERWORLD,p:found?.p??null,status:found?.status??"unconfirmed"};
 }
+export function offerRelayLead(player){
+  if(player.dimension.id!==OVERWORLD||player.getDynamicProperty(TRACK)||
+    player.getDynamicProperty("bearframe:relay_lead_received"))return;
+  const state=readCampaign(player);
+  if(state.chapter>0||state.facts["read:maintenance_relay"])return;
+  const dest=solution("maintenance_relay",player,state);
+  if(dest.status!=="ready"||dist(dest.p,point(player.location))>100)return;
+  save(player,TRACK,dest);
+  player.setDynamicProperty("bearframe:relay_lead_received",true);
+  player.sendMessage("§b[Farfield]§r We have a real signal. Follow the bearing to the Maintenance Relay and read the lectern. I'll file the coordinates in your Field Log.");
+}
+
 function sitesFor(goal){
   const [action,id]=goal.key.split(":");
   if(action==="read"||action==="repair"||action==="calibrated")return [id==="spillway"?"spillway_bunker":id];
   if(goal.key==="survey:bypass")return ["crashed_skiff","flooded_pump_bunker"];
-  if(goal.key==="survey:shelter")return ["shelter_bunker","rootbound_service_bunker"];
+  if(goal.key==="survey:shelter")return ["rootbound_service_bunker","shelter_bunker"];
   if(action==="talk"||action==="after")return ["echo_ward","shelter_bunker"];
   if(action==="kill")return ["intrusion_checkpoint"];
   return [];
 }
+export function missingCampaignSite(player){
+  const state=readCampaign(player);
+  const requested=player.getDynamicProperty(REQUEST);
+  if(typeof requested==="string"){
+    const status=solution(requested,player,state)?.status;
+    if(status==="unconfirmed"||status==="beacon")return requested;
+  }
+  const chapter=MAIN[state.chapter];
+  const pending=chapter?.goals.filter(goal=>(state.facts[goal.key]??0)<goal.count);
+  if(!pending?.length)return;
+  for(const goal of pending){
+    const sites=sitesFor(goal);
+    if(sites.some(id=>{
+      const status=solution(id,player,state)?.status;
+      return status==="ready"||status==="visited";
+    }))continue;
+    const supported=sites.find(id=>supportedSurvey.has(id));
+    if(supported)return supported;
+  }
+}
+
 function staticTargets(id){
   if(id==="charts")return ["frontier_ruin","grid_hub","farfield_camp","maintenance_relay","echo_ward"];
   if(id==="power")return ["grid_hub","foundry_annex","rainline_town","spillway_bunker"];
@@ -192,10 +242,17 @@ async function show(f,player){
 }
 async function waypoint(player,dest){
   const f=craftForm(dest.name,body(player,dest));
-  f.button(dest.p?"Track this X":"Recheck chart when you explore farther",MAP_ICON);
+  const needsSurvey=dest.status==="beacon"||!dest.p||!available(player,dest.id,dest.p);
+  const requestable=needsSurvey&&supportedSurvey.has(dest.id);
+  if(dest.p)f.button("Track this X",MAP_ICON);
+  if(requestable)f.button("Request a Farfield survey",MAP_ICON);
   f.button("Back");
   const result=await show(f,player);
-  if(result===0&&dest.p&&player.isValid){
+  if(!player.isValid)return;
+  if(requestable&&result===(dest.p?1:0)){
+    player.setDynamicProperty(REQUEST,dest.id);
+    player.sendMessage(GOLD+"Survey requested for "+dest.name+". "+(biomeHints[dest.biome]??"Look for broad, dry ground.")+" Farfield will report a confirmed entrance.");
+  }else if(dest.p&&result===0){
     save(player,TRACK,dest);
     followed.set(player.id,{dest,near:false});
     player.sendMessage(GOLD+"Tracking "+dest.name+". Your bearing appears while you travel.");
@@ -231,6 +288,7 @@ export async function openCharts(player){
     const result=await show(f,player);
     if(result===3){
       player.setDynamicProperty(TRACK,undefined);
+      player.setDynamicProperty(REQUEST,undefined);
       followed.delete(player.id);
       player.onScreenDisplay.setActionBar("");
     }else if(result!==undefined)await group(player,result);
@@ -241,6 +299,20 @@ export function installRouteCharts(){
   world.afterEvents.playerLeave.subscribe(({playerId})=>{followed.delete(playerId);open.delete(playerId);});
   system.runInterval(()=>{
     for(const p of world.getAllPlayers()){
+      const request=p.getDynamicProperty(REQUEST);
+      if(typeof request==="string"){
+        const ready=solution(request,p,readCampaign(p));
+        if(ready?.status==="ready"||ready?.status==="visited"){
+          const current=load(p,TRACK,null);
+          const canTrack=!current||current.id===request;
+          if(canTrack){
+            followed.set(p.id,{dest:ready,near:false});
+            save(p,TRACK,ready);
+          }
+          p.setDynamicProperty(REQUEST,undefined);
+          p.sendMessage(GOLD+"Entrance confirmed for "+ready.name+(canTrack?". Tracking your requested route.":". Open your Field Log to switch routes."));
+        }
+      }
       let tracked=followed.get(p.id);
       if(!tracked){
         const dest=load(p,TRACK,null);
@@ -249,11 +321,19 @@ export function installRouteCharts(){
         followed.set(p.id,tracked);
       }
       let dest=tracked.dest;
-      if(dest.status==="beacon"){
+      if(dest.dim===OVERWORLD&&(dest.status==="beacon"||!available(p,dest.id,dest.p))){
+        const hadBeacon=dest.status==="beacon";
+
         const candidate=solution(dest.id,p,readCampaign(p));
-        if(candidate?.p&&candidate.status!=="beacon"){
-          dest=candidate;tracked.dest=dest;
+        if(candidate?.p&&(candidate.status!=="beacon"||!hadBeacon)){
+          dest=candidate;tracked.dest=dest;tracked.near=false;
           save(p,TRACK,dest);
+        }else if(!hadBeacon){
+          p.setDynamicProperty(TRACK,undefined);
+          followed.delete(p.id);
+          p.onScreenDisplay.setActionBar("");
+          p.sendMessage(GOLD+"The reported "+dest.name+" entrance could not be verified. Open the Field Log to survey again.");
+          continue;
         }
       }
       const d=direction(p,dest);

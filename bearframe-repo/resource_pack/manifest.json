@@ -1,13 +1,13 @@
 {
   "format_version": 2,
   "header": {
-    "name": "Bearframe | Resources (Star Odyssey Edition)",
-    "description": "Bearframe structural materials for the Star Odyssey resource pack.",
+    "name": "Bearframe: The Last Dispatch | Resources",
+    "description": "Bearframe models, materials, and audio. Select Compatibility for mixed add-on worlds.",
     "uuid": "57aabde7-cd63-5995-b00d-a69f983ba905",
     "version": [
       0,
-      8,
-      5
+      10,
+      1
     ],
     "min_engine_version": [
       1,
@@ -21,19 +21,31 @@
       "uuid": "ff9421f5-b63e-593c-8d3b-161226c95359",
       "version": [
         0,
-        8,
-        5
+        10,
+        1
       ]
     }
   ],
-  "dependencies": [
+  "subpacks": [
     {
-      "uuid": "f0e09332-73bf-11e8-adc0-fa7ae01bbebc",
-      "version": [
-        1,
-        0,
-        50
-      ]
+      "folder_name": "compatible",
+      "name": "Compatibility",
+      "memory_tier": 0
+    },
+    {
+      "folder_name": "bearframe_mobs",
+      "name": "Bearframe mob visuals",
+      "memory_tier": 1
+    },
+    {
+      "folder_name": "star_odyssey",
+      "name": "Star Odyssey materials (requires Star Odyssey)",
+      "memory_tier": 2
+    },
+    {
+      "folder_name": "star_odyssey_mobs",
+      "name": "Star Odyssey materials + Bearframe mobs (requires Star Odyssey)",
+      "memory_tier": 3
     }
   ]
 }

@@ -39,8 +39,7 @@ function prepareSigns(dim, origin) {
 
 // The beacon is only an invitation to survey the terrain. Never paste a
 // gallery through a ravine, under insufficient cover or into marked builds.
-function candidateOrigin(datum, dx, dz) {
-  const {dimension:dim,location} = datum;
+function candidateOrigin(dim, location, dx, dz) {
   const start = {x:location.x+dx,y:location.y,z:location.z+dz};
   if (!dim.isChunkLoaded(start)) return;
   let surface = dim.getTopmostBlock(start);
@@ -49,8 +48,7 @@ function candidateOrigin(datum, dx, dz) {
   return at({...start,y:surface.y+1},SPILLWAY_DATUM.map(n=>-n));
 }
 
-function surveySite(datum, origin) {
-  const dim = datum.dimension;
+function surveySite(dim, origin) {
   const point = (x,y,z) => at(origin,[x,y,z]);
   if (origin.y+2 < dim.heightRange.min || origin.y+SPILLWAY_SIZE.y >= dim.heightRange.max) return false;
   for (let x=(origin.x-1)>>4; x<=((origin.x+SPILLWAY_SIZE.x-1)>>4); x++) {
@@ -112,22 +110,30 @@ const candidates = [[0,0],[-11,0],[11,0],[0,-11],[0,11],[-12,-12],[-12,12],[12,-
 
 export function buildSpillway(datum, search=true) {
   if (datum.permutation.getState(SPILLWAY_BUILT)) return false;
-  const dim=datum.dimension;
-  const beacon=datum.location;
+  return placeSpillway(datum.dimension,datum.location,search,datum);
+}
+
+export function surveySpillway(dim,location){
+  return placeSpillway(dim,location,true);
+}
+
+function placeSpillway(dim,beacon,search,datum) {
   const nominal = at(beacon,SPILLWAY_DATUM.map(n=>-n));
-  for (const [dx,dz] of search ? candidates : [[0,0]]) {
-    const base=search ? candidateOrigin(datum,dx,dz) : nominal;
+  for (const [dx,dz] of search&&datum ? candidates : [[0,0]]) {
+    const base=search ? candidateOrigin(dim,beacon,dx,dz) : nominal;
     if (!base) continue;
     for(const grade of search ? [0,-1,1] : [0]){
       const origin=at(base,[0,grade,0]);
-      const site=surveySite(datum,origin);
+      const site=surveySite(dim,origin);
       if(!site) continue;
       world.structureManager.place("bearframe:spillway_facility",dim,origin,{includeEntities:false});
-      removeChartBeacon("spillway_bunker",dim.id,datum.location);
+      if(datum)removeChartBeacon("spillway_bunker",dim.id,datum.location);
       registerChartSite("spillway_bunker",dim.id,at(origin,SPILLWAY_DATUM));
       // The native beacon may sit several blocks back in the shoulder while the
       // lit panel on the completed site marks the actual approach.
-      if (datum.typeId===SPILLWAY_MARKER) datum.setPermutation(datum.permutation.withState(SPILLWAY_BUILT,true));
+      const placed=dim.getBlock(at(origin,SPILLWAY_DATUM));
+      placed.setPermutation(placed.permutation.withState(SPILLWAY_BUILT,true));
+      if(datum?.typeId===SPILLWAY_MARKER)datum.setPermutation(datum.permutation.withState(SPILLWAY_BUILT,true));
       for(const block of site.foundations)block.setType("minecraft:deepslate_bricks");
       const stair=BlockPermutation.resolve("minecraft:stone_brick_stairs",{weirdo_direction:0,upside_down_bit:false});
       for(const pos of site.approach)dim.getBlock(pos).setPermutation(stair);

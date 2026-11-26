@@ -107,19 +107,28 @@ test("Android 4 GB RAM spawn caps and non-griefing projectile constraints hold",
   assert(!proj.on_hit.definition_event, "grid_bolt should not trigger block destruction");
 
   const spawnFiles = readdirSync(new URL("spawn_rules/", bp));
-  assert.equal(spawnFiles.length, 4);
+  assert(spawnFiles.length > 0);
   for (const f of spawnFiles) {
     const sr = readJson(new URL(`spawn_rules/${f}`, bp))["minecraft:spawn_rules"];
-    const cap = sr.conditions[0]["minecraft:density_limit"];
-    assert(cap && cap.surface <= 3, `${f} exceeds Android surface density cap of 3`);
+    for (const condition of sr.conditions) {
+      const cap = condition["minecraft:density_limit"];
+      const layer = "minecraft:spawns_underground" in condition ? "underground" : "surface";
+      assert(Number.isInteger(cap?.[layer]) && cap[layer] > 0 && cap[layer] <= 3, `${f} exceeds ${layer} density cap`);
+    }
   }
 });
 
-test("all 4 survival recipes and 6 custom items are properly registered without sentience-chip lore violations", () => {
+test("all survival recipes and custom items are properly registered without sentience-chip lore violations", () => {
   const items = readdirSync(new URL("items/", bp));
-  assert.equal(items.length, 6);
+  const itemIds = new Set(items.map(f => readJson(new URL(`items/${f}`, bp))["minecraft:item"].description.identifier));
+  for (const f of readdirSync(new URL("blocks/", bp)))
+    itemIds.add(readJson(new URL(`blocks/${f}`, bp))["minecraft:block"].description.identifier);
   const recipes = readdirSync(new URL("recipes/", bp));
-  assert.equal(recipes.length, 4);
+  assert(recipes.length > 0);
+  const outputs = new Set(recipes.map(f => Object.values(readJson(new URL(`recipes/${f}`, bp))).find(v => v?.result).result.item));
+  for (const id of outputs) if (id.startsWith("bearframe:")) assert(itemIds.has(id), `Unregistered recipe output: ${id}`);
+  for (const id of ["teleport_tablet","field_log_pad","field_scanner","repair_wrench"])
+    assert(outputs.has("bearframe:"+id), `Missing survival recipe: ${id}`);
   for (const f of items) {
     assert(!f.includes("sentience") && !f.includes("prime_core"), `Lore violation item: ${f}`);
   }
@@ -136,10 +145,10 @@ test("the seven Frontier roles use distinct authored rigs and matching resources
     assert.equal(client.geometry.default,geo.description.identifier);
     assert.equal(client.textures.default,"textures/bearframe/"+id);
     assert(client.spawn_egg);
-    const shape=geo.bones.map(b=>[b.name,b.pivot,b.cubes.map(c=>[c.origin,c.size,c.rotation])]);
+    const shape=geo.bones.map(b=>[b.name,b.pivot,(b.cubes??[]).map(c=>[c.origin,c.size,c.rotation])]);
     signatures.add(JSON.stringify(shape));
     if(id==="grid_repair_crawler")assert.equal(geo.bones.filter(b=>/^leg\d$/.test(b.name)).length,6);
-    if(id==="grid_protocol_keeper")assert(geo.bones.some(b=>b.name==="scanner")&&!geo.bones.some(b=>b.name==="leg0"));
+    if(id==="grid_protocol_keeper")assert.equal(geo.bones.filter(b=>/^leg\d$/.test(b.name)).length,2);
   }
   assert.equal(signatures.size,lineup.length);
 });
