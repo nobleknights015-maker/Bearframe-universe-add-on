@@ -1,13 +1,16 @@
 """Build the original Bedrock boss rigs, texture atlases and animation sets."""
+import argparse
 import json
 import random
 from pathlib import Path
 
 from PIL import Image
 
+from boss_reference import motion_profile
+
 ROOT = Path(__file__).resolve().parents[1]
 BP, RP = ROOT / "behavior_pack", ROOT / "resource_pack"
-SIZE = 256
+SIZE = 512
 
 
 def write(path, data):
@@ -18,8 +21,8 @@ def bone(name, pivot, *cubes, parent="body"):
     return name, parent, pivot, cubes
 
 
-def cube(x, y, z, w, h, d, material="metal"):
-    return [x, y, z], [w, h, d], material
+def cube(x, y, z, w, h, d, material="metal", rotation=None):
+    return [x, y, z], [w, h, d], material, rotation
 
 
 def chassis(*cubes):
@@ -245,15 +248,107 @@ bosses.extend([
 ])
 
 
+def remodel(spec):
+    """Add authored profile pieces, separated hardware and asymmetrical cloth."""
+    c = cube
+    slug = spec["id"]
+    layout = {
+        "grid_palinode": [
+            bone("carapace", [0,20,1], c(-8,20,-11,16,3,23),
+                 c(-6,23,-7,12,2,15,"rust"), c(-3,25,-5,6,1,13,"dark"),
+                 c(-9,21,4,2,4,9,"moss"), c(6,23,8,3,2,6,"moss")),
+            bone("optic_pincers", [0,16,-18], c(-11,13,-27,3,4,11,"rust", [0,18,0]),
+                 c(8,13,-25,3,4,10,"metal",[0,-18,0]), c(-4,17,-22,8,1,2,"glow"), parent="head"),
+        ],
+        "grid_silt_engine": [
+            bone("pump_stack", [0,28,8], c(-7,34,5,4,11,5,"rust"),
+                 c(-8,44,4,6,2,7,"dark"), c(5,32,8,4,8,4),
+                 c(4,39,7,6,2,6,"rust"), c(-10,20,7,20,6,7,"moss"), parent="rotor"),
+            bone("collimator", [0,27,-20], c(-8,20,-27,4,14,5,"metal",[0,-12,0]),
+                 c(4,20,-27,4,14,5,"metal",[0,12,0]), c(-5,24,-28,10,5,2,"dark"),
+                 c(-3,25,-29,6,3,1,"glow"), parent="barrel"),
+        ],
+        "grid_gantry_marrow": [
+            bone("gantry", [0,18,3], c(-11,16,5,3,17,4,"rust",[0,0,-14]),
+                 c(8,16,5,3,17,4,"metal",[0,0,14]), c(-12,33,4,24,3,6),
+                 c(-11,35,5,10,2,4,"moss"), c(-7,18,10,14,12,5,"dark")),
+            bone("lifting_hooks", [0,17,-20], c(-8,5,-24,3,10,4,"metal",[0,0,-26]),
+                 c(5,7,-24,3,9,4,"rust",[0,0,30]), c(-5,7,-26,3,3,6,"metal"),
+                 c(2,8,-26,3,3,6), parent="claw"),
+        ],
+        "grid_cinder_spindle": [
+            bone("flywheel", [0,26,0], *[
+                c(-2,25,-21,4,4,18,"rust",[0,yaw,0]) for yaw in range(0,360,45)
+            ], c(-4,30,-4,8,6,8,"dark"), c(-3,34,-3,6,3,6,"glow"), parent="crown"),
+            bone("lower_fins", [0,11,0], *[
+                c(-4,1,-10,8,11,3,"metal",[22,yaw,0]) for yaw in (0,90,180,270)
+            ]),
+        ],
+        "echo_seam_riven": [
+            bone("split_mantle", [0,23,2], c(-11,20,-1,13,6,6,"cloth",[0,0,-15]),
+                 c(-10,5,2,6,17,2,"cloth",[-8,0,15]), c(-6,8,3,3,11,2,"cloth",[5,0,-13]),
+                 c(-8,1,3,2,10,2,"moss",[-9,0,16]), parent="drape"),
+            bone("broken_edge", [7,13,-3], c(7,2,-5,3,15,2,"metal",[0,0,10]),
+                 c(8,0,-5,1,16,1,"glow",[0,0,10]), parent="arm_r"),
+        ],
+        "echo_veil_regent": [
+            bone("veil", [0,30,1], c(-6,30,-4,12,4,9,"cloth"), c(-7,18,-3,3,14,2,"cloth",[0,0,-7]),
+                 c(4,21,-4,3,13,2,"cloth",[0,0,8]), c(-5,30,4,10,3,3,"rust"), parent="head"),
+            bone("court_robe", [0,20,3], c(-9,3,2,7,20,2,"cloth",[8,0,-13]),
+                 c(2,1,2,6,20,2,"cloth",[9,0,10]), c(-2,0,3,4,15,2,"cloth",[-7,0,0]),
+                 c(7,6,3,3,10,2,"moss"), parent="drape"),
+            bone("staff_cage", [8,26,0], c(4,23,-4,9,10,2,"rust",[0,0,28]),
+                 c(4,23,2,9,10,2,"metal",[0,0,-28]), c(7,26,-3,4,4,6,"glow"), parent="arm_r"),
+        ],
+        "echo_rubble_rook": [
+            bone("bastion", [-8,14,-5], c(-18,5,-8,4,22,4,"metal",[0,0,-11]),
+                 c(-15,22,-9,15,4,4,"rust",[0,0,11]), c(-14,10,-9,16,3,2,"metal",[0,0,-21]),
+                 c(-15,2,-8,4,7,4,"rust"), c(-1,3,-8,3,5,4,"rust"),
+                 c(-14,15,-10,5,8,2,"moss"), parent="shield"),
+            bone("backplate", [0,23,3], c(-11,21,1,20,6,8,"cloth",[9,0,8]),
+                 c(4,21,0,7,8,8,"rust",[0,0,16]), c(-8,15,5,8,10,4,"metal",[14,0,0]),
+                 c(-7,16,8,5,7,2,"moss")),
+        ],
+        "echo_hush_pendulum": [
+            bone("trail", [-3,26,3], c(-8,6,4,5,21,2,"cloth",[21,0,10]),
+                 c(-4,4,5,3,15,2,"cloth",[28,0,-8]), c(-9,9,5,2,12,2,"moss",[16,0,14]), parent="hood_tail"),
+            bone("weight_shell", [9,7,0], c(7,4,-2,2,13,2,"rust",[0,0,-8]),
+                 c(7,0,-5,8,7,8,"metal",[0,18,13]), c(8,2,-6,5,3,3,"glow"),
+                 c(8,0,-1,6,2,4,"rust"), parent="counterweight"),
+            bone("hood_cowl", [0,27,1], c(-7,29,-2,4,7,8,"cloth",[0,0,-24]),
+                 c(-5,33,-3,10,4,8,"cloth",[0,0,12]), c(-6,23,1,3,9,6,"moss"), parent="head"),
+        ],
+    }
+    rig = spec["rig"]
+    if slug == "grid_palinode":
+        for index, (name, parent, pivot, mesh) in enumerate(rig):
+            if name.startswith(("leg_", "foot_")):
+                side = -1 if name.endswith("_l") else 1
+                # Taper the broad original feet into a shank and a separate toe.
+                mesh = tuple((*part[:3], [0,0,side*(18 if name.startswith("leg") else -13)])
+                             for part in mesh)
+                rig[index] = (name, parent, pivot, mesh)
+    for index, (name, parent, pivot, mesh) in enumerate(rig):
+        if name.startswith("tread_"):
+            x = mesh[0][0][0]
+            mesh = (*mesh, *(c(x-1,1,z,10,2,2,"rust") for z in range(-13,14,4)))
+            rig[index] = (name, parent, pivot, mesh)
+        if slug in {"echo_rubble_rook", "echo_hush_pendulum"} and name == "arm_r":
+            # These silhouettes carry a shield or counterweight, rather than a second energy blade.
+            rig[index] = (name, parent, pivot, mesh[:2])
+    rig.extend(layout[slug])
+
+
 def texture_and_geometry(spec):
     rng = random.Random(spec["id"])
     atlas = Image.new("RGBA", (SIZE, SIZE))
     x = y = row = 0
     bones = [{"name": "root", "pivot": [0, 0, 0]}]
     colors = dict(zip(("metal", "rust", "glow", "cloth", "dark"), spec["palette"]))
+    colors["moss"] = "#536c42"
     for name, parent, pivot, cubes in spec["rig"]:
         mesh = []
-        for origin, size, material in cubes:
+        for origin, size, material, rotation in cubes:
             w, h, d = size
             width, height = 2*(w+d), h+d
             if x + width > SIZE:
@@ -262,14 +357,29 @@ def texture_and_geometry(spec):
             base = tuple(bytes.fromhex(colors[material][1:]))
             for dy in range(height):
                 for dx in range(width):
-                    edge = dx in (0, d, d+w, 2*d+w, width-1) or dy in (0, d, height-1)
-                    shade = (10 if edge else 0) + rng.choice((-15, -8, -2, 0, 2, 6))
+                    borders = (0, d, d+w, 2*d+w)
+                    local_x = dx - max(boundary for boundary in borders if boundary <= dx)
+                    local_y = dy if dy < d else dy-d
+                    edge = dx in borders or dy in (0,d)
+                    shade = rng.choice((-5,-3,-1,0,2,3,5))
+                    tint = base
                     if material == "glow":
-                        shade = -35 if edge else 16
-                    elif material in ("metal", "rust") and rng.random() < .07:
-                        shade -= 22
-                    atlas.putpixel((x+dx, y+dy), tuple(max(0,min(255,c+shade)) for c in base)+(255,))
-            mesh.append(dict(origin=origin, size=size, uv=[x, y]))
+                        shade = -40 if edge else 22 if local_y % 4 == 1 else 4
+                    elif material in ("metal","rust","dark"):
+                        shade += 16 if edge else -16 if local_y % 9 == 7 else 0
+                        if local_x % 9 == 2 and local_y % 9 in (2,3):
+                            shade -= 30
+                        if (local_x * 7 + local_y * 3 + x) % 31 < 4 and material != "dark":
+                            tint = (116,82,51)
+                    else:
+                        shade += (8 if local_x % 3 == 0 else -4) - (9 if local_y % 5 == 0 else 0)
+                        if material == "cloth" and local_y > h-4 and local_x % 5 < 2:
+                            shade -= 37
+                    atlas.putpixel((x+dx,y+dy),tuple(max(0,min(255,k+shade)) for k in tint)+(255,))
+            piece = dict(origin=origin, size=size, uv=[x, y])
+            if rotation:
+                piece.update(rotation=rotation, pivot=[origin[i]+size[i]/2 for i in range(3)])
+            mesh.append(piece)
             x += width
             row = max(row, height)
         bones.append(dict(name=name, parent=parent, pivot=pivot, cubes=mesh))
@@ -334,6 +444,12 @@ def animation_set(spec):
                 "0.0":[0,0,0], str(round(impact*.42,3)):[round(n*.58,2) for n in coil],
                 str(round(impact-.12,3)):list(coil), str(impact):list(strike),
                 str(round(impact+.24,3)):list(recoil), str(end):[0,0,0]}}
+        # Add a short original follow-through; reference density controls its spacing.
+        settle = min(.27, max(.09, 2 / spec["pose_density"]))
+        for channel in keys.values():
+            rotation = channel["rotation"]
+            recoil = rotation[str(round(impact+.24,3))]
+            rotation[str(round(impact+.24+settle,3))] = [round(n*.42,2) for n in recoil]
         animations[f"attack{idx}"] = dict(animation_length=end, loop="hold_on_last_frame", bones=keys)
     animations["death"] = dict(animation_length=1, loop="hold_on_last_frame", bones={
         "root":{"rotation":{"0.0":[0,0,0],"0.2":[-7,0,11],"1.0":[0,0,62 if echo else -17]},
@@ -392,7 +508,16 @@ def build(spec):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--reference-jar", type=Path, help="Local Mowzie's Mobs Java JAR")
+    args = parser.parse_args()
+    profile = motion_profile(args.reference_jar) if args.reference_jar else None
+    density = profile["poses_per_second"] if profile else 12
+    if profile:
+        print(f"Reference: {profile['clips']} clips, median {density} distinct keyframe times/second")
     for spec in bosses:
+        spec["pose_density"] = density
+        remodel(spec)
         build(spec)
     active = [{"death":"!query.is_alive"},{"attack0":"query.property('bearframe:boss_move') == 1"},
               {"attack1":"query.property('bearframe:boss_move') == 2"}]
