@@ -19,7 +19,8 @@
       },
       "animations": {
         "first": "animation.bearframe.held.gantry_rake.first",
-        "third": "animation.bearframe.held.gantry_rake.third"
+        "third": "animation.bearframe.held.gantry_rake.third",
+        "energy": "animation.bearframe.held.gantry_rake.energy"
       },
       "scripts": {
         "animate": [
@@ -28,7 +29,8 @@
           },
           {
             "third": "context.is_first_person == 0.0"
-          }
+          },
+          "energy"
         ]
       },
       "render_controllers": [

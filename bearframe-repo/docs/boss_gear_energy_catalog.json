@@ -1,0 +1,34 @@
+[
+  {
+    "id": "palinode_ram",
+    "name": "Piston charge",
+    "period": 1.65,
+    "groups": 4,
+    "overlays": 8,
+    "parent": "grip"
+  },
+  {
+    "id": "silt_discharge",
+    "name": "Three-prong discharge",
+    "period": 1.8,
+    "groups": 3,
+    "overlays": 9,
+    "parent": "grip"
+  },
+  {
+    "id": "gantry_rake",
+    "name": "Hook edge sweep",
+    "period": 1.85,
+    "groups": 5,
+    "overlays": 11,
+    "parent": "grip"
+  },
+  {
+    "id": "cinder_inductor",
+    "name": "Circulating induction heat",
+    "period": 1.35,
+    "groups": 8,
+    "overlays": 16,
+    "parent": "grip"
+  }
+]

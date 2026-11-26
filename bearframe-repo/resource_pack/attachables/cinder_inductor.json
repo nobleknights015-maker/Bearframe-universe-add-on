@@ -19,7 +19,8 @@
       },
       "animations": {
         "first": "animation.bearframe.held.cinder_inductor.first",
-        "third": "animation.bearframe.held.cinder_inductor.third"
+        "third": "animation.bearframe.held.cinder_inductor.third",
+        "energy": "animation.bearframe.held.cinder_inductor.energy"
       },
       "scripts": {
         "animate": [
@@ -28,7 +29,8 @@
           },
           {
             "third": "context.is_first_person == 0.0"
-          }
+          },
+          "energy"
         ]
       },
       "render_controllers": [

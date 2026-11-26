@@ -19,7 +19,8 @@
       },
       "animations": {
         "first": "animation.bearframe.held.palinode_ram.first",
-        "third": "animation.bearframe.held.palinode_ram.third"
+        "third": "animation.bearframe.held.palinode_ram.third",
+        "energy": "animation.bearframe.held.palinode_ram.energy"
       },
       "scripts": {
         "animate": [
@@ -28,7 +29,8 @@
           },
           {
             "third": "context.is_first_person == 0.0"
-          }
+          },
+          "energy"
         ]
       },
       "render_controllers": [
