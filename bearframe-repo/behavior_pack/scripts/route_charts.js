@@ -4,6 +4,7 @@ import {ActionFormData} from "@minecraft/server-ui";
 import {SURFACE_SITES,LEGACY_SITES} from "./surface_layout.js";
 import {MAIN,SIDES,CONTRACTS,EVIDENCE} from "./campaign_data.js";
 import {read as readCampaign} from "./campaign_state.js";
+import {goalCount} from "./rpg_progress.js";
 
 const OVERWORLD="minecraft:overworld";
 const DIRECTORY="bearframe:charted_sites:";
@@ -145,7 +146,7 @@ function goalMaps(q,player,state,finished=false){
     for(const id of sitesFor(g)){
       const dest=solution(id,player,state,finished);
       if(dest&&!rows.some(x=>x.id===id))rows.push({...dest,
-        objective:g.label,done:(state.facts[g.key]??0)>=g.count});
+        objective:g.label,done:goalCount(q,state,g)>=g.count});
     }
   }
   return rows;
@@ -192,7 +193,7 @@ function activeLists(player,state){
   const q=MAIN[state.chapter];
   if(q)rows.push({title:q.title,maps:[...goalMaps(q,player,state),{...station,objective:"Debrief with "+q.speaker}]});
   else if(state.chapter<0)rows.push({title:"Start The Last Dispatch",maps:[solution("farfield_camp",player,state),station]});
-  for(const side of SIDES)if(state.side[side.id]===1)rows.push({title:side.title,maps:goalMaps(side,player,state)});
+  for(const side of SIDES)if(state.side[side.id]===1)rows.push({title:side.title,maps:[...goalMaps(side,player,state),{...station,objective:"Debrief with "+side.speaker}]});
   for(const c of CONTRACTS)if(state.contracts[c.id]?.active)rows.push({title:c.title,
     maps:[...visitedFromSeen(state.contracts[c.id]?.seen,player,state),...staticTargets(c.id).map(id=>solution(id,player,state)).filter(Boolean)]});
   const local=load(player,ROAMING,{});

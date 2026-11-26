@@ -1,12 +1,13 @@
+import {goalCount,rpgState} from "./rpg_progress.js";
 export const STATE_KEY="bearframe:campaign_v1";
 export const initial=()=>({chapter:-1,facts:{},sites:{},side:{},contracts:{},choice:null});
 export function read(player){
   const raw=player.getDynamicProperty(STATE_KEY);
-  return typeof raw==="string"?{...initial(),...JSON.parse(raw)}:initial();
+  const state=typeof raw==="string"?{...initial(),...JSON.parse(raw)}:initial();rpgState(state);return state;
 }
 export const write=(player,state)=>player.setDynamicProperty(STATE_KEY,JSON.stringify(state));
 export function complete(q,state){
-  return q.goals.every(g=>(state.facts[g.key]??0)>=g.count);
+  return q.goals.every(g=>goalCount(q,state,g)>=g.count);
 }
 export function applySignal(state,type,id,place){
   const facts=state.facts;
@@ -25,6 +26,7 @@ export function applySignal(state,type,id,place){
     fresh=mark("talk:echo");
     if(state.choice)fresh=mark("after:echo")||fresh;
   }else if(type==="kill"){
+    rpgState(state).kills++;
     facts["kill:directorate"]=Math.min(99,(facts["kill:directorate"]??0)+1);
     fresh=true;
   }

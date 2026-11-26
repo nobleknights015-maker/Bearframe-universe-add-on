@@ -45,3 +45,1028 @@ export const CONTRACTS=[
  {id:"power",title:"Maintenance Circuit",speaker:"Atlas",text:"Verify power at two distinct repaired facilities after accepting. Existing repairs count when you inspect them.",key:"circuit",count:2,reward:[i("iron_ingot",4),i("copper_ingot",4)]},
  {id:"hostiles",title:"Clear the Approach",speaker:"Sentinel",text:"Defeat three Hollows or Hunters on the surface after accepting. Echoes and Ghost Grid maintenance units never count.",key:"defeat",count:3,reward:[i("arrow",16),i("emerald",3)]},
 ];
+
+// Preserve all legacy IDs and main chapter indices.
+export const RPG_SIDES=[
+  {
+    "id": "mira_bearings",
+    "title": "The Unmarked Bearing",
+    "speaker": "Mira",
+    "chapter": 0,
+    "requires": [],
+    "intro": "The old route is not the only way through. Compare the handwritten detour with Rainline's surviving records.",
+    "goals": [
+      {
+        "key": "read:frontier_ruin",
+        "label": "Read the hand-marked detour",
+        "count": 1
+      },
+      {
+        "key": "read:rainline_town",
+        "label": "Read the workshop record",
+        "count": 1
+      }
+    ],
+    "delivery": [],
+    "report": "A useful bearing is one someone can actually follow.",
+    "reward": [
+      [
+        "minecraft:paper",
+        8
+      ],
+      [
+        "minecraft:compass",
+        1
+      ]
+    ]
+  },
+  {
+    "id": "mira_manifest",
+    "title": "An Empty Seat",
+    "speaker": "Mira",
+    "chapter": 1,
+    "requires": [
+      "mira_bearings"
+    ],
+    "intro": "The old system treated empty seats as failed departures. Compare the cargo seal with the civilian rescue recorder.",
+    "goals": [
+      {
+        "key": "read:saltline_town",
+        "label": "Read the cargo seal",
+        "count": 1
+      },
+      {
+        "key": "read:crashed_skiff",
+        "label": "Inspect the rescue recorder",
+        "count": 1
+      }
+    ],
+    "delivery": [],
+    "report": "A missing passenger is not automatically a missing person.",
+    "reward": [
+      [
+        "minecraft:bread",
+        6
+      ],
+      [
+        "minecraft:iron_ingot",
+        3
+      ]
+    ]
+  },
+  {
+    "id": "mira_detour",
+    "title": "A Survey Worth Returning From",
+    "speaker": "Mira",
+    "chapter": 3,
+    "requires": [
+      "mira_manifest"
+    ],
+    "intro": "Check the collapsed railway and submerged bypass. Bring paper for a field copy.",
+    "goals": [
+      {
+        "key": "read:collapsed_transit_bunker",
+        "label": "Verify the blocked rail",
+        "count": 1
+      },
+      {
+        "key": "read:flooded_pump_bunker",
+        "label": "Read the intake bypass",
+        "count": 1
+      }
+    ],
+    "delivery": [
+      [
+        "minecraft:paper",
+        6
+      ]
+    ],
+    "report": "A practical detour, not a line through a mountain.",
+    "reward": [
+      [
+        "minecraft:emerald",
+        3
+      ],
+      [
+        "minecraft:torch",
+        12
+      ]
+    ]
+  },
+  {
+    "id": "mira_routes",
+    "title": "The Route We Leave Behind",
+    "speaker": "Mira",
+    "chapter": 6,
+    "requires": [
+      "mira_detour"
+    ],
+    "intro": "Compare the shelter and alternate carrier. Choose the expedition's next supply package.",
+    "goals": [
+      {
+        "key": "read:shelter_bunker",
+        "label": "Read the shelter record",
+        "count": 1
+      },
+      {
+        "key": "read:shattered_array",
+        "label": "Inspect the local carrier",
+        "count": 1
+      }
+    ],
+    "delivery": [],
+    "report": "The survey is filed. The recorded sites remain available.",
+    "reward": [
+      [
+        "minecraft:emerald",
+        4
+      ]
+    ],
+    "outcomes": [
+      {
+        "id": "shelter",
+        "label": "Prioritize shelter supplies",
+        "report": "The rest points come first.",
+        "reward": [
+          [
+            "minecraft:bread",
+            12
+          ],
+          [
+            "minecraft:torch",
+            8
+          ]
+        ]
+      },
+      {
+        "id": "survey",
+        "label": "Prioritize survey equipment",
+        "report": "We will document the entrances.",
+        "reward": [
+          [
+            "minecraft:paper",
+            16
+          ],
+          [
+            "minecraft:compass",
+            1
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "atlas_stock",
+    "title": "Stock for the Bench",
+    "speaker": "Atlas",
+    "chapter": 0,
+    "requires": [],
+    "intro": "A wrench is useless with an empty parts bin. Bring copper and redstone to the expedition workshop.",
+    "goals": [],
+    "delivery": [
+      [
+        "minecraft:copper_ingot",
+        6
+      ],
+      [
+        "minecraft:redstone",
+        4
+      ]
+    ],
+    "report": "Sorted, labeled, usable.",
+    "reward": [
+      [
+        "minecraft:iron_ingot",
+        4
+      ],
+      [
+        "minecraft:torch",
+        8
+      ]
+    ]
+  },
+  {
+    "id": "atlas_relay",
+    "title": "A Circuit That Holds",
+    "speaker": "Atlas",
+    "chapter": 1,
+    "requires": [
+      "atlas_stock"
+    ],
+    "intro": "Verify the relay and Switchyard. I need working endpoints, not a picture of a panel.",
+    "goals": [
+      {
+        "key": "repair:maintenance_relay",
+        "label": "Verify relay power",
+        "count": 1
+      },
+      {
+        "key": "repair:grid_hub",
+        "label": "Verify Switchyard power",
+        "count": 1
+      }
+    ],
+    "delivery": [],
+    "report": "Both ends answer. Good.",
+    "reward": [
+      [
+        "minecraft:redstone",
+        8
+      ],
+      [
+        "bearframe:salvaged_alloy",
+        1
+      ]
+    ]
+  },
+  {
+    "id": "atlas_workshops",
+    "title": "Borrowed Workbenches",
+    "speaker": "Atlas",
+    "chapter": 3,
+    "requires": [
+      "atlas_relay"
+    ],
+    "intro": "Verify both workshops. Deliver replacement iron brackets without stripping your own base.",
+    "goals": [
+      {
+        "key": "repair:foundry_annex",
+        "label": "Verify Annex power",
+        "count": 1
+      },
+      {
+        "key": "repair:rainline_town",
+        "label": "Verify Rainline power",
+        "count": 1
+      }
+    ],
+    "delivery": [
+      [
+        "minecraft:iron_ingot",
+        4
+      ]
+    ],
+    "report": "Those benches belong to the crews using them.",
+    "reward": [
+      [
+        "bearframe:salvaged_alloy",
+        3
+      ],
+      [
+        "minecraft:copper_ingot",
+        6
+      ]
+    ]
+  },
+  {
+    "id": "atlas_spares",
+    "title": "A Repair That Lasts",
+    "speaker": "Atlas",
+    "chapter": 5,
+    "requires": [
+      "atlas_workshops"
+    ],
+    "intro": "Compare the rootbound instructions and auxiliary pump. Choose the next spare-parts package.",
+    "goals": [
+      {
+        "key": "read:rootbound_service_bunker",
+        "label": "Recover service instructions",
+        "count": 1
+      },
+      {
+        "key": "repair:spillway_bunker",
+        "label": "Verify the auxiliary pump",
+        "count": 1
+      }
+    ],
+    "delivery": [],
+    "report": "Keep the circuit accessible.",
+    "reward": [
+      [
+        "bearframe:legacy_cell",
+        1
+      ]
+    ],
+    "outcomes": [
+      {
+        "id": "electrical",
+        "label": "Electrical spares",
+        "report": "Copper and redstone, ready to go.",
+        "reward": [
+          [
+            "minecraft:redstone",
+            12
+          ],
+          [
+            "minecraft:copper_ingot",
+            8
+          ]
+        ]
+      },
+      {
+        "id": "structural",
+        "label": "Mechanical spares",
+        "report": "Brackets and housings. Built to last.",
+        "reward": [
+          [
+            "minecraft:iron_ingot",
+            8
+          ],
+          [
+            "bearframe:salvaged_alloy",
+            2
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vera_marks",
+    "title": "Signs of a Reader",
+    "speaker": "Vera",
+    "chapter": 0,
+    "requires": [],
+    "intro": "Compare the informal markings at the Frontier Ruin with the relay's formal log.",
+    "goals": [
+      {
+        "key": "read:frontier_ruin",
+        "label": "Read informal markings",
+        "count": 1
+      },
+      {
+        "key": "read:maintenance_relay",
+        "label": "Read the relay log",
+        "count": 1
+      }
+    ],
+    "delivery": [],
+    "report": "One was written for a machine; one for a reader who might never arrive.",
+    "reward": [
+      [
+        "minecraft:paper",
+        8
+      ],
+      [
+        "minecraft:glow_ink_sac",
+        2
+      ]
+    ]
+  },
+  {
+    "id": "vera_records",
+    "title": "A Record Without a Name",
+    "speaker": "Vera",
+    "chapter": 2,
+    "requires": [
+      "vera_marks"
+    ],
+    "intro": "Inspect Relay Nine and the ward roster. A registry is not a complete account of its residents.",
+    "goals": [
+      {
+        "key": "read:relay_nine",
+        "label": "Read carrier fragment",
+        "count": 1
+      },
+      {
+        "key": "read:echo_ward",
+        "label": "Read ward record",
+        "count": 1
+      }
+    ],
+    "delivery": [],
+    "report": "Preserve the record without treating its errors as facts.",
+    "reward": [
+      [
+        "minecraft:amethyst_shard",
+        4
+      ],
+      [
+        "minecraft:paper",
+        6
+      ]
+    ]
+  },
+  {
+    "id": "vera_index",
+    "title": "The Sealed Index",
+    "speaker": "Vera",
+    "chapter": 4,
+    "requires": [
+      "vera_records"
+    ],
+    "intro": "Compare the archive and Nivalis thermal record. Bring clean paper for an engineering-only index.",
+    "goals": [
+      {
+        "key": "read:sealed_archive_bunker",
+        "label": "Inspect sealed registry",
+        "count": 1
+      },
+      {
+        "key": "read:nivalis_lab",
+        "label": "Recover thermal record",
+        "count": 1
+      }
+    ],
+    "delivery": [
+      [
+        "minecraft:paper",
+        8
+      ]
+    ],
+    "report": "No resident names were copied into the route sheet.",
+    "reward": [
+      [
+        "minecraft:emerald",
+        3
+      ],
+      [
+        "minecraft:glow_ink_sac",
+        3
+      ]
+    ]
+  },
+  {
+    "id": "vera_archive",
+    "title": "What a Map Cannot Say",
+    "speaker": "Vera",
+    "chapter": 6,
+    "requires": [
+      "vera_index"
+    ],
+    "intro": "Compare the greenhouse ledger and the Array's machine report. Choose how to present the engineering-only archive.",
+    "goals": [
+      {
+        "key": "read:overgrown_colony",
+        "label": "Read greenhouse ledger",
+        "count": 1
+      },
+      {
+        "key": "read:shattered_array",
+        "label": "Inspect emitter status",
+        "count": 1
+      }
+    ],
+    "delivery": [],
+    "report": "Both accounts are preserved.",
+    "reward": [
+      [
+        "minecraft:amethyst_shard",
+        6
+      ]
+    ],
+    "outcomes": [
+      {
+        "id": "field",
+        "label": "Field-readable notes",
+        "report": "Clear marks, nothing unnecessary.",
+        "reward": [
+          [
+            "minecraft:paper",
+            16
+          ],
+          [
+            "minecraft:glow_ink_sac",
+            4
+          ]
+        ]
+      },
+      {
+        "id": "technical",
+        "label": "Technical index",
+        "report": "Measurements and annotations kept separate.",
+        "reward": [
+          [
+            "minecraft:redstone",
+            10
+          ],
+          [
+            "minecraft:amethyst_shard",
+            4
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sentinel_trace",
+    "title": "Signs of a Patrol",
+    "speaker": "Sentinel",
+    "chapter": 1,
+    "requires": [],
+    "intro": "Read the checkpoint. Clear two hostile units threatening the surface routes. Neutral Echoes and maintenance machines are not targets.",
+    "goals": [
+      {
+        "key": "read:intrusion_checkpoint",
+        "label": "Inspect current checkpoint",
+        "count": 1
+      },
+      {
+        "key": "kill:directorate",
+        "label": "Defeat hostile Hollows or Hunters after accepting",
+        "count": 2
+      }
+    ],
+    "delivery": [],
+    "report": "Keep the distinction between threats and residents.",
+    "reward": [
+      [
+        "minecraft:arrow",
+        16
+      ],
+      [
+        "minecraft:iron_ingot",
+        3
+      ]
+    ]
+  },
+  {
+    "id": "sentinel_detour",
+    "title": "A Safe Approach",
+    "speaker": "Sentinel",
+    "chapter": 2,
+    "requires": [
+      "sentinel_trace"
+    ],
+    "intro": "Compare Relay Nine and the rescue recorder. Clear three more hostile Directorate units.",
+    "goals": [
+      {
+        "key": "read:relay_nine",
+        "label": "Inspect Relay Nine",
+        "count": 1
+      },
+      {
+        "key": "read:crashed_skiff",
+        "label": "Inspect rescue route",
+        "count": 1
+      },
+      {
+        "key": "kill:directorate",
+        "label": "Defeat hostile Hollows or Hunters after accepting",
+        "count": 3
+      }
+    ],
+    "delivery": [],
+    "report": "A cleared route is not permanent security.",
+    "reward": [
+      [
+        "minecraft:arrow",
+        24
+      ],
+      [
+        "minecraft:cooked_beef",
+        6
+      ]
+    ]
+  },
+  {
+    "id": "sentinel_supply",
+    "title": "Field Watch Resupply",
+    "speaker": "Sentinel",
+    "chapter": 3,
+    "requires": [
+      "sentinel_detour"
+    ],
+    "intro": "Bring iron and torches for routine patrol equipment. Confirm the checkpoint record.",
+    "goals": [
+      {
+        "key": "read:intrusion_checkpoint",
+        "label": "Confirm checkpoint record",
+        "count": 1
+      }
+    ],
+    "delivery": [
+      [
+        "minecraft:iron_ingot",
+        5
+      ],
+      [
+        "minecraft:torch",
+        8
+      ]
+    ],
+    "report": "Small patrols. Short reports. No occupation.",
+    "reward": [
+      [
+        "minecraft:emerald",
+        4
+      ],
+      [
+        "minecraft:arrow",
+        16
+      ]
+    ]
+  },
+  {
+    "id": "sentinel_watch",
+    "title": "A Watch Without an Occupation",
+    "speaker": "Sentinel",
+    "chapter": 6,
+    "requires": [
+      "sentinel_supply"
+    ],
+    "intro": "Inspect the blocked route and local signal. Clear four hostile units. Recommend a patrol support package.",
+    "goals": [
+      {
+        "key": "read:collapsed_transit_bunker",
+        "label": "Inspect blocked route",
+        "count": 1
+      },
+      {
+        "key": "read:shattered_array",
+        "label": "Inspect local signal",
+        "count": 1
+      },
+      {
+        "key": "kill:directorate",
+        "label": "Defeat hostile Hollows or Hunters after accepting",
+        "count": 4
+      }
+    ],
+    "delivery": [],
+    "report": "Watchtower will monitor the route, not claim settlements.",
+    "reward": [
+      [
+        "minecraft:emerald",
+        5
+      ]
+    ],
+    "outcomes": [
+      {
+        "id": "observation",
+        "label": "Observation supplies",
+        "report": "Contact before escalation.",
+        "reward": [
+          [
+            "minecraft:torch",
+            24
+          ],
+          [
+            "minecraft:paper",
+            8
+          ]
+        ]
+      },
+      {
+        "id": "defense",
+        "label": "Defensive supplies",
+        "report": "Equip patrols for confirmed hostiles.",
+        "reward": [
+          [
+            "minecraft:arrow",
+            32
+          ],
+          [
+            "minecraft:iron_ingot",
+            6
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "penney_lamps",
+    "title": "A Lamp in the Window",
+    "speaker": "Penney",
+    "chapter": 0,
+    "requires": [],
+    "intro": "A shelter needs light and food before another expedition arrives. Bring bread and torches to the Commons.",
+    "goals": [],
+    "delivery": [
+      [
+        "minecraft:bread",
+        6
+      ],
+      [
+        "minecraft:torch",
+        8
+      ]
+    ],
+    "report": "We can ask before we offer.",
+    "reward": [
+      [
+        "minecraft:emerald",
+        2
+      ],
+      [
+        "minecraft:cooked_beef",
+        4
+      ]
+    ]
+  },
+  {
+    "id": "penney_rooms",
+    "title": "Rooms Still in Use",
+    "speaker": "Penney",
+    "chapter": 1,
+    "requires": [
+      "penney_lamps"
+    ],
+    "intro": "Listen to an Echo and inspect the ward. The room inventory isn't permission to enter.",
+    "goals": [
+      {
+        "key": "talk:echo",
+        "label": "Listen to an Echo resident",
+        "count": 1
+      },
+      {
+        "key": "read:echo_ward",
+        "label": "Inspect ward record",
+        "count": 1
+      }
+    ],
+    "delivery": [],
+    "report": "I'll mark the briefing as a request to ask, not an instruction to search.",
+    "reward": [
+      [
+        "minecraft:bread",
+        8
+      ],
+      [
+        "minecraft:emerald",
+        2
+      ]
+    ]
+  },
+  {
+    "id": "penney_garden",
+    "title": "Enough for Tomorrow",
+    "speaker": "Penney",
+    "chapter": 3,
+    "requires": [
+      "penney_rooms"
+    ],
+    "intro": "Inspect the colony and waystation records. Bring wheat and seeds for anyone who wants a garden.",
+    "goals": [
+      {
+        "key": "read:overgrown_colony",
+        "label": "Read greenhouse ledger",
+        "count": 1
+      },
+      {
+        "key": "read:lost_waystation",
+        "label": "Read shelter record",
+        "count": 1
+      }
+    ],
+    "delivery": [
+      [
+        "minecraft:wheat",
+        8
+      ],
+      [
+        "minecraft:wheat_seeds",
+        8
+      ]
+    ],
+    "report": "A little food and a way to grow more.",
+    "reward": [
+      [
+        "minecraft:bone_meal",
+        12
+      ],
+      [
+        "minecraft:carrot",
+        6
+      ],
+      [
+        "minecraft:emerald",
+        2
+      ]
+    ]
+  },
+  {
+    "id": "penney_welcome",
+    "title": "A Place to Stop",
+    "speaker": "Penney",
+    "chapter": 6,
+    "requires": [
+      "penney_garden"
+    ],
+    "intro": "Read the shelter and Saltline logs. Help choose the next care package. Nobody is required to travel.",
+    "goals": [
+      {
+        "key": "read:shelter_bunker",
+        "label": "Read shelter log",
+        "count": 1
+      },
+      {
+        "key": "read:saltline_town",
+        "label": "Read empty-car record",
+        "count": 1
+      }
+    ],
+    "delivery": [],
+    "report": "A standing offer of help, not a list of people to collect.",
+    "reward": [
+      [
+        "minecraft:emerald",
+        4
+      ]
+    ],
+    "outcomes": [
+      {
+        "id": "food",
+        "label": "Food for residents",
+        "report": "For those who choose to stay.",
+        "reward": [
+          [
+            "minecraft:bread",
+            16
+          ],
+          [
+            "minecraft:carrot",
+            8
+          ]
+        ]
+      },
+      {
+        "id": "travel",
+        "label": "Traveler supplies",
+        "report": "For those who leave on their own terms.",
+        "reward": [
+          [
+            "minecraft:cooked_beef",
+            10
+          ],
+          [
+            "minecraft:torch",
+            16
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "auren_paper",
+    "title": "Before the Signal",
+    "speaker": "Auren",
+    "chapter": 0,
+    "requires": [],
+    "intro": "Bring paper for a briefing packet and compare both signal endpoints.",
+    "goals": [
+      {
+        "key": "read:maintenance_relay",
+        "label": "Read first relay",
+        "count": 1
+      },
+      {
+        "key": "read:grid_hub",
+        "label": "Read route loop",
+        "count": 1
+      }
+    ],
+    "delivery": [
+      [
+        "minecraft:paper",
+        4
+      ]
+    ],
+    "report": "A signal is evidence, not an order.",
+    "reward": [
+      [
+        "minecraft:emerald",
+        2
+      ],
+      [
+        "minecraft:redstone",
+        4
+      ]
+    ]
+  },
+  {
+    "id": "auren_conflict",
+    "title": "Two Accounts of One Route",
+    "speaker": "Auren",
+    "chapter": 2,
+    "requires": [
+      "auren_paper"
+    ],
+    "intro": "Compare the ward record and Directorate annotation without assuming either is the original authority.",
+    "goals": [
+      {
+        "key": "read:echo_ward",
+        "label": "Review ward record",
+        "count": 1
+      },
+      {
+        "key": "read:intrusion_checkpoint",
+        "label": "Review current annotation",
+        "count": 1
+      }
+    ],
+    "delivery": [],
+    "report": "The old network predates the current conflict.",
+    "reward": [
+      [
+        "minecraft:iron_ingot",
+        4
+      ],
+      [
+        "minecraft:paper",
+        8
+      ]
+    ]
+  },
+  {
+    "id": "auren_endpoints",
+    "title": "An Endpoint, Not a Promise",
+    "speaker": "Auren",
+    "chapter": 4,
+    "requires": [
+      "auren_conflict"
+    ],
+    "intro": "Inspect compatible service instructions and the local carrier. Verify the Foundry test circuit.",
+    "goals": [
+      {
+        "key": "read:rootbound_service_bunker",
+        "label": "Read service instructions",
+        "count": 1
+      },
+      {
+        "key": "read:shattered_array",
+        "label": "Inspect local carrier",
+        "count": 1
+      },
+      {
+        "key": "repair:foundry_annex",
+        "label": "Verify Foundry power",
+        "count": 1
+      }
+    ],
+    "delivery": [],
+    "report": "We have alternatives to restarting the whole network.",
+    "reward": [
+      [
+        "minecraft:redstone",
+        8
+      ],
+      [
+        "bearframe:legacy_cell",
+        1
+      ]
+    ]
+  },
+  {
+    "id": "auren_followup",
+    "title": "After the Dispatch",
+    "speaker": "Auren",
+    "chapter": 7,
+    "requires": [
+      "auren_endpoints"
+    ],
+    "intro": "Verify the Switchyard and speak to an Echo after the dispatch. Recommend the station's next support package.",
+    "goals": [
+      {
+        "key": "after:echo",
+        "label": "Speak to an Echo after the dispatch",
+        "count": 1
+      },
+      {
+        "key": "repair:grid_hub",
+        "label": "Verify Switchyard circuit",
+        "count": 1
+      }
+    ],
+    "delivery": [],
+    "report": "The people affected still decide what they need.",
+    "reward": [
+      [
+        "minecraft:emerald",
+        5
+      ]
+    ],
+    "outcomes": [
+      {
+        "id": "maintenance",
+        "label": "Maintenance assistance",
+        "report": "Keep local infrastructure repairable.",
+        "reward": [
+          [
+            "bearframe:salvaged_alloy",
+            3
+          ],
+          [
+            "minecraft:redstone",
+            8
+          ]
+        ]
+      },
+      {
+        "id": "expedition",
+        "label": "Expedition assistance",
+        "report": "Keep routes documented and supplies available.",
+        "reward": [
+          [
+            "minecraft:torch",
+            16
+          ],
+          [
+            "minecraft:paper",
+            12
+          ]
+        ]
+      }
+    ]
+  }
+];
+SIDES.push(...RPG_SIDES);
