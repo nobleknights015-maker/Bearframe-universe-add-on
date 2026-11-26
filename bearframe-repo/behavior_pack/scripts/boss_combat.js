@@ -167,7 +167,7 @@ export function installBossCombat() {
   const participants = new Map();
   const register = entity => {
     if (!entity.isValid || !BOSS_MOVES[entity.typeId] || active.has(entity.id)) return;
-    const state = { entity, next: 0 };
+    const state = { entity, next: 0, origin:entity.location, dimension:entity.dimension.id, claim:entity.getDynamicProperty("bearframe:boss_claim") };
     reset(entity, state, system.currentTick, 32);
     active.set(entity.id, state);
   };
@@ -177,6 +177,8 @@ export function installBossCombat() {
     if(!BOSS_MOVES[hurtEntity.typeId])return;
     const p=damageSource.damagingEntity;
     if(p?.typeId!=="minecraft:player"||!eligible(p))return;
+    const state=active.get(hurtEntity.id);
+    if(state){state.origin=hurtEntity.location;state.dimension=hurtEntity.dimension.id;state.claim=hurtEntity.getDynamicProperty("bearframe:boss_claim")??state.claim;}
     const record=participants.get(hurtEntity.id)??new Map();
     record.set(p.id,system.currentTick);
     participants.set(hurtEntity.id,record);

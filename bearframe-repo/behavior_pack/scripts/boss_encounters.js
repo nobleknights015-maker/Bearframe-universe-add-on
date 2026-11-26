@@ -3,7 +3,7 @@ import { BOSS_HABITATS, encounterRoll } from "./boss_habitats.js";
 
 import { read } from "./campaign_state.js";
 import { activeHunt } from "./boss_dossiers.js";
-import { siteClaimKey, canRetryClaim } from "./boss_claims.js";
+import { siteClaimKey, canRetryClaim, HABITAT_DIRECTORY, recordHabitat } from "./boss_claims.js";
 const SITE_BOSS = "bearframe_site_boss";
 const ARENA_FLOORS = new Set([
   "bearframe:frontier_deck", "bearframe:frontier_dust",
@@ -28,13 +28,26 @@ function clearArena(dimension, position) {
 
 export function discoverBoss(siteId, marker, player) {
   const habitat = BOSS_HABITATS[siteId];
-  if (!habitat || world.getDifficulty() === Difficulty.Peaceful ||
-      ![GameMode.Survival, GameMode.Adventure].includes(player.getGameMode())) return;
+  if(!habitat)return;
   const { dimension, location } = marker;
+  if(dimension.id!=="minecraft:overworld")return;
+  // Record the archive marker itself, not a template center or a terminal coordinate.
+  const directory=HABITAT_DIRECTORY+siteId;
+  const raw=world.getDynamicProperty(directory);
+  const old=typeof raw==="string"?JSON.parse(raw):[];
+  const next=recordHabitat(old,location);
+  if(next!==old)world.setDynamicProperty(directory,JSON.stringify(next));
+  if(world.getDifficulty()===Difficulty.Peaceful||![GameMode.Survival,GameMode.Adventure].includes(player.getGameMode()))return;
   const hunt=activeHunt(read(player),siteId);
   if (dimension.id !== "minecraft:overworld" || (!hunt && !encounterRoll(siteId, location))) return;
   const siteKey=siteClaimKey(siteId,location);
   const claim=world.getDynamicProperty(siteKey);
+  if(claim===true){
+    // Migrate an existing legacy boss only when exactly one matching unbound site boss is loaded nearby.
+    const existing=dimension.getEntities({location,maxDistance:36,tags:[SITE_BOSS],type:"bearframe:"+habitat.boss}).filter(e=>!e.getDynamicProperty("bearframe:boss_claim"));
+    if(existing.length===1){existing[0].setDynamicProperty("bearframe:boss_claim",siteKey);world.setDynamicProperty(siteKey,"active");}
+    return;
+  }
   if(claim&&!canRetryClaim(claim,hunt,system.currentTick))return;
   // Native jigsaw pieces can be quarter-turned. Keep attempts on authored flooring.
   const candidates = habitat.offsets.flatMap(([x, y, z]) =>

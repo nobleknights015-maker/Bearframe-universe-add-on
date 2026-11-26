@@ -8,7 +8,7 @@ import {goalCount} from "./rpg_progress.js";
 
 import {ALL_LOCAL} from "./local_rpg.js";
 import {bossSite,activeHunt} from "./boss_dossiers.js";
-import {siteClaimKey,canRetryClaim} from "./boss_claims.js";
+import {siteClaimKey,canRetryClaim,HABITAT_DIRECTORY,chooseHabitat} from "./boss_claims.js";
 import {ALL_LOCAL as STORY_JOBS} from "./local_rpg.js";
 const OVERWORLD="minecraft:overworld";
 const DIRECTORY="bearframe:charted_sites:";
@@ -102,13 +102,9 @@ function solution(id,player,state,visitedOnly=false){
 function huntSolution(id,player,state){
   const e=sourceOf(id);if(!e)return;
   const origin=player.dimension.id===OVERWORLD?point(player.location):[0,0,0];
-  const candidates=load(world,DIRECTORY+id,[]).filter(v=>{
-    if(v.status!=="ready"||!available(player,id,v.p))return false;
-    const claim=world.getDynamicProperty(siteClaimKey(id,loc(v.p)));
-    return claim==="active"||canRetryClaim(claim,true,system.currentTick);
-  });
-  const found=candidates.sort((a,b)=>dist(a.p,origin)-dist(b.p,origin))[0];
-  return {id,name:e.name,biome:e.biome,dim:OVERWORLD,p:found?.p??null,status:found?"ready":"unconfirmed",encounter:true};
+  const entries=load(world,HABITAT_DIRECTORY+id,[]);
+  const found=chooseHabitat(entries,origin,p=>world.getDynamicProperty(siteClaimKey(id,loc(p))),p=>available(player,id,p),system.currentTick);
+  return {id,name:e.name,biome:e.biome,dim:OVERWORLD,p:found??null,status:found?"ready":"unconfirmed",encounter:true};
 }
 function requestedSolution(id,player,state){
   return player.getDynamicProperty(HUNT_REQUEST)===id&&activeHunt(state,id)?huntSolution(id,player,state):solution(id,player,state);
