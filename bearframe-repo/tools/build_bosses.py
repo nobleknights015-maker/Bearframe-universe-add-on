@@ -154,26 +154,38 @@ bosses.extend([
 def silt_rig():
     c = cube
     yield chassis(c(-12,4,-13,24,8,30,"dark"),c(-10,11,2,20,6,14),
-                  c(-9,16,7,15,3,8,"moss"),c(-9,7,-19,18,4,8,"rust"))
+                  c(-9,16,7,15,3,8,"moss"),c(-9,7,-19,18,4,8,"rust"),
+                  c(-11,8,-20,22,4,2,"hazard"),c(-7,10,-14,14,4,5,"metal"),
+                  c(-5,11,-15,10,2,2,"dark"), c(-4,11,-16,8,1,1,"glow"))
     for side,x in (("l",-18),("r",11)):
         yield bone("tread_"+side,[x+3,5,0],c(x,0,-15,7,9,31,"dark"),
-                   *(c(x-1,1,z,9,2,2,"metal") for z in range(-14,16,5)))
+                   *(c(x-1,1,z,9,2,2,"metal") for z in range(-14,16,5)),
+                   c(x-1,5,-11,9,4,22,"dark"),c(x,7,-9,7,2,15,"hazard"),
+                   c(x,9,3,5,1,8,"moss"))
     yield bone("rotor",[0,15,1],c(-3,13,-2,6,13,7,"rust"),
                c(-8,23,0,16,7,11),c(-7,29,5,9,3,5,"moss"),
                c(-5,24,10,10,4,2,"dark"))
     yield bone("barrel",[0,23,1],c(-2,19,-16,4,5,20,"dark"),
                c(-8,17,-22,3,10,12,"metal",[0,12,0]),
                c(5,17,-22,3,10,12,"metal",[0,-12,0]),
-               c(-4,19,-22,8,6,3,"dark"),c(-3,20,-23,6,4,1,"glow"),parent="rotor")
+               c(-4,19,-22,8,6,3,"dark"),c(-3,20,-23,6,4,1,"glow"),
+               c(-12,18,-19,5,8,12,"metal",[0,9,0]),
+               c(8,18,-19,5,8,12,"metal",[0,-9,0]),
+               c(-11,20,-20,2,3,2,"glow"), c(10,20,-20,2,3,2,"glow"),parent="rotor")
     for side,x in (("l",-11),("r",7)):
         yield bone("vent_"+side,[x+2,23,7],c(x,22,2,4,12,13,"rust"),
-                   c(x,33,4,4,2,8,"moss"),c(x+1,29,1,2,2,2,"glow"),parent="rotor")
+                   c(x,33,4,4,2,8,"moss"),c(x+1,29,1,2,2,2,"glow"),
+                   c(x-1,30,7,6,6,4,"dark"),c(x-1,34,6,6,3,6,"metal"),
+                   c(x,35,7,4,2,4,"dark"),parent="rotor")
 
 
 def gantry_rig():
     c = cube
     yield chassis(c(-10,12,-6,20,5,16,"dark"),c(-10,17,4,20,4,7),
-                  c(-3,18,8,9,2,4,"moss"))
+                  c(-3,18,8,9,2,4,"moss"),c(-10,13,-10,20,5,4,"hazard"),
+                  c(-4,15,-11,8,3,2,"dark"),c(-2,16,-12,4,1,1,"glow"),
+                  c(6,14,7,8,10,9,"metal"),c(7,23,8,6,2,6,"moss"),
+                  c(-10,18,8,6,4,7,"rust"))
     for side,x in (("l",-13),("r",10)):
         for end,z in (("f",-8),("b",9)):
             sign = -1 if side=="l" else 1
@@ -184,23 +196,35 @@ def gantry_rig():
     yield bone("boom",[0,20,7],c(-3,21,5,6,17,5,"metal",[14,0,0]),
                c(-3,33,-20,6,5,29,"metal",[-9,0,0]),
                c(-5,35,1,9,3,8,"moss"),c(-2,28,-12,4,2,18,"dark",[-16,0,0]),
-               c(-2,30,-20,4,2,2,"glow"))
+               c(-2,30,-20,4,2,2,"glow"),c(-5,30,-19,10,5,4,"hazard"),
+               c(-7,27,-13,3,7,7,"dark"), c(-8,29,-12,2,3,4,"glow"),
+               c(4,32,-5,2,7,13,"metal",[10,0,0]))
     yield bone("claw",[0,35,-18],c(-1,21,-18,2,15,2,"dark"),
                c(-6,17,-23,4,8,5,"metal",[0,0,-29]),
                c(2,17,-23,4,8,5,"metal",[0,0,29]),
-               c(-4,15,-23,8,2,4,"rust"),parent="boom")
+               c(-4,15,-23,8,2,4,"rust"),c(-5,19,-22,10,4,7,"dark"),
+               c(-7,15,-25,3,5,6,"metal",[0,0,-14]),
+               c(4,14,-25,3,5,6,"metal",[0,0,14]),
+               c(-3,20,-23,6,2,1,"glow"),parent="boom")
 
 
 def cinder_rig():
     c = cube
-    yield chassis(c(-5,5,-5,10,22,10,"dark"),c(-3,2,-3,6,7,6,"rust"),
-                  c(-5,15,-6,10,7,2),c(-3,17,-7,6,2,1,"glow"))
-    yield bone("crown",[0,19,0],c(-8,21,-8,16,4,16,"metal",[0,45,0]),
-               c(-3,17,-23,6,6,46,"dark"),c(-23,17,-3,46,6,6,"dark"),
-               c(-5,23,-4,7,2,6,"moss"))
-    for name,x,z,angle in (("north",0,-19,0),("south",0,19,180),("west",-19,0,90),("east",19,0,-90)):
-        yield bone(name,[0,18,0],c(x-4,15,z-4,8,10,8,"metal",[12,angle,0]),
-                   c(x-2,16,z-3,4,3,6,"glow"),c(x-3,24,z-2,5,1,4,"moss"),parent="crown")
+    yield chassis(c(-5,5,-5,10,21,10,"dark"),c(-3,1,-3,6,6,6,"rust"),
+                  c(-6,12,-6,12,8,3,"metal"),c(-4,14,-7,8,4,2,"dark"),
+                  c(-2,15,-8,4,2,1,"glow"),c(-6,4,-6,12,3,12,"hazard"))
+    belt = []
+    for angle in (20,48,76,104,132,160,200,232,268,306,338):
+        rad = math.radians(angle)
+        x,y = round(14*math.cos(rad)), round(19+14*math.sin(rad))
+        belt.extend((c(x-4,y-2,2,8,4,5,"metal",[0,0,angle+90]),
+                     c(x-2,y-1,1,4,2,2,"glow",[0,0,angle+90])))
+    yield bone("crown",[0,19,0],c(-4,17,-15,8,4,33,"dark"),
+               c(-17,17,-3,34,4,6,"dark"),c(-7,22,2,9,2,6,"moss"),*belt)
+    for name,x,z,angle in (("north",0,-17,0),("south",0,17,180),("west",-17,0,90),("east",17,0,-90)):
+        yield bone(name,[0,18,0],c(x-4,15,z-4,8,8,8,"dark",[12,angle,0]),
+                   c(x-3,20,z-3,6,4,6,"metal"),c(x-3,13,z-3,6,2,6,"hazard"),
+                   c(x-2,16,z-4,4,3,7,"glow"),c(x-2,24,z-1,4,1,3,"moss"),parent="crown")
 
 
 def rook_rig():
@@ -368,7 +392,7 @@ def texture_and_geometry(spec):
     x = y = row = 0
     bones = [{"name": "root", "pivot": [0, 0, 0]}]
     colors = dict(zip(("metal", "rust", "glow", "cloth", "dark"), spec["palette"]))
-    colors["moss"] = "#536c42"
+    colors.update(moss="#536c42", hazard="#c19242")
     for name, parent, pivot, cubes in spec["rig"]:
         mesh = []
         for origin, size, material, rotation in cubes:
@@ -388,6 +412,9 @@ def texture_and_geometry(spec):
                     tint = base
                     if material == "glow":
                         shade = -40 if edge else 22 if local_y % 4 == 1 else 4
+                    elif material == "hazard":
+                        tint = base if (local_x + local_y) % 8 < 4 else (43,45,42)
+                        shade += 8 if edge else 0
                     elif material in ("metal","rust","dark"):
                         shade += 16 if edge else -16 if local_y % 9 == 7 else 0
                         if local_x % 9 == 2 and local_y % 9 in (2,3):
@@ -513,7 +540,7 @@ def palinode_ram_rig():
     yield bone("ram", [0,12,-4], c(-2,9,-18,4,5,21,"dark"),
                c(-4,9,-21,8,7,8,"metal"), c(-9,6,-25,18,3,7,"metal",[22,0,0]),
                c(-10,7,-24,4,5,6,"rust",[0,-17,0]),
-               c(6,7,-24,4,5,6,"rust",[0,17,0]), c(-5,12,-22,10,1,2,"glow"))
+               c(6,7,-24,4,5,6,"rust",[0,17,0]), c(-5,12,-22,10,1,2,"glow"), c(-7,7,-24,14,2,2,"hazard"))
     for index, z in enumerate((-10, 0, 12)):
         for side, tag in ((-1,"l"),(1,"r")):
             suffix = f"{index}_{tag}"
