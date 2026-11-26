@@ -29,7 +29,7 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
-          version=[0,11,2]
+          version=[0,11,3]
           for folder in ('behavior_pack','resource_pack'):
               path=Path(folder)/'manifest.json'
               data=json.loads(path.read_text())
@@ -44,7 +44,7 @@ jobs:
           python3 tools/package_current.py dist
       - uses: actions/upload-artifact@v4
         with:
-          name: Last-Dispatch-0.11.2-held-gear-test-candidate
+          name: Last-Dispatch-0.11.3-flail-test-candidate
           path: bearframe-repo/dist/*.mcaddon
           if-no-files-found: error
           retention-days: 7

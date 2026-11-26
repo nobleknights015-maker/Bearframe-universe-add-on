@@ -19,7 +19,8 @@
       },
       "animations": {
         "first": "animation.bearframe.held.hush_pendulum.first",
-        "third": "animation.bearframe.held.hush_pendulum.third"
+        "third": "animation.bearframe.held.hush_pendulum.third",
+        "whip": "animation.bearframe.held.hush_pendulum.whip"
       },
       "scripts": {
         "animate": [
@@ -28,7 +29,11 @@
           },
           {
             "third": "context.is_first_person == 0.0"
-          }
+          },
+          "whip"
+        ],
+        "pre_animation": [
+          "v.bearframe_flail_swing = c.owning_entity->v.attack_time;"
         ]
       },
       "render_controllers": [
