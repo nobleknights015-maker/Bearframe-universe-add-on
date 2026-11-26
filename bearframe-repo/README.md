@@ -1,9 +1,9 @@
-# Bearframe: The Last Dispatch 0.10.19
+# Bearframe: The Last Dispatch 0.10.20
 
 A Minecraft Bedrock survival add-on set in the Bearframe universe.
 
 The behavior and resource packs in this directory are the editable source for
-version 0.10.19. They include the expanded ruins, bunkers and orbital station,
+version 0.10.20. They include the expanded ruins, bunkers and orbital station,
 faction models, campaign and repeatable quests,
 loot, Field Log, and archived Treasure Charts. Craft a Field Log Pad at a crafting table and use it from your hand to open the same records as the placed Field Log Terminal. The craftable Teleport Tablet takes you from solid ground in the Overworld to Bearframe Station and back to your recorded surface berth. The Farfield Survey Camp cartography table also provides station transit when used while sneaking.
 
@@ -11,7 +11,7 @@ loot, Field Log, and archived Treasure Charts. Craft a Field Log Pad at a crafti
 
 Run `python3 tools/package_current.py` from this directory with Node.js
 available for script validation. The generated import file is
-`dist/Bearframe_The_Last_Dispatch_0.10.19.mcaddon`.
+`dist/Bearframe_The_Last_Dispatch_0.10.20.mcaddon`.
 
 Import the generated add-on and activate its behavior and resource packs.
 Bearframe's mob makeovers and original sci-fi materials are included.
@@ -35,7 +35,7 @@ spawn eggs for arena testing.
 | Echo Frame | Veil Regent | Sealed Archive Bunker | `bearframe:echo_veil_regent` | Anchor Sigil, Broken Court |
 | Ghost Grid | Gantry Marrow | Rootbound Service Bunker | `bearframe:grid_gantry_marrow` | Load Drop, Gantry Rake |
 | Ghost Grid | Cinder Spindle | Shattered Array | `bearframe:grid_cinder_spindle` | Flywheel Burst, Induction Lance |
-| Echo Frame | Rubble Rook | Frontier Ruin | `bearframe:echo_rubble_rook` | Barricade Rush, Fallen Parapet |
+| Echo Frame | Rubble Rook | Frontier Ruin | `bearframe:echo_rubble_rook` | Harrowing Rush, Fourfold Slam |
 | Echo Frame | Hush Pendulum | Lost Waystation | `bearframe:echo_hush_pendulum` | Deadweight Arc, Missing Beat |
 
 Particle markers preview the strike area. Below 40% health, bosses recover

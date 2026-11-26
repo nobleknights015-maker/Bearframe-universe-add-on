@@ -137,7 +137,7 @@ export const BOSS_MOVES = {
   ],
   "bearframe:echo_rubble_rook": [
     {
-      "name": "Barricade Rush",
+      "name": "Harrowing Rush",
       "shape": "lane",
       "radius": 7.0,
       "windup": 26,
@@ -147,7 +147,7 @@ export const BOSS_MOVES = {
       "drive": 0.75
     },
     {
-      "name": "Fallen Parapet",
+      "name": "Fourfold Slam",
       "shape": "ring",
       "radius": 4.6,
       "windup": 33,

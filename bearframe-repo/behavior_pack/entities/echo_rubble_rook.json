@@ -36,8 +36,8 @@
         "should_darken_sky": false
       },
       "minecraft:collision_box": {
-        "width": 1.1,
-        "height": 2.1
+        "width": 2.1,
+        "height": 1.9
       },
       "minecraft:persistent": {},
       "minecraft:physics": {},

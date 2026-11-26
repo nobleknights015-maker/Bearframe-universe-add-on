@@ -115,16 +115,22 @@ bosses.extend([
                    width=1.35, effect=["slowness",55]),
          ]),
     dict(id="echo_rubble_rook", title="Rubble Rook", family="echo_frame", health=218, speed=.19,
-         width=1.1, height=2.1, color="#a0c8ff",
+         width=2.1, height=1.9, color="#a0c8ff",
          palette=["#544f63","#816954","#a0c8ff","#464749","#292733"],
          moves=[
-            attack("Barricade Rush", "lane", 7.0, 26, 57, 11,
-                   {"arm_l": ([-76,-16,-40],[-98,16,-13],[-44,-12,-12]),
-                    "shield": ([0,38,0],[0,-10,0],[11,15,0]), "body": ([-7,0,5],[27,0,-10],[-6,0,2])},
+            attack("Harrowing Rush", "lane", 7.0, 26, 57, 11,
+                   {"arm_l": ([-19,4,-10],[21,-5,5],[-6,0,0]),
+                    "arm_r": ([-19,-4,10],[21,5,-5],[-6,0,0]),
+                    "brace_l": ([0,-35,-16],[0,24,9],[0,10,4]),
+                    "brace_r": ([0,35,16],[0,-24,-9],[0,-10,-4]),
+                    "body": ([-8,0,0],[13,0,-3],[-4,0,2])},
                    width=1.8, drive=.75),
-            attack("Fallen Parapet", "ring", 4.6, 33, 66, 10,
-                   {"arm_l": ([-165,18,-38],[45,-24,24],[12,0,0]),
-                    "shield": ([-24,0,14],[31,0,0],[0,0,0]), "body": ([-17,0,-17],[31,0,15],[8,0,0]),
+            attack("Fourfold Slam", "ring", 4.6, 33, 66, 10,
+                   {"arm_l": ([-25,8,-8],[12,-8,4],[4,0,0]),
+                    "arm_r": ([-25,-8,8],[12,8,-4],[4,0,0]),
+                    "brace_l": ([-45,0,-14],[46,0,16],[11,0,4]),
+                    "brace_r": ([-45,0,14],[46,0,-16],[11,0,-4]),
+                    "body": ([-13,0,-4],[13,0,5],[3,0,0]),
                     "head": ([-16,25,0],[23,-17,-15],[-8,0,0])}),
          ]),
     dict(id="echo_hush_pendulum", title="Hush Pendulum", family="echo_frame", health=162, speed=.26,
@@ -256,6 +262,68 @@ def echo_boss_rig(kind):
     x,w,h = stance
     yield bone("leg_l",[-x,h,0],c(-x-2,3,-2,w,h-2,4,"metal"),c(-x-2,0,-4,w,3,6,"rust"))
     yield bone("leg_r",[x,h,0],c(x-1,2,-1,w-1,h-1,3,"dark"),c(x-1,0,-3,w,2,5,"metal"))
+
+
+def rook_rig():
+    c = cube
+
+    def strut(start, end, width, depth, material):
+        """Place a rectangular segment between two points."""
+        dx,dy,dz = (b-a for a,b in zip(start,end))
+        length = round(math.sqrt(dx*dx+dy*dy+dz*dz))
+        x,y,z = ((a+b)/2 for a,b in zip(start,end))
+        pitch = math.degrees(math.atan2(dz, math.hypot(dx,dy)))
+        roll = math.degrees(math.atan2(-dx,dy))
+        return c(x-width/2,y-length/2,z-depth/2,width,length,depth,material,[pitch,0,roll])
+
+    yield chassis(strut((0,13,13),(0,23,-10),10,7,"dark"),
+                  c(-9,18,-11,18,7,9,"dark"),c(-5,17,-13,10,4,2,"glow"),
+                  c(-8,14,8,16,6,10,"rust"))
+    yield bone("head",[0,23,-11],
+               c(-5,18,-16,10,9,7,"dark"),c(-4,20,-17,8,4,2,"dark"),
+               c(-2,21,-18,4,2,1,"glow"),c(-6,25,-16,11,3,7,"metal",[0,0,-9]),
+               c(-6,18,-15.75,3,8,5,"metal",[0,0,-12]),
+               c(4,20,-15.7,2,6,4,"metal",[0,0,16]))
+    # Broken halo above the face. The absent arc leaves the profile open.
+    yield bone("relay_l",[0,25,-10],*(
+        c(round(11*math.cos(t))-2,round(25+11*math.sin(t))-1,-11,4,3,3,
+          "metal" if index%2 else "glow",[0,0,math.degrees(t)+90])
+        for index,t in enumerate(map(math.radians,(32,57,84,112,144,171)))),parent="head")
+    yield bone("drape",[0,23,1],
+               c(-9,20,-6,18,2,20,"cloth",[-9,0,0]),
+               c(8,9,-1,2,14,11,"cloth",[6,0,-15]),
+               c(8,5,6,2,11,4,"cloth",[14,0,-10]),
+               c(-10,10,3,2,13,10,"cloth",[9,0,15]),
+               c(-11,8,6,1,10,3,"moss",[7,0,12]))
+    for tag,sign in (("l",-1),("r",1)):
+        shoulder=(7*sign,22,-8)
+        elbow=(12*sign,12,-11)
+        palm=(15*sign,2,-18)
+        hip=(6*sign,15,11)
+        hock=(9*sign,8,17)
+        yield bone("arm_"+tag,list(shoulder),
+                   strut(elbow,shoulder,5,5,"dark"),
+                   strut((11*sign,14,-11),(8*sign,21,-8),6,6,"metal"))
+        yield bone("paw_"+tag,list(elbow),
+                   strut(palm,elbow,4,4,"dark"),
+                   strut((14*sign,4,-17),(12*sign,11,-12),6,5,"metal"),
+                   c(palm[0]-3,1,-20,6,3,6,"metal"),
+                   *(c(palm[0]+i,0,-23,1,2,5,"rust",[9,0,i*4]) for i in (-3,0,3)),
+                   parent="arm_"+tag)
+        yield bone("leg_"+tag,list(hip),
+                   strut(hock,hip,5,5,"metal"),
+                   strut((11*sign,2,19),hock,4,4,"dark"),
+                   c(11*sign-3,0,16,6,3,7,"metal"))
+        joint=(17*sign,28,4)
+        yield bone("brace_"+tag,[6*sign,23,4],
+                   strut(joint,(6*sign,23,4),4,4,"dark"),
+                   strut((14*sign,27,4),(8*sign,24,4),5,5,"metal"))
+        yield bone("hook_"+tag,list(joint),
+                   strut((23*sign,22,-2),joint,4,4,"metal"),
+                   strut((24*sign,16,-5),(23*sign,22,-2),3,3,"dark"),
+                   c(24*sign-2,15,-6,4,3,3,"metal"),
+                   *(c(24*sign+i,12,-7,1,4,2,"rust",[18,0,i*7]) for i in (-2,1)),
+                   parent="brace_"+tag)
 
 
 def reference_echo_rig(kind):
@@ -410,8 +478,10 @@ def animation_set(spec):
         for side, sign in (("l",1),("r",-1)):
             walk["tread_"+side] = {"position":[0,0,f"math.sin(query.anim_time * 230 + {90*sign}) * 0.7"]}
     if sector == "echo_rubble_rook":
-        walk["arm_l"] = {"rotation":[-39,-8,-14]}
-        walk["body"]["rotation"] = [13,0,"math.sin(query.anim_time * 281) * 8"]
+        for side,phase in (("l",0),("r",180)):
+            walk["arm_"+side] = {"rotation":[f"math.sin(query.anim_time * 281 + {phase}) * 15",0,0]}
+            walk["leg_"+side] = {"rotation":[f"math.sin(query.anim_time * 281 + {180-phase}) * 13",0,0]}
+        walk["body"]["rotation"] = [0,0,"math.sin(query.anim_time * 281) * 3"]
     if sector == "echo_hush_pendulum":
         walk["counterweight"] = {"rotation":["math.sin(query.anim_time * 409) * 46",0,12]}
         walk["head"] = {"rotation":["math.sin(query.anim_time * 818) * 8",-13,17]}
@@ -540,7 +610,7 @@ def main():
             spec["rig"] = list(machine_rigs[spec["id"]]())
             spec["palette"] = ["#b9b7a1","#925d37","#54d8f0","#5b7135","#282d30"]
         else:
-            spec["rig"] = list(reference_echo_rig(spec["id"]))
+            spec["rig"] = list(rook_rig() if spec["id"] == "echo_rubble_rook" else reference_echo_rig(spec["id"]))
             glow = {"echo_seam_riven":"#49d6e3","echo_veil_regent":"#ce73fa",
                     "echo_rubble_rook":"#ae5df0","echo_hush_pendulum":"#f47755"}[spec["id"]]
             spec["palette"] = ["#bdb4a9","#865c40",glow,"#65404e","#2b272b"]
