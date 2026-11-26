@@ -305,10 +305,20 @@ def tall_echo_rig(kind):
                    c(x-1,elbow-1,-1,3,shoulder-elbow+2,3,"dark",[0,0,side*9]),
                    c(x-3,shoulder-5,-2,5,6,5,"metal",[0,0,-side*20]),
                    c(x-2,shoulder,-1,3,1,3,"moss"))
-        yield bone("forearm_"+tag,[x,elbow,-1],
-                   c(x-1,elbow-8,-2,3,8,3,"dark"),
-                   c(x-2,elbow-7,-3,4,6,4,"metal",[0,0,side*12]),
-                   c(x-1,elbow-10,-2,3,3,3,"rust"),parent="arm_"+tag)
+        if regent and tag == "r":
+            yield bone("forearm_r",[x,elbow,-1],
+                       c(6,22,-8,4,4,8,"dark",[8,0,-8]),
+                       c(6,23,-7,4,4,5,"metal"),parent="arm_r")
+            yield bone("grip",[9,23,-9],
+                       c(7,21,-10,2,5,4,"dark"),
+                       c(8,22,-11,4,1,2,"metal"),
+                       c(8,24,-11,4,1,2,"metal"),
+                       c(11,21,-10,1,4,3,"rust"),parent="forearm_r")
+        else:
+            yield bone("forearm_"+tag,[x,elbow,-1],
+                       c(x-1,elbow-8,-2,3,8,3,"dark"),
+                       c(x-2,elbow-7,-3,4,6,4,"metal",[0,0,side*12]),
+                       c(x-1,elbow-10,-2,3,3,3,"rust"),parent="arm_"+tag)
         hip = side*(4 if regent else 5)
         yield bone("leg_"+tag,[hip,18,0],
                    c(hip-1,9,-1,3,10,3,"dark",[0,0,side*9]),
@@ -324,12 +334,12 @@ def tall_echo_rig(kind):
                    c(9,7,-5,4,3,2,"metal"),c(9,2,-5,3,2,2,"metal"),
                    c(8,9,-5,2,4,1,"glow"),parent="forearm_r")
     elif regent:
-        yield bone("staff",[9,15,-2],c(9,0,-3,2,38,2,"dark"),
-                   *(c(8,k,-4,4,2,4,"metal") for k in (2,12,22,30,36)),
-                   c(4,35,-4,2,7,4,"metal",[0,0,-28]),
-                   c(14,35,-4,2,7,4,"metal",[0,0,28]),
-                   c(7,41,-4,6,2,4,"rust"),c(8,37,-5,4,4,4,"glow"),
-                   parent="forearm_r")
+        yield bone("staff",[9,23,-9],c(9,2,-9,2,38,2,"dark"),
+                   *(c(8,k,-10,4,2,4,"metal") for k in (3,13,30,36)),
+                   c(4,36,-10,2,7,4,"metal",[0,0,-28]),
+                   c(14,36,-10,2,7,4,"metal",[0,0,28]),
+                   c(7,42,-10,6,2,4,"rust"),c(8,38,-11,4,4,4,"glow"),
+                   parent="grip")
     else:
         yield bone("counterweight",[7,11,-2],c(8,4,-3,1,9,1,"rust"),
                    c(6,0,-5,6,6,5,"metal",[0,0,11]),c(7,2,-6,4,2,1,"glow"),
