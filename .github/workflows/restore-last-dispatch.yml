@@ -1,0 +1,27 @@
+name: Restore Last Dispatch 0.10.13
+on:
+  push:
+    branches: [restore/last-dispatch-0.10.13]
+permissions:
+  contents: write
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Restore and push the verified original commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git init -q
+          git remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
+          gh auth setup-git
+          backup=backup/last-dispatch-0.10.13
+          release=release/last-dispatch-0.10.13
+          git fetch --no-tags origin "refs/heads/$backup"
+          test "$(git rev-parse FETCH_HEAD)" = 7d031d39a06ef3e1e7cff2292a659af2166e5f7a
+          git show FETCH_HEAD:backups/last-dispatch-0.10.13/Bearframe_The_Last_Dispatch_0.10.13.bundle > "$RUNNER_TEMP/dispatch.bundle"
+          git fetch "$RUNNER_TEMP/dispatch.bundle" HEAD
+          test "$(git rev-parse FETCH_HEAD)" = e9ecbd5d37ee979f9eb987ae17651b4166e67167
+          git push --force-with-lease="refs/heads/$release:" origin "FETCH_HEAD:refs/heads/$release"
