@@ -31,10 +31,10 @@ export function discoverBoss(siteId, marker, player) {
   if (!habitat || world.getDifficulty() === Difficulty.Peaceful ||
       ![GameMode.Survival, GameMode.Adventure].includes(player.getGameMode())) return;
   const { dimension, location } = marker;
-  if (dimension.id !== "minecraft:overworld" || (!activeHunt(read(player),siteId) && !encounterRoll(siteId, location))) return;
+  const hunt=activeHunt(read(player),siteId);
+  if (dimension.id !== "minecraft:overworld" || (!hunt && !encounterRoll(siteId, location))) return;
   const siteKey=siteClaimKey(siteId,location);
   const claim=world.getDynamicProperty(siteKey);
-  const hunt=activeHunt(read(player),siteId);
   if(claim&&!canRetryClaim(claim,hunt,system.currentTick))return;
   // Native jigsaw pieces can be quarter-turned. Keep attempts on authored flooring.
   const candidates = habitat.offsets.flatMap(([x, y, z]) =>

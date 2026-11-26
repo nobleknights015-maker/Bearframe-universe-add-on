@@ -1,0 +1,3 @@
+# Stabilization round
+
+Fixed hunt-specific survey and tracking selection; preserved first boss defeat coordinates; scoped local interaction to Bearframe namespace; reduced idle boss polling; contained reset errors and added last-known death location/claim fallback. 159 isolated logic assertions and syntax checks passed, including all 38 station quest and eight local story state progressions. Tests simulate goals and do not prove real world availability, UI interactions, live inventory transactions, or actual gameplay. Legacy boolean boss claims remain protected. No Bedrock runtime or package built in this round.

@@ -592,6 +592,7 @@ function exchange(player,payment,reward,commit){
 }
 export function fieldInteraction(player,target){
   if(!target?.isValid||player.dimension.id!==OVERWORLD||target.dimension.id!==OVERWORLD)return false;
+  if(!target.typeId.startsWith("bearframe:"))return false;
   const type=target.typeId.split(":")[1];
   if(!catalogs[type])return false;
   const bag=player.getComponent("minecraft:inventory")?.container;

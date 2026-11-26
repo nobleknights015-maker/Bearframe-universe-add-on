@@ -6,6 +6,7 @@ import {MAIN,SIDES,CONTRACTS,EVIDENCE} from "./campaign_data.js";
 import {goalCount,standing,LEADS,itemName,rpgState,inventoryCount} from "./rpg_progress.js";
 import {localRows} from "./local_rpg.js";
 import {specialty} from "./rpg_training.js";
+import {BOSS_DOSSIERS} from "./boss_dossiers.js";
 const TERMINAL="bearframe:field_log";
 const OPEN_PAD="bearframe:open_field_log";
 const SAVE="bearframe:activity:";
@@ -119,7 +120,7 @@ function materialsText(stats){
   return lines.join("\n");
 }
 function fieldText(stats,state){
-  const lines=Object.entries(state.sites).map(([id,at])=>(EVIDENCE[id]?.name??clean(id))+" · "+at.join(", "));
+  const lines=Object.entries(state.sites).map(([id,at])=>(EVIDENCE[id]?.name??(id.startsWith("boss:")?BOSS_DOSSIERS[id.slice(5)]?.name:undefined)??clean(id))+" · "+at.join(", "));
   for(const [key,value] of Object.entries(stats.checkpoints))
     lines.unshift("Last "+key.toLowerCase()+" · "+dimension(value.dim)+" · "+value.at.join(", "));
   return lines.join("\n")||"Field and travel records will appear here.";

@@ -27,7 +27,7 @@ export function applySignal(state,type,id,place){
     if(state.choice)fresh=mark("after:echo")||fresh;
   }else if(type==="boss"){
     fresh=mark("boss:"+id);
-    if(place)state.sites["boss:"+id]=[Math.floor(place.x),Math.floor(place.y),Math.floor(place.z)];
+    if(place&&(fresh||!state.sites["boss:"+id]))state.sites["boss:"+id]=[Math.floor(place.x),Math.floor(place.y),Math.floor(place.z)];
   }else if(type==="kill"){
     rpgState(state).kills++;
     facts["kill:directorate"]=Math.min(99,(facts["kill:directorate"]??0)+1);

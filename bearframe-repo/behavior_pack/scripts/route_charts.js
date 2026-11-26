@@ -7,7 +7,7 @@ import {read as readCampaign} from "./campaign_state.js";
 import {goalCount} from "./rpg_progress.js";
 
 import {ALL_LOCAL} from "./local_rpg.js";
-import {bossSite} from "./boss_dossiers.js";
+import {bossSite,activeHunt} from "./boss_dossiers.js";
 import {siteClaimKey,canRetryClaim} from "./boss_claims.js";
 import {ALL_LOCAL as STORY_JOBS} from "./local_rpg.js";
 const OVERWORLD="minecraft:overworld";
@@ -15,6 +15,7 @@ const DIRECTORY="bearframe:charted_sites:";
 const SAVED="bearframe:quest_charts";
 const TRACK="bearframe:tracked_chart";
 const REQUEST="bearframe:survey_request";
+const HUNT_REQUEST="bearframe:hunt_survey_request";
 const ROAMING="bearframe:field_requests";
 const supportedSurvey=new Set(["spillway_bunker",...[...SURFACE_SITES,...LEGACY_SITES].map(site=>site.id)]);
 const GOLD="§6[Field Charts]§r ";
@@ -97,6 +98,21 @@ function solution(id,player,state,visitedOnly=false){
   const found=entries.sort((a,b)=>dist(a.p,origin)-dist(b.p,origin))[0];
   return {id,name:e.name,biome:e.biome,dim:OVERWORLD,p:found?.p??null,status:found?.status??"unconfirmed"};
 }
+// Keep hunt routing distinct from ordinary discovery/visited coordinates.
+function huntSolution(id,player,state){
+  const e=sourceOf(id);if(!e)return;
+  const origin=player.dimension.id===OVERWORLD?point(player.location):[0,0,0];
+  const candidates=load(world,DIRECTORY+id,[]).filter(v=>{
+    if(v.status!=="ready"||!available(player,id,v.p))return false;
+    const claim=world.getDynamicProperty(siteClaimKey(id,loc(v.p)));
+    return claim==="active"||canRetryClaim(claim,true,system.currentTick);
+  });
+  const found=candidates.sort((a,b)=>dist(a.p,origin)-dist(b.p,origin))[0];
+  return {id,name:e.name,biome:e.biome,dim:OVERWORLD,p:found?.p??null,status:found?"ready":"unconfirmed",encounter:true};
+}
+function requestedSolution(id,player,state){
+  return player.getDynamicProperty(HUNT_REQUEST)===id&&activeHunt(state,id)?huntSolution(id,player,state):solution(id,player,state);
+}
 export function offerRelayLead(player){
   if(player.dimension.id!==OVERWORLD||player.getDynamicProperty(TRACK)||
     player.getDynamicProperty("bearframe:relay_lead_received"))return;
@@ -123,7 +139,7 @@ export function missingCampaignSite(player){
   const state=readCampaign(player);
   const requested=player.getDynamicProperty(REQUEST);
   if(typeof requested==="string"){
-    const status=solution(requested,player,state)?.status;
+    const status=requestedSolution(requested,player,state)?.status;
     if(status==="unconfirmed"||status==="beacon")return requested;
   }
   const chapter=MAIN[state.chapter];
@@ -153,14 +169,7 @@ function goalMaps(q,player,state,finished=false){
       if(g.key.startsWith("boss:")){
         const actual=state.sites[g.key];
         if(actual)dest={id,name:sourceOf(id).name,biome:sourceOf(id).biome,dim:OVERWORLD,p:actual,status:"visited",encounter:true};
-        else if(!finished){
-          const origin=player.dimension.id===OVERWORLD?point(player.location):[0,0,0];
-          const candidates=load(world,DIRECTORY+id,[]).filter(v=>v.status==="ready"&&available(player,id,v.p)&&canRetryClaim(world.getDynamicProperty(siteClaimKey(id,loc(v.p))),true,system.currentTick));
-          const found=candidates.sort((a,b)=>dist(a.p,origin)-dist(b.p,origin))[0];
-          if(found)dest={...dest,p:found.p,status:"ready",encounter:true};
-          else if(dest?.p&&world.getDynamicProperty(siteClaimKey(id,loc(dest.p)))==="active")dest={...dest,encounter:true};
-          else dest={...dest,p:null,status:"unconfirmed",encounter:true};
-        }
+        else if(!finished)dest=huntSolution(id,player,state);
       }
       if(dest&&!rows.some(x=>x.id===id))rows.push({...dest,
         objective:g.label,done:goalCount(q,state,g)>=g.count});
@@ -273,7 +282,7 @@ async function show(f,player){
 }
 async function waypoint(player,dest){
   const f=craftForm(dest.name,body(player,dest));
-  const needsSurvey=dest.status==="beacon"||!dest.p||!available(player,dest.id,dest.p);
+  const needsSurvey=dest.status==="beacon"||!dest.p||(!dest.encounter&&!available(player,dest.id,dest.p));
   const requestable=needsSurvey&&supportedSurvey.has(dest.id);
   if(dest.p)f.button("Track this X",MAP_ICON);
   if(requestable)f.button("Request a Farfield survey",MAP_ICON);
@@ -282,6 +291,8 @@ async function waypoint(player,dest){
   if(!player.isValid)return;
   if(requestable&&result===(dest.p?1:0)){
     player.setDynamicProperty(REQUEST,dest.id);
+    player.setDynamicProperty(HUNT_REQUEST,dest.encounter?dest.id:undefined);
+    player.setDynamicProperty(TRACK,undefined);followed.delete(player.id);
     player.sendMessage(GOLD+"Survey requested for "+dest.name+". "+(biomeHints[dest.biome]??"Look for broad, dry ground.")+" Farfield will report the entrance once you get close enough to verify it.");
   }else if(dest.p&&result===0){
     save(player,TRACK,dest);
@@ -320,6 +331,7 @@ export async function openCharts(player){
     if(result===3){
       player.setDynamicProperty(TRACK,undefined);
       player.setDynamicProperty(REQUEST,undefined);
+      player.setDynamicProperty(HUNT_REQUEST,undefined);
       followed.delete(player.id);
       player.onScreenDisplay.setActionBar("");
     }else if(result!==undefined)await group(player,result);
@@ -332,7 +344,7 @@ export function installRouteCharts(){
     for(const p of world.getAllPlayers()){
       const request=p.getDynamicProperty(REQUEST);
       if(typeof request==="string"){
-        const ready=solution(request,p,readCampaign(p));
+        const ready=requestedSolution(request,p,readCampaign(p));
         if(ready?.status==="ready"||ready?.status==="visited"){
           const current=load(p,TRACK,null);
           const canTrack=!current||current.id===request;
@@ -341,6 +353,7 @@ export function installRouteCharts(){
             save(p,TRACK,ready);
           }
           p.setDynamicProperty(REQUEST,undefined);
+          p.setDynamicProperty(HUNT_REQUEST,undefined);
           p.sendMessage(GOLD+"Entrance confirmed for "+ready.name+(canTrack?". Tracking your requested route.":". Open your Field Log to switch routes."));
         }
       }
@@ -352,6 +365,14 @@ export function installRouteCharts(){
         followed.set(p.id,tracked);
       }
       let dest=tracked.dest;
+      if(dest.encounter&&dest.status!=="visited"&&activeHunt(readCampaign(p),dest.id)){
+        const next=huntSolution(dest.id,p,readCampaign(p));
+        const claim=dest.p?world.getDynamicProperty(siteClaimKey(dest.id,loc(dest.p))):undefined;
+        if(!dest.p||!available(p,dest.id,dest.p)||claim!=="active"&&!canRetryClaim(claim,true,system.currentTick)){
+          if(next?.p){dest=next;tracked.dest=dest;tracked.near=false;save(p,TRACK,dest);}
+          else {p.setDynamicProperty(REQUEST,dest.id);p.setDynamicProperty(HUNT_REQUEST,dest.id);p.setDynamicProperty(TRACK,undefined);followed.delete(p.id);p.onScreenDisplay.setActionBar("");p.sendMessage(GOLD+"Encounter cleared or unavailable. Farfield is surveying another habitat.");continue;}
+        }
+      }
       if(dest.dim===OVERWORLD&&!dest.encounter&&(dest.status==="beacon"||!available(p,dest.id,dest.p))){
         const hadBeacon=dest.status==="beacon";
 
@@ -366,6 +387,9 @@ export function installRouteCharts(){
           p.sendMessage(GOLD+"The reported "+dest.name+" entrance could not be verified. Open the Field Log to survey again.");
           continue;
         }
+      }
+      if(dest.encounter&&dest.status!=="visited"&&!activeHunt(readCampaign(p),dest.id)){
+        p.setDynamicProperty(TRACK,undefined);followed.delete(p.id);p.onScreenDisplay.setActionBar("");continue;
       }
       const d=direction(p,dest);
       if(!d){

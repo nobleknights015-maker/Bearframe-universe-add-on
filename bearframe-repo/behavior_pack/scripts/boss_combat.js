@@ -118,9 +118,11 @@ function update(entity, state, now) {
   if (!state.strike && now < state.ready) return;
   const origin = entity.location;
   const dimension = entity.dimension;
+  state.origin=origin;state.dimension=dimension.id;state.claim=entity.getDynamicProperty("bearframe:boss_claim");
   const players = dimension.getPlayers({ location: origin, maxDistance: ENGAGE_RADIUS }).filter(eligible);
   if (world.getDifficulty() === Difficulty.Peaceful || !players.length) {
-    if (state.strike) reset(entity, state, now);
+    if (state.strike) reset(entity, state, now, 60);
+    else state.ready=now+40;
     return;
   }
   if (state.strike) {
@@ -183,10 +185,12 @@ export function installBossCombat() {
     if(!BOSS_MOVES[deadEntity.typeId])return;
     const now=system.currentTick;
     const record=participants.get(deadEntity.id)??new Map();
+    const snapshot=active.get(deadEntity.id);
     active.delete(deadEntity.id);participants.delete(deadEntity.id);
     try{
-      const origin=deadEntity.location,dim=deadEntity.dimension.id;
-      const key=deadEntity.getDynamicProperty("bearframe:boss_claim");
+      let origin=snapshot?.origin,dim=snapshot?.dimension,key=snapshot?.claim;
+      try{origin=deadEntity.location;dim=deadEntity.dimension.id;key=deadEntity.getDynamicProperty("bearframe:boss_claim")??key;}catch{}
+      if(!origin||!dim)return;
       if(typeof key==="string"&&key.startsWith("bearframe:boss_site:"))world.setDynamicProperty(key,defeatedClaim(now));
       if(dim!=="minecraft:overworld"||world.getDifficulty()===Difficulty.Peaceful)return;
       const candidates=world.getAllPlayers().filter(eligible);
@@ -210,7 +214,10 @@ export function installBossCombat() {
         update(state.entity, state, now);
       } catch (error) {
         console.warn("[Bearframe bosses] " + error);
-        if (state.entity.isValid) reset(state.entity, state, now, 60);
+        if (state.entity.isValid) {
+          state.strike=undefined;state.ready=now+60;
+          try{reset(state.entity,state,now,60);}catch(resetError){console.warn("[Bearframe boss reset] "+resetError);}
+        }
       }
     }
   }, 1);
