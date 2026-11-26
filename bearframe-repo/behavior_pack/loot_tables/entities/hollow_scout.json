@@ -19,6 +19,20 @@
           "weight": 3
         }
       ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "empty",
+          "weight": 96
+        },
+        {
+          "type": "item",
+          "name": "bearframe:field_cutter",
+          "weight": 4
+        }
+      ]
     }
   ]
 }

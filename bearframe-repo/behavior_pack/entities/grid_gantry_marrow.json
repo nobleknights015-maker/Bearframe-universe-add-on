@@ -36,7 +36,7 @@
         "should_darken_sky": false
       },
       "minecraft:collision_box": {
-        "width": 2.0,
+        "width": 2,
         "height": 1.9
       },
       "minecraft:persistent": {},
@@ -80,7 +80,7 @@
         "within_radius": 3
       },
       "minecraft:loot": {
-        "table": "loot_tables/entities/grid_heavy.json"
+        "table": "loot_tables/entities/boss_grid_gantry_marrow.json"
       }
     },
     "component_groups": {

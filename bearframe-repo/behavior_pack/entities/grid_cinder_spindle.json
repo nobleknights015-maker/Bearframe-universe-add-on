@@ -80,7 +80,7 @@
         "within_radius": 3
       },
       "minecraft:loot": {
-        "table": "loot_tables/entities/grid_heavy.json"
+        "table": "loot_tables/entities/boss_grid_cinder_spindle.json"
       }
     },
     "component_groups": {
