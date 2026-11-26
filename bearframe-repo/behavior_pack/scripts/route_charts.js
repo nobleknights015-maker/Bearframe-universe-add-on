@@ -8,6 +8,8 @@ import {goalCount} from "./rpg_progress.js";
 
 import {ALL_LOCAL} from "./local_rpg.js";
 import {bossSite} from "./boss_dossiers.js";
+import {siteClaimKey,canRetryClaim} from "./boss_claims.js";
+import {ALL_LOCAL as STORY_JOBS} from "./local_rpg.js";
 const OVERWORLD="minecraft:overworld";
 const DIRECTORY="bearframe:charted_sites:";
 const SAVED="bearframe:quest_charts";
@@ -147,7 +149,19 @@ function goalMaps(q,player,state,finished=false){
   const rows=[];
   for(const g of q.goals){
     for(const id of sitesFor(g)){
-      const dest=solution(id,player,state,finished);
+      let dest=solution(id,player,state,finished);
+      if(g.key.startsWith("boss:")){
+        const actual=state.sites[g.key];
+        if(actual)dest={id,name:sourceOf(id).name,biome:sourceOf(id).biome,dim:OVERWORLD,p:actual,status:"visited",encounter:true};
+        else if(!finished){
+          const origin=player.dimension.id===OVERWORLD?point(player.location):[0,0,0];
+          const candidates=load(world,DIRECTORY+id,[]).filter(v=>v.status==="ready"&&available(player,id,v.p)&&canRetryClaim(world.getDynamicProperty(siteClaimKey(id,loc(v.p))),true,system.currentTick));
+          const found=candidates.sort((a,b)=>dist(a.p,origin)-dist(b.p,origin))[0];
+          if(found)dest={...dest,p:found.p,status:"ready",encounter:true};
+          else if(dest?.p&&world.getDynamicProperty(siteClaimKey(id,loc(dest.p)))==="active")dest={...dest,encounter:true};
+          else dest={...dest,p:null,status:"unconfirmed",encounter:true};
+        }
+      }
       if(dest&&!rows.some(x=>x.id===id))rows.push({...dest,
         objective:g.label,done:goalCount(q,state,g)>=g.count});
     }
@@ -166,6 +180,16 @@ function visitedFromSeen(values,player,state){
   }
   return seen;
 }
+function isPermanentChart(x){return x.key.startsWith("main:")||x.key.startsWith("side:")||STORY_JOBS.some(q=>x.key.startsWith("local:"+q.id+":"));}
+function fitArchive(fixed,runs){
+ const result=[...fixed,...runs];
+ // Conservative UTF-8 budget: up to four bytes per Unicode code point.
+ const bytes=s=>Array.from(JSON.stringify(s)).reduce((n,c)=>n+(c.codePointAt(0)<=127?1:c.codePointAt(0)<=2047?2:c.codePointAt(0)<=65535?3:4),0);
+ while(bytes(result)>30000&&result.length>fixed.length)result.pop();
+ // Quest records can be reconstructed from persistent progress; preserve newest permanent entries first.
+ while(bytes(result)>30000&&result.length)result.pop();
+ return result;
+}
 export function archiveChart(player,kind,id,quest,state,seen){
   const chartState=kind==="local"?readCampaign(player):state;
   const maps=kind==="main"||kind==="side"?goalMaps(quest,player,chartState,true):visitedFromSeen(seen,player,chartState);
@@ -174,9 +198,9 @@ export function archiveChart(player,kind,id,quest,state,seen){
   const key=kind+":"+id+(run!=null?":"+run:"");
   if(all.some(x=>x.key===key))return;
   all.unshift({key,title:quest.title,maps});
-  const fixed=all.filter(x=>x.key.startsWith("main:")||x.key.startsWith("side:"));
-  const runs=all.filter(x=>!x.key.startsWith("main:")&&!x.key.startsWith("side:")).slice(0,36);
-  save(player,SAVED,[...fixed,...runs]);
+  const fixed=all.filter(isPermanentChart);
+  const runs=all.filter(x=>!isPermanentChart(x)).slice(0,36);
+  save(player,SAVED,fitArchive(fixed,runs));
 }
 function completedLists(player,state){
   const saved=load(player,SAVED,[]);
@@ -189,6 +213,8 @@ function completedLists(player,state){
     restore.push({key:"side:"+q.id,title:q.title,maps:goalMaps(q,player,state,true)});
   for(const q of CONTRACTS)if(state.contracts[q.id]?.done&&!saved.some(r=>r.key.startsWith("contract:"+q.id+":")))
     restore.push({key:"contract:"+q.id+":legacy",title:q.title+" · earlier runs",maps:[]});
+  const local=load(player,ROAMING,{});
+  for(const q of STORY_JOBS)if(local[q.id]?.done&&!saved.some(r=>r.key.startsWith("local:"+q.id+":")))restore.push({key:"local:"+q.id+":restored",title:q.title,maps:visitedFromSeen(local[q.id].seen,player,state)});
   return [...saved,...restore.reverse()];
 }
 function activeLists(player,state){
@@ -326,7 +352,7 @@ export function installRouteCharts(){
         followed.set(p.id,tracked);
       }
       let dest=tracked.dest;
-      if(dest.dim===OVERWORLD&&(dest.status==="beacon"||!available(p,dest.id,dest.p))){
+      if(dest.dim===OVERWORLD&&!dest.encounter&&(dest.status==="beacon"||!available(p,dest.id,dest.p))){
         const hadBeacon=dest.status==="beacon";
 
         const candidate=solution(dest.id,p,readCampaign(p));

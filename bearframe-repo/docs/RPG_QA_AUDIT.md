@@ -1,0 +1,3 @@
+# QA checkpoint
+
+21 isolated checks passed for boss claim lifecycle, encounter coordinates, local exchange capacity and rollback, bounded chart history and syntax. Boss hunts may retry explicitly defeated tagged site encounters after 12000 ticks; legacy boolean claims and active claims remain protected to avoid duplicate bosses. Actual encounter coordinates retained. New local story chart records prioritized and recoverable. No full Node suite or live Bedrock test; no package produced. Remaining risks: legacy claimed site may need another habitat, worldgen/structure validation, runtime API verification, real gameplay balance and performance.

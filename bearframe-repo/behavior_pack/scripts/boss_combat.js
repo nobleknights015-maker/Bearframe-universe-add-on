@@ -3,6 +3,7 @@ import { BOSS_MOVES } from "./boss_moves.js";
 
 import { campaignSignal } from "./campaign.js";
 import { creditIds } from "./boss_dossiers.js";
+import { defeatedClaim } from "./boss_claims.js";
 const ENGAGE_RADIUS = 24;
 const MAX_HEIGHT_DIFFERENCE = 2.5;
 const PARTICLE = "minecraft:endrod";
@@ -185,6 +186,8 @@ export function installBossCombat() {
     active.delete(deadEntity.id);participants.delete(deadEntity.id);
     try{
       const origin=deadEntity.location,dim=deadEntity.dimension.id;
+      const key=deadEntity.getDynamicProperty("bearframe:boss_claim");
+      if(typeof key==="string"&&key.startsWith("bearframe:boss_site:"))world.setDynamicProperty(key,defeatedClaim(now));
       if(dim!=="minecraft:overworld"||world.getDifficulty()===Difficulty.Peaceful)return;
       const candidates=world.getAllPlayers().filter(eligible);
       const killer=damageSource.damagingEntity;

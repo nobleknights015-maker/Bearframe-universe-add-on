@@ -569,6 +569,7 @@ function exchange(player,payment,reward,commit){
     if(remain>0&&item.typeId===payment[0]){
       const take=Math.min(remain,item.amount);
       changes.push([i,item,item.amount-take]);
+      if(take===item.amount)vacant.push(i);
       remain-=take;
     }
   }

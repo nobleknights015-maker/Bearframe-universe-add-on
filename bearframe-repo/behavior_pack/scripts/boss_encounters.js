@@ -1,8 +1,9 @@
-import { Difficulty, GameMode, world } from "@minecraft/server";
+import { Difficulty, GameMode, world, system } from "@minecraft/server";
 import { BOSS_HABITATS, encounterRoll } from "./boss_habitats.js";
 
 import { read } from "./campaign_state.js";
 import { activeHunt } from "./boss_dossiers.js";
+import { siteClaimKey, canRetryClaim } from "./boss_claims.js";
 const SITE_BOSS = "bearframe_site_boss";
 const ARENA_FLOORS = new Set([
   "bearframe:frontier_deck", "bearframe:frontier_dust",
@@ -31,8 +32,10 @@ export function discoverBoss(siteId, marker, player) {
       ![GameMode.Survival, GameMode.Adventure].includes(player.getGameMode())) return;
   const { dimension, location } = marker;
   if (dimension.id !== "minecraft:overworld" || (!activeHunt(read(player),siteId) && !encounterRoll(siteId, location))) return;
-  const siteKey = "bearframe:boss_site:" + [siteId, location.x, location.y, location.z].join(":");
-  if (world.getDynamicProperty(siteKey)) return;
+  const siteKey=siteClaimKey(siteId,location);
+  const claim=world.getDynamicProperty(siteKey);
+  const hunt=activeHunt(read(player),siteId);
+  if(claim&&!canRetryClaim(claim,hunt,system.currentTick))return;
   // Native jigsaw pieces can be quarter-turned. Keep attempts on authored flooring.
   const candidates = habitat.offsets.flatMap(([x, y, z]) =>
     [[x,y,z],[-z,y,x],[-x,y,-z],[z,y,-x]]);
@@ -47,8 +50,8 @@ export function discoverBoss(siteId, marker, player) {
     const boss = dimension.spawnEntity("bearframe:" + habitat.boss, center);
     try {
       boss.addTag(SITE_BOSS);
-      // Claim the site on spawn, even if the boss later dies or leaves its wing.
-      world.setDynamicProperty(siteKey, true);
+      boss.setDynamicProperty("bearframe:boss_claim",siteKey);
+      world.setDynamicProperty(siteKey,"active");
     } catch (error) {
       if (boss.isValid) boss.remove();
       throw error;
