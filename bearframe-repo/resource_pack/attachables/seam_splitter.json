@@ -19,7 +19,8 @@
       },
       "animations": {
         "first": "animation.bearframe.held.seam_splitter.first",
-        "third": "animation.bearframe.held.seam_splitter.third"
+        "third": "animation.bearframe.held.seam_splitter.third",
+        "energy": "animation.bearframe.held.seam_splitter.energy"
       },
       "scripts": {
         "animate": [
@@ -28,7 +29,8 @@
           },
           {
             "third": "context.is_first_person == 0.0"
-          }
+          },
+          "energy"
         ]
       },
       "render_controllers": [

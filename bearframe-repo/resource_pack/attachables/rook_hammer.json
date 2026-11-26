@@ -19,7 +19,8 @@
       },
       "animations": {
         "first": "animation.bearframe.held.rook_hammer.first",
-        "third": "animation.bearframe.held.rook_hammer.third"
+        "third": "animation.bearframe.held.rook_hammer.third",
+        "energy": "animation.bearframe.held.rook_hammer.energy"
       },
       "scripts": {
         "animate": [
@@ -28,7 +29,8 @@
           },
           {
             "third": "context.is_first_person == 0.0"
-          }
+          },
+          "energy"
         ]
       },
       "render_controllers": [

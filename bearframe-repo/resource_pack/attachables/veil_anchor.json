@@ -19,7 +19,8 @@
       },
       "animations": {
         "first": "animation.bearframe.held.veil_anchor.first",
-        "third": "animation.bearframe.held.veil_anchor.third"
+        "third": "animation.bearframe.held.veil_anchor.third",
+        "energy": "animation.bearframe.held.veil_anchor.energy"
       },
       "scripts": {
         "animate": [
@@ -28,7 +29,8 @@
           },
           {
             "third": "context.is_first_person == 0.0"
-          }
+          },
+          "energy"
         ]
       },
       "render_controllers": [

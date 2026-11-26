@@ -30,5 +30,37 @@
     "groups": 8,
     "overlays": 16,
     "parent": "grip"
+  },
+  {
+    "id": "seam_splitter",
+    "name": "Twin blade pulses",
+    "period": 1.55,
+    "groups": 5,
+    "overlays": 12,
+    "parent": "grip"
+  },
+  {
+    "id": "veil_anchor",
+    "name": "Paired ring circuit",
+    "period": 2.05,
+    "groups": 7,
+    "overlays": 14,
+    "parent": "grip"
+  },
+  {
+    "id": "rook_hammer",
+    "name": "Impact core charge",
+    "period": 1.85,
+    "groups": 3,
+    "overlays": 5,
+    "parent": "grip"
+  },
+  {
+    "id": "hush_pendulum",
+    "name": "Striking head heartbeat",
+    "period": 1.75,
+    "groups": 3,
+    "overlays": 4,
+    "parent": "pendulum_head"
   }
 ]
