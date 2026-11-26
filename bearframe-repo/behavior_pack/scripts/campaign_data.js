@@ -38,13 +38,13 @@ export const SIDES=[
   {id:"grow",title:"The Greenhouse Ledger",speaker:"Penney",intro:"Compare the garden ledger in the Overgrown Colony with the shelter record at the Lost Waystation. I want to know what can actually sustain a crew out there.",goals:[objective("read:overgrown_colony","Read the colony archive"),objective("read:lost_waystation","Read the waystation archive")],report:"Penney: We'll bring seed and dry bedding on the next run. A route is worth more if somebody can rest along it.",reward:[i("melon_seeds",5),i("bone_meal",8),i("emerald",2)]},
   {id:"metal",title:"Hands That Still Work",speaker:"Atlas",intro:"Power both the Foundry Annex and Rainline Works. The maintenance units can use the sites even when no expedition is around.",goals:[objective("repair:foundry_annex","Verify Foundry power"),objective("repair:rainline_town","Verify Rainline workshop power")],report:"Atlas: Good. Both benches can be used again. Here, take some stock for your own.",reward:[i("iron_ingot",7),i("bearframe:salvaged_alloy",2)]},
   {id:"prints",title:"Marks Under the Paint",speaker:"Vera",intro:"The Frontier Ruin was marked by hand. The Nivalis Lab was labeled by machine. Recover both archives so I can preserve the difference.",goals:[objective("read:frontier_ruin","Read the Frontier Ruin record"),objective("read:nivalis_lab","Read the Nivalis Lab record")],report:"Vera: One of these records was written for a reader. The other was written by someone who hoped there would still be a reader.",reward:[i("amethyst_shard",6),i("glow_ink_sac",3)]},
-  {id:"watch",title:"A Short Patrol",speaker:"Sentinel",intro:"Verify the Directorate's current checkpoint and clear two hostile Hollows or Hunters that threaten the field routes.",goals:[objective("read:intrusion_checkpoint","Log the Directorate checkpoint"),objective("kill:directorate","Defeat Hollows or Hunters",2)],report:"Sentinel: Logged. We'll keep the routes watched. Nobody needs a standing occupation out there.",reward:[i("arrow",20),i("iron_ingot",3)]},
+  {id:"watch",title:"A Short Patrol",speaker:"Sentinel",intro:"Verify the Directorate's current checkpoint and clear two hostile Nullframe Directorate units that threaten the field routes.",goals:[objective("read:intrusion_checkpoint","Log the Directorate checkpoint"),objective("kill:directorate","Defeat hostile Nullframe units",2)],report:"Sentinel: Logged. We'll keep the routes watched. Nobody needs a standing occupation out there.",reward:[i("arrow",20),i("iron_ingot",3)]},
   {id:"carrier",title:"Cold Carrier",speaker:"Auren",intro:"Compare the signal at the Shattered Array to Relay Nine. The output should be different if the array is running locally.",goals:[objective("read:shattered_array","Read the Shattered Array"),objective("read:relay_nine","Read Relay Nine")],report:"Auren: The carrier agrees. The array can be useful even if it never rejoins the old network.",reward:[i("redstone",8),i("bearframe:legacy_cell")]},
 ];
 export const CONTRACTS=[
  {id:"charts",title:"Fresh Route Survey",speaker:"Mira",text:"Log three distinct field terminals or archives after accepting. A completed site can be revisited on another commission.",key:"field",count:3,reward:[i("emerald",3),i("torch",8)]},
  {id:"power",title:"Maintenance Circuit",speaker:"Atlas",text:"Verify power at two distinct repaired facilities after accepting. Existing repairs count when you inspect them.",key:"circuit",count:2,reward:[i("iron_ingot",4),i("copper_ingot",4)]},
- {id:"hostiles",title:"Clear the Approach",speaker:"Sentinel",text:"Defeat three Hollows or Hunters on the surface after accepting. Echoes and Ghost Grid maintenance units never count.",key:"defeat",count:3,reward:[i("arrow",16),i("emerald",3)]},
+ {id:"hostiles",title:"Clear the Approach",speaker:"Sentinel",text:"Defeat three hostile Nullframe Directorate units on the surface after accepting. Echo Frames and Ghost Grid units are recorded separately.",key:"defeat",count:3,reward:[i("arrow",16),i("emerald",3)]},
 ];
 
 // Preserve all legacy IDs and main chapter indices.
@@ -563,7 +563,7 @@ export const RPG_SIDES=[
       },
       {
         "key": "kill:directorate",
-        "label": "Defeat hostile Hollows or Hunters after accepting",
+        "label": "Defeat hostile Nullframe Directorate units after accepting",
         "count": 2
       }
     ],
@@ -602,7 +602,7 @@ export const RPG_SIDES=[
       },
       {
         "key": "kill:directorate",
-        "label": "Defeat hostile Hollows or Hunters after accepting",
+        "label": "Defeat hostile Nullframe Directorate units after accepting",
         "count": 3
       }
     ],
@@ -679,7 +679,7 @@ export const RPG_SIDES=[
       },
       {
         "key": "kill:directorate",
-        "label": "Defeat hostile Hollows or Hunters after accepting",
+        "label": "Defeat hostile Nullframe Directorate units after accepting",
         "count": 4
       }
     ],

@@ -1,3 +1,4 @@
+import {classifyUnit} from "./unit_classification.js";
 import {goalCount,rpgState} from "./rpg_progress.js";
 export const STATE_KEY="bearframe:campaign_v1";
 export const initial=()=>({chapter:-1,facts:{},sites:{},side:{},contracts:{},choice:null});
@@ -29,11 +30,14 @@ export function applySignal(state,type,id,place){
     fresh=mark("boss:"+id);
     if(place&&(fresh||!state.sites["boss:"+id]))state.sites["boss:"+id]=[Math.floor(place.x),Math.floor(place.y),Math.floor(place.z)];
   }else if(type==="kill"){
-    rpgState(state).kills++;
-    facts["kill:directorate"]=Math.min(99,(facts["kill:directorate"]??0)+1);
+    const unit=classifyUnit(id);
+    if(!unit||unit.disposition==="neutral")return false;
+    const p=rpgState(state);p.defeats??={};p.defeats[unit.key]=(p.defeats[unit.key]??0)+1;
+    if(unit.faction==="directorate")p.kills++;
+    const key="kill:"+unit.faction;facts[key]=Math.min(99,(facts[key]??0)+1);
     fresh=true;
   }
-  const contract=type==="read"?"charts":type==="repair"?"power":type==="kill"?"hostiles":undefined;
+  const contract=type==="read"?"charts":type==="repair"?"power":type==="kill"&&classifyUnit(id)?.faction==="directorate"?"hostiles":undefined;
   const record=state.contracts[contract];
   if(record?.active&&record.progress<(contract==="power"?2:3)){
     if(contract==="hostiles"){

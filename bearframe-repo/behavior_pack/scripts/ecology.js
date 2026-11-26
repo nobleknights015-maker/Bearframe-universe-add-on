@@ -1,3 +1,4 @@
+import {entityThreat} from "./unit_classification.js";
 import {creditedPlayer} from "./combat_credit.js";
 import {archiveChart} from "./route_charts.js";
 const HABITATS={
@@ -517,12 +518,12 @@ const catalogs={
   },
   grid_wayfarer:{
     name:"Legacy Route Guardian",intro:"Route clearance unconfirmed. My current directive permits passage and cooperative maintenance.",
-    quest:"Clear Where You Can",task:"Defeat two Lost Echoes or hostile Grid Breach Guardians after accepting.",event:"hazard",count:2,pay:[["minecraft:iron_ingot",4],["bearframe:legacy_cell",1]],
+    quest:"Clear Where You Can",task:"Defeat two confirmed hostile Echo Frames or Ghost Grid units after accepting.",event:"hazard",count:2,pay:[["minecraft:iron_ingot",4],["bearframe:legacy_cell",1]],
     deals:[["bearframe:salvaged_alloy",2,"minecraft:iron_ingot",3]],
   },
   grid_guardian:{
     name:"Legacy Sector Guardian",intro:"Local defense idle. Non-hostile visitors may request a service assignment.",
-    quest:"Clear Where You Can",task:"Defeat two Lost Echoes or hostile Grid Breach Guardians after accepting.",event:"hazard",count:2,pay:[["minecraft:iron_ingot",4],["bearframe:legacy_cell",1]],
+    quest:"Clear Where You Can",task:"Defeat two confirmed hostile Echo Frames or Ghost Grid units after accepting.",event:"hazard",count:2,pay:[["minecraft:iron_ingot",4],["bearframe:legacy_cell",1]],
     deals:[["bearframe:salvaged_alloy",2,"minecraft:iron_ingot",3]],
   },
   grid_repair_crawler:{
@@ -690,7 +691,8 @@ export function installEcology(){
     system.run(()=>interact(player,target));
   });
   world.afterEvents.entityDie.subscribe(({deadEntity,damageSource})=>{
-    if(deadEntity.dimension.id!==OVERWORLD||!deadEntity.typeId.startsWith("bearframe:")||!dangerous.has(deadEntity.typeId.split(":")[1]))return;
+    if(deadEntity.dimension.id!==OVERWORLD)return;
+    const threat=entityThreat(deadEntity);if(!threat||threat.faction==="directorate")return;
     const p=creditedPlayer(damageSource);
     if(p?.typeId==="minecraft:player")fieldProgress(p,"hazard",deadEntity.typeId);
   });

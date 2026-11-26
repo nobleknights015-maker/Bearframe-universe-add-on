@@ -1,3 +1,4 @@
+import {classifyUnit,entityThreat,unitLabel} from "./unit_classification.js";
 import {fieldInteraction} from "./ecology.js";
 import {campaignSignal} from "./campaign.js";
 import {ItemStack,system,world} from "@minecraft/server";
@@ -186,13 +187,15 @@ export function installLivingWorld({validPlayer,spend,attempt}){
       const dim=player.dimension;
       const range=player.getDynamicProperty(CALIBRATED_SCANNER)?30:18;
       const nearby=dim.getEntities({location:player.location,maxDistance:range})
-        .filter(e=>e.typeId.startsWith("bearframe:") && e.typeId!=="bearframe:grid_bolt")
+        .filter(e=>!!classifyUnit(e.typeId)||(e.typeId.startsWith("bearframe:") && e.typeId!=="bearframe:grid_bolt"))
         .sort((a,b)=>distSq(player.location,a.location)-distSq(player.location,b.location));
       if(!nearby.length){
         return say(player,"§b[Farfield Scanner]",`No synthetic signatures or autonomous machines within ${range} blocks.`);
       }
       const target=nearby[0];
-      const entry=SCAN_DB[target.typeId]??{tag:target.typeId,note:"Unclassified Bearframe-universe entity."};
+      const unit=classifyUnit(target.typeId);
+      const existing=SCAN_DB[target.typeId];
+      const entry=unit?{tag:unitLabel(unit),note:(entityThreat(target)?"Confirmed hostile. ":unit.disposition==="neutral"?"Non-hostile. ":"Conditional threat. ")+(existing?.note??"Variant identified.")}:existing??{tag:target.typeId,note:"Unclassified Bearframe-universe entity."};
       const hp=target.getComponent("minecraft:health");
       const hpText=hp?`Integrity ${Math.round(hp.currentValue)}/${Math.round(hp.effectiveMax)}`:"Integrity unreadable";
       const calm=target.getDynamicProperty("bearframe:stabilized")?" · Stabilized":"";

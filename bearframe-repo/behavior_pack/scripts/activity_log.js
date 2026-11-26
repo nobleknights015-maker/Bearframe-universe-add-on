@@ -1,3 +1,5 @@
+import {classifyUnit,entityThreat,noteAggression,unitLabel,UNIT_TYPES,FACTION_LABELS} from "./unit_classification.js";
+import {creditedPlayer} from "./combat_credit.js";
 import {openCharts} from "./route_charts.js";
 import {system,world} from "@minecraft/server";
 import {ActionFormData} from "@minecraft/server-ui";
@@ -119,6 +121,14 @@ function materialsText(stats){
   }
   return lines.join("\n");
 }
+function combatText(stats){
+  const counts=stats.types.DefeatedUnits??{},lines=[];
+  for(const [faction,label] of Object.entries(FACTION_LABELS)){
+    const units=Object.entries(counts).filter(([key])=>UNIT_TYPES[key]?.faction===faction);
+    lines.push(label+" · "+units.reduce((n,[,v])=>n+v,0),...units.sort((a,b)=>b[1]-a[1]).map(([key,n])=>UNIT_TYPES[key].variant+" · "+n),"");
+  }
+  return lines.join("\n")+"Only confirmed hostile units count. Earlier unclassified activity is retained in lifetime totals.";
+}
 function fieldText(stats,state){
   const lines=Object.entries(state.sites).map(([id,at])=>(EVIDENCE[id]?.name??(id.startsWith("boss:")?BOSS_DOSSIERS[id.slice(5)]?.name:undefined)??clean(id))+" · "+at.join(", "));
   for(const [key,value] of Object.entries(stats.checkpoints))
@@ -147,12 +157,12 @@ async function logForm(player){
   try{
     drainInventory(player.id);
     flush(player.id);
-    const options=["Recent activity","Lifetime totals","Block and inventory details","Exploration and coordinates","Active quest dossier","Treasure charts","Completed assignments","Department standing"];
+    const options=["Recent activity","Lifetime totals","Block and inventory details","Exploration and coordinates","Active quest dossier","Treasure charts","Completed assignments","Department standing","Faction combat records"];
     const selection=await menu("Field Log","Personal record for this world",options).show(player);
     if(selection.canceled||!player.isValid)return;
     if(selection.selection===5){await openCharts(player);return;}
     const stats=record(player.id),campaign=readCampaign(player);
-    const pages=[activityText,totalsText,materialsText,s=>fieldText(s,campaign),()=>storyText(campaign,player),null,()=>SIDES.filter(q=>campaign.side[q.id]===2).map(q=>{const outcome=q.outcomes?.find(o=>o.id===rpgState(campaign).decisions[q.id]);return q.title+" · "+q.speaker+"\n"+q.report+(outcome?"\nRecommendation: "+outcome.label:"");}).join("\n\n")||"No completed assignments.",()=>LEADS.map(name=>{const r=standing(campaign,name);return name+" · "+r.tier+" ("+r.points+")";}).join("\n")];
+    const pages=[activityText,totalsText,materialsText,s=>fieldText(s,campaign),()=>storyText(campaign,player),null,()=>SIDES.filter(q=>campaign.side[q.id]===2).map(q=>{const outcome=q.outcomes?.find(o=>o.id===rpgState(campaign).decisions[q.id]);return q.title+" · "+q.speaker+"\n"+q.report+(outcome?"\nRecommendation: "+outcome.label:"");}).join("\n\n")||"No completed assignments.",()=>LEADS.map(name=>{const r=standing(campaign,name);return name+" · "+r.tier+" ("+r.points+")";}).join("\n"),combatText];
     if(pages[selection.selection])await menu(options[selection.selection],pages[selection.selection](stats),["Close"]).show(player);
   }catch(error){console.warn("[Bearframe Field Log] "+error);}
   finally{forms.delete(player.id);}
@@ -196,10 +206,17 @@ export function installActivityLog(){
     noteActivity(player,"Travel","Entered "+dimension(toDimension.id),toLocation,toDimension.id);
     flush(player.id);
   });
+  world.afterEvents.entityHurt.subscribe(({hurtEntity,damageSource})=>{
+    if(hurtEntity.typeId==="minecraft:player")noteAggression(damageSource.damagingEntity);
+  });
   world.afterEvents.entityDie.subscribe(({deadEntity,damageSource})=>{
     if(deadEntity.typeId==="minecraft:player")noteActivity(deadEntity,"Death",clean(damageSource.cause),deadEntity.location);
-    const source=damageSource.damagingEntity;
-    if(source?.typeId==="minecraft:player")noteActivity(source,"Defeat",clean(deadEntity.typeId),deadEntity.location);
+    const source=creditedPlayer(damageSource);
+    if(source?.typeId==="minecraft:player"){
+      const unit=classifyUnit(deadEntity.typeId),threat=entityThreat(deadEntity);
+      noteActivity(source,"Defeat",unit?unitLabel(unit):clean(deadEntity.typeId),deadEntity.location,deadEntity.dimension.id);
+      if(threat){const stats=record(source.id),table=stats.types.DefeatedUnits??(stats.types.DefeatedUnits={});table[threat.key]=(table[threat.key]??0)+1;dirty.add(source.id);}
+    }
   });
   world.afterEvents.playerLeave.subscribe(({playerId})=>{
     drainInventory(playerId);
