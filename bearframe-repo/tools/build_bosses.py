@@ -501,6 +501,36 @@ def animation_set(spec):
     return {f"animation.bearframe.{sector}.{name}":value for name,value in animations.items()}
 
 
+def palinode_ram_rig():
+    """A low rail-clearance machine built around an exposed reciprocating ram."""
+    c = cube
+    yield chassis(c(-3,10,-11,6,5,25,"dark"), c(-8,13,1,16,4,16,"metal"),
+                  c(-7,17,6,14,4,11,"metal"), c(-5,20,10,9,2,6,"moss"),
+                  c(-7,15,-9,3,4,12,"metal"), c(4,15,-9,3,4,12,"metal"))
+    yield bone("head", [-6,17,-5], c(-9,17,-9,6,4,6,"metal"),
+               c(-8,18,-10,4,2,2,"dark"), c(-7,18,-11,2,1,1,"glow"),
+               c(-9,21,-7,4,1,3,"moss"))
+    yield bone("ram", [0,12,-4], c(-2,9,-18,4,5,21,"dark"),
+               c(-4,9,-21,8,7,8,"metal"), c(-9,6,-25,18,3,7,"metal",[22,0,0]),
+               c(-10,7,-24,4,5,6,"rust",[0,-17,0]),
+               c(6,7,-24,4,5,6,"rust",[0,17,0]), c(-5,12,-22,10,1,2,"glow"))
+    for index, z in enumerate((-10, 0, 12)):
+        for side, tag in ((-1,"l"),(1,"r")):
+            suffix = f"{index}_{tag}"
+            hip = (6 + (index == 2)) * side
+            reach = (15 + (index == 1) * 3) * side
+            left = min(hip,reach)
+            yield bone("leg_"+suffix, [hip,14,z],
+                       c(left,12,z-2,abs(hip-reach),4,4,"dark",[0,side*(index-1)*18,0]),
+                       c(reach-3,10,z-3,6,6,6,"metal"),
+                       c(reach-2,16,z-1,3,1,3,"moss"))
+            broken = index == 1 and side == -1
+            yield bone("foot_"+suffix, [reach,11,z],
+                       c(reach-2,2,z-2,4,10,4,"rust" if broken else "metal",[0,0,side*-23]),
+                       c(reach-3,0,z-4,6,3,8,"dark"),
+                       c(reach-2,1,z-5,4,2,4,"metal"), parent="leg_"+suffix)
+
+
 def build(spec):
     name = spec["id"]
     identifier = "bearframe:" + name
@@ -508,7 +538,7 @@ def build(spec):
     atlas.save(RP / f"textures/bearframe/{name}.png")
     geom = f"geometry.bearframe.{name}"
     write(RP / f"models/entity/{name}.geo.json", {"format_version":"1.12.0", "minecraft:geometry":[{
-        "description":{"identifier":geom,"texture_width":SIZE,"texture_height":SIZE,
+        "description":{"identifier":geom,"texture_width":atlas.width,"texture_height":atlas.height,
                        "visible_bounds_width":6,"visible_bounds_height":5,"visible_bounds_offset":[0,1,0]},
         "bones":bones}]})
     write(RP / f"animations/{name}.animation.json",
@@ -561,7 +591,11 @@ def main():
         print(f"Reference: {profile['clips']} clips, median {density} distinct keyframe times/second")
     for spec in bosses:
         spec["pose_density"] = density
-        remodel(spec)
+        if spec["id"] == "grid_palinode":
+            spec["rig"] = list(palinode_ram_rig())
+            spec["palette"] = ["#b9b7a1","#925d37","#54d8f0","#5b7135","#282d30"]
+        else:
+            remodel(spec)
         build(spec)
     active = [{"death":"!query.is_alive"},{"attack0":"query.property('bearframe:boss_move') == 1"},
               {"attack1":"query.property('bearframe:boss_move') == 2"}]
