@@ -2,8 +2,8 @@
 
 0.11.15 uses the owner-supplied Astro schematic by VoponKL
 (SHA-256 07c45c0f90b58dc7124d30e32f47f4773bf8ff8a755a3f758f9335f320be1711).
-The installer is for private testing. Public redistribution rights have
-not been verified.
+The owner confirmed the map is for public use. The station source credits
+VoponKL, and the packaged installer is under releases/.
 
 The converter reads 35,961 occupied Java blocks across a 159 × 129 × 263
 region. It resolves occupied palette entries against Bedrock 1.26.60,
