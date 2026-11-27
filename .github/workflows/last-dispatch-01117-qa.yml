@@ -1,0 +1,61 @@
+name: Last Dispatch 0.11.17 easy fixes
+on:
+  push:
+    branches: ['repair/last-dispatch-0.11.17-easy-fixes']
+    paths: ['bearframe-repo/behavior_pack/**', 'bearframe-repo/resource_pack/**', 'bearframe-repo/tests/**', 'bearframe-repo/package.json', '.github/workflows/last-dispatch-01117-qa.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: last-dispatch-01117-qa
+  cancel-in-progress: false
+jobs:
+  validate:
+    if: github.ref == 'refs/heads/repair/last-dispatch-0.11.17-easy-fixes'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: bearframe-repo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --ignore-scripts --no-audit --no-fund
+      - run: npm test
+      - name: Package and verify
+        run: |
+          python3 tools/package_current.py dist
+          python3 tools/verify_package.py dist/Bearframe_The_Last_Dispatch_0.11.17.mcaddon
+      - name: Verify candidate payload
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          from zipfile import ZipFile
+          with ZipFile('dist/Bearframe_The_Last_Dispatch_0.11.17.mcaddon') as z:
+              assert len(z.namelist()) == len(set(z.namelist())) == 775
+              h = hashlib.sha256()
+              for name in sorted(z.namelist()):
+                  h.update(name.encode() + b'\0' + hashlib.sha256(z.read(name)).digest())
+              assert h.hexdigest() == '00ff84dd1575697ff717b45230c28218cf3309d440ee28d7c49d3e821a5781ed', h.hexdigest()
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Last-Dispatch-0.11.17-test-candidate
+          path: bearframe-repo/dist/*.mcaddon
+          retention-days: 30
+          if-no-files-found: error
+      - name: Permanently archive verified test candidate on repair branch
+        run: |
+          mkdir -p releases
+          cp dist/Bearframe_The_Last_Dispatch_0.11.17.mcaddon releases/Bearframe_The_Last_Dispatch_0.11.17_Test_Candidate.mcaddon
+          cd releases
+          sha256sum Bearframe_The_Last_Dispatch_0.11.17_Test_Candidate.mcaddon > Bearframe_The_Last_Dispatch_0.11.17_Test_Candidate.sha256
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f Bearframe_The_Last_Dispatch_0.11.17_Test_Candidate.mcaddon Bearframe_The_Last_Dispatch_0.11.17_Test_Candidate.sha256
+          if ! git diff --cached --quiet; then
+            git commit -m 'Archive validated 0.11.17 test candidate'
+            git push origin HEAD:refs/heads/repair/last-dispatch-0.11.17-easy-fixes
+          fi
