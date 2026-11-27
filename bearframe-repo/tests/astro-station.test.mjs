@@ -35,3 +35,25 @@ test("Astro decks connect all staff, department lift and return desk",()=>{
     }
   }
 });
+
+test("Astro recovery accepts matching blocks and rejects partial placement or obstructions", async()=>{
+  const {matchesAstroSection}=await import("../behavior_pack/scripts/astro_recovery.js");
+  const origin={x:4,y:8,z:12};
+  const size=[2,1,1];
+  const stairs={type:{id:"minecraft:oak_stairs"},getAllStates:()=>({weirdo_direction:1})};
+  const structure={
+    getBlockPermutation:({x})=>x===0?stairs:undefined,
+    getIsWaterlogged:()=>true,
+  };
+  const stairBlock={
+    isAir:false,isWaterlogged:true,
+    permutation:{matches:(id,states)=>id===stairs.type.id&&states.weirdo_direction===1},
+  };
+  const air={isAir:true,permutation:{matches:()=>false}};
+  const dim=(first,second)=>({getBlock:({x,y,z})=>y===8&&z===12?(x===4?first:second):undefined});
+  assert(matchesAstroSection(dim(stairBlock,air),origin,size,structure));
+  assert(!matchesAstroSection(dim(air,air),origin,size,structure));
+  assert(!matchesAstroSection(dim(stairBlock,stairBlock),origin,size,structure));
+  assert(!matchesAstroSection(dim({...stairBlock,isWaterlogged:false},air),origin,size,structure));
+  assert(!matchesAstroSection(dim(stairBlock,undefined),origin,size,structure));
+});
