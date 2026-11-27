@@ -16,6 +16,7 @@ import {
 import {CITY_ORIGIN,DOCK_ROLES,STATION_WINGS} from "./station_layout.js";
 import {ASTRO} from "./astro_layout.js";
 import {inspectPlacedSection,liftLanding} from "./astro_recovery.js";
+import {withTemporaryArea} from "./temporary_area.js";
 import {GATEWAY_CREW,GATEWAY_PARTS} from "./gateway_layout.js";
 const CHEST="minecraft:barrel";
 const STATUS="bearframe:status";
@@ -247,21 +248,11 @@ function claim(player,site){
   return say(player,"Site stores recovered.");
 }
 
+let areaSequence=0;
 async function withArea(dim,from,to,name,task){
-  const areas=world.tickingAreaManager;
-  let timer;
-  try{
-    await Promise.race([
-      areas.createTickingArea(name,{dimension:dim,from,to}),
-      new Promise((_,reject)=>{
-        timer=system.runTimeout(()=>reject(Error("Chunk loading timed out for "+name)),200);
-      })
-    ]);
-    return await task();
-  }finally{
-    if(timer!==undefined)system.clearRun(timer);
-    if(areas.hasTickingArea(name))areas.removeTickingArea(name);
-  }
+  const ticket=name+"-"+(++areaSequence).toString(36);
+  return withTemporaryArea({areas:world.tickingAreaManager,dimension:dim,from,to,name:ticket,task,
+    scheduleTimeout:fn=>system.runTimeout(fn,200),cancelTimeout:id=>system.clearRun(id)});
 }
 
 function clearDockPreload(dim){
