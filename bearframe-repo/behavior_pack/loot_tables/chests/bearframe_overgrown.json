@@ -97,17 +97,17 @@
       "entries": [
         {
           "type": "empty",
-          "weight": 94
+          "weight": 658
         },
         {
           "type": "item",
           "name": "bearframe:phase_edge",
-          "weight": 5
+          "weight": 36
         },
         {
           "type": "item",
           "name": "bearframe:watchtower_lance",
-          "weight": 1
+          "weight": 6
         }
       ]
     }

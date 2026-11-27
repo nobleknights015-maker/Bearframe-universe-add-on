@@ -46,9 +46,13 @@ test("all seventeen chest tables keep normal loot and append bounded tiered gear
  for(const dir of ["chests","structures"])for(const name of readdirSync(new URL("loot_tables/"+dir+"/",bp))){
   if(!name.endsWith(".json"))continue;
   const t=read(bp,"loot_tables/"+dir+"/"+name);assert(t.pools.length>=2);
-  const p=t.pools.at(-1);assert.equal(p.rolls,1);assert.equal(p.entries[0].type,"empty");assert.equal(p.entries.reduce((n,e)=>n+e.weight,0),100);
+  const p=t.pools.at(-1);assert.equal(p.rolls,1);assert.equal(p.entries[0].type,"empty");const total=p.entries.reduce((n,e)=>n+e.weight,0);
+  assert(p.entries[0].weight/total>=.76);
+  const weights=p.entries.slice(1).map(e=>e.weight);
+  if(weights.length===2)assert.equal(weights[0],6*weights[1]);
+  if(weights.length===3)assert.deepEqual(weights.map(weight=>weight/weights[2]),[60,15,1]);
   for(const e of p.entries.slice(1)){assert(catalog.some(g=>!g.boss&&"bearframe:"+g.id===e.name));assert(e.weight>0);}
-  assert((p.entries.find(e=>e.name==="bearframe:foundry_prototype")?.weight??0)<=1);count++;
+  assert((p.entries.find(e=>e.name==="bearframe:foundry_prototype")?.weight??0)/total<=.01);count++;
  }assert.equal(count,17);
 });
 test("four hostile tables receive low-chance loot without replacing previous drops",()=>{

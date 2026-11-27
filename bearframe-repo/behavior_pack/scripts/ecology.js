@@ -1,3 +1,4 @@
+import {ARCHIVE_HABITATS,quarterTurns} from "./archive_habitats.js";
 import {entityThreat} from "./unit_classification.js";
 import {creditedPlayer} from "./combat_credit.js";
 import {archiveChart} from "./route_charts.js";
@@ -462,7 +463,47 @@ function spawnResident(dim,p,name,site){
   entity.setDynamicProperty("bearframe:region_role",site);
   return true;
 }
+const archiveFloor = new Set([
+  "bearframe:frontier_deck","bearframe:frontier_dust","minecraft:chiseled_stone_bricks",
+  "minecraft:polished_andesite","minecraft:mossy_stone_bricks","minecraft:mud_bricks",
+  "minecraft:light_gray_concrete","minecraft:polished_deepslate","minecraft:stone_bricks",
+  "minecraft:rooted_dirt","minecraft:cobbled_deepslate","minecraft:polished_diorite",
+]);
+
+export function populateArchive(id,marker){
+  const plan=ARCHIVE_HABITATS[id];
+  if(!plan)return;
+  const {dimension:dim,location:base}=marker;
+  const claim="bearframe:archive_residents:"+[id,base.x,base.y,base.z].join(":");
+  const done=Number(world.getDynamicProperty(claim)??0);
+  const [roles,offsets]=plan;
+  if(done>=roles.length)return;
+  let count=done;
+  if(!count){
+    // Older survey-built copies may already contain their original inhabitants.
+    const nearby=dim.getEntities({location:base,maxDistance:16});
+    count=Math.min(roles.length,nearby.filter(entity=>
+      entity.isValid&&entity.getDynamicProperty("bearframe:region_role")===id).length);
+    if(count)world.setDynamicProperty(claim,count);
+  }
+  for(const [x,y,z] of offsets.flatMap(quarterTurns)){
+    if(count>=roles.length)return;
+    const p={x:base.x+x,y:base.y+y,z:base.z+z};
+    if(!dim.isChunkLoaded(p))continue;
+    const below=dim.getBlock(p)?.below();
+    if(!below||!archiveFloor.has(below.typeId)||below.isWaterlogged)continue;
+    if(dim.getEntities({location:{x:p.x+.5,y:p.y,z:p.z+.5},maxDistance:2}).length)continue;
+    const desired=roles[count];
+    const role=dangerous.has(desired)&&world.getDifficulty()===Difficulty.Peaceful?roles[0]:desired;
+    if(spawnResident(dim,p,role,id)){
+      count++;
+      world.setDynamicProperty(claim,count);
+    }
+  }
+}
+
 export function populateRuin(dim,key,base){
+  if(ARCHIVE_HABITATS[key])return; // Shared archive discovery handles native and survey placements.
   const plan=HABITATS[key];
   if(!plan)return;
   const n=hash(key,base.x,base.y,base.z);

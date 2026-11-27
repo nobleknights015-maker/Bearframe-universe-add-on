@@ -3,7 +3,7 @@ import {installBossCombat} from "./boss_combat.js";
 import {ARCHIVE_SITE_IDS} from "./campaign_data.js";
 import {fieldSound} from "./field_audio.js";
 import {offerRelayLead,registerChartSite,installRouteCharts} from "./route_charts.js";
-import {installEcology,retainResident} from "./ecology.js";
+import {installEcology,populateArchive,retainResident} from "./ecology.js";
 import {installActivityLog} from "./activity_log.js";
 import {campaignSignal,installCampaign} from "./campaign.js";
 import {prepareGeneratedSpillway} from "./spillway.js";
@@ -238,6 +238,7 @@ system.runInterval(()=>{
         const id=ARCHIVE_SITE_IDS[marker.permutation.getState("bearframe:record")];
         if(id){
           registerChartSite(id,dim.id,marker.location);
+          attempt(()=>populateArchive(id,marker));
           attempt(()=>discoverBoss(id,marker,p));
         }
         continue;
