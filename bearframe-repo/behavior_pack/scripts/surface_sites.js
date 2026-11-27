@@ -1,3 +1,4 @@
+import {drySoil,dryClear} from "./survey_terrain.js";
 import {hasSurveySiteNearby,missingCampaignSite,registerChartSite,removeChartBeacon} from "./route_charts.js";
 import {surveySpillway} from "./spillway.js";
 import {populateRuin,retainResident} from "./ecology.js";
@@ -315,8 +316,8 @@ function rect(x1,z1,x2,z2,visit){
 function grade(dim,p){
   let block=dim.getTopmostBlock(p);
   for(let i=0;block&&i<20;i++){
-    if(soil.has(block.typeId))return block.y;
-    if(!clear.has(block.typeId)&&!isDatum(block.typeId))return;
+    if(drySoil(block,soil))return block.y;
+    if(block.isWaterlogged||block.isLiquid||(!dryClear(block,clear)&&!isDatum(block.typeId)))return;
     block=block.below();
   }
 }
@@ -335,9 +336,9 @@ function survey(dim,base,site,beacon){
   if(!rect(0,0,width-1,depth-1,(x,z)=>{
     for(let y=floor-1;y>=floor-(site.expanded?6:3);y--){
       const b=block(x,y,z);
-      if(soil.has(b?.typeId))return true;
-      if(isBeacon(b))continue;
-      if(!clear.has(b?.typeId)||b.isWaterlogged)return false;
+      if(drySoil(b,soil))return true;
+      if(isBeacon(b)&&!b.isWaterlogged&&!b.isLiquid)continue;
+      if(!dryClear(b,clear))return false;
       foundations.push({pos:p(x,y,z),type:b.typeId});
     }
     return false;
@@ -352,9 +353,9 @@ function survey(dim,base,site,beacon){
   if(!corridors.some(r=>rect(...r,(x,z)=>{
     for(const y of [floor,floor-1]){
       const b=block(x,y,z);
-      if(soil.has(b?.typeId)&&[1,2].every(h=>{
+      if(drySoil(b,soil)&&[1,2].every(h=>{
         const above=block(x,y+h,z);
-        return above&&!above.isWaterlogged&&clear.has(above.typeId);
+        return dryClear(above,clear);
       }))return true;
     }
     return false;
@@ -367,7 +368,7 @@ function survey(dim,base,site,beacon){
   if(!rect(0,0,width-1,depth-1,(x,z)=>{
     for(let y=floor-2;y<=height-1;y++){
       const b=block(x,y,z);
-      if(b?.isWaterlogged||(isDatum(b?.typeId)&&!isBeacon(b)))return false;
+      if(!b||b.isWaterlogged||b.isLiquid||(isDatum(b.typeId)&&!isBeacon(b)))return false;
     }
     return true;
   }))return;
