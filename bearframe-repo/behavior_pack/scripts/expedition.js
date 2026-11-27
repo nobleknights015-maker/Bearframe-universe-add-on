@@ -15,6 +15,7 @@ import {
 
 import {CITY_ORIGIN,DOCK_ROLES,STATION_WINGS} from "./station_layout.js";
 import {ASTRO} from "./astro_layout.js";
+import {inspectPlacedSection,liftLanding} from "./astro_recovery.js";
 import {GATEWAY_CREW,GATEWAY_PARTS} from "./gateway_layout.js";
 const CHEST="minecraft:barrel";
 const STATUS="bearframe:status";
@@ -368,9 +369,19 @@ async function buildAstro(dim){
     const key="bearframe:astro_built:"+id;
     if(world.getDynamicProperty(key))continue;
     const end=at(origin,[w-1,h-1,d-1]);
-    await withArea(dim,origin,end,id,()=>{
-      if(dim.getBlocks(new BlockVolume(origin,end),{excludeTypes:["minecraft:air"]},true).getCapacity())
-        throw Error("Astro section intersects existing blocks: "+id);
+    await withArea(dim,origin,end,id,async()=>{
+      if(dim.getBlocks(new BlockVolume(origin,end),{excludeTypes:["minecraft:air"]},true).getCapacity()){
+        const structure=world.structureManager.get("bearframe:"+id);
+        if(!structure)throw Error("Missing Astro section template: "+id);
+        const result=await inspectPlacedSection({structure,origin,size:[w,h,d],
+          readBlock:p=>dims(dim,p),yieldTick:()=>new Promise(resolve=>system.run(resolve))});
+        if(!result.ok)throw Error("Astro section "+id+" cannot be recovered ("+result.reason+
+          (result.position?" at "+keyAt(result.position):"")+"). Existing blocks were preserved.");
+        // An interrupted placement can have all blocks but lack its completion marker.
+        // Do not place the template again; that could replace existing containers.
+        world.setDynamicProperty(key,true);
+        return;
+      }
       world.structureManager.place("bearframe:"+id,dim,origin,{includeEntities:false});
       world.setDynamicProperty(key,true);
     });
@@ -568,7 +579,7 @@ export function installExpedition({validPlayer,spend,attempt}){
         if(!validPlayer(player))return;
         useStationTablet(player).catch(error=>{
           promiseError(error);
-          if(player.isValid)say(player,"Station transit failed. Try again in a moment.");
+          if(player.isValid)say(player,String(error?.message??error).startsWith("Astro section ")?String(error.message):"Station transit failed. Try again in a moment.");
         });
       })
     });
@@ -586,10 +597,18 @@ export function installExpedition({validPlayer,spend,attempt}){
       if(!validPlayer(player)||player.dimension.id!==dimension.id||dist(player.location,location)>49)return;
       if(lift){
         const p=lift.target,cell={x:Math.floor(p.x),y:p.y,z:Math.floor(p.z)};
-        withArea(dimension,cell,cell,"astro-lift-"+player.id,()=>{
-          if(player.isValid&&player.dimension.id===dimension.id&&dist(player.location,location)<=49&&
-            standing(dimension,p)&&player.tryTeleport(p,{dimension,checkForBlocks:true}))say(player,lift.label);
-        }).catch(promiseError);
+        const isCurrent=()=>player.isValid&&player.dimension.id===dimension.id&&dist(player.location,location)<=49;
+        const area="astro-lift-"+player.id;
+        if(transit.has(player.id))return;
+        transit.add(player.id);
+        withArea(dimension,cell,cell,area,()=>{
+          liftLanding({isCurrent,standing:()=>standing(dimension,p),
+            teleport:()=>player.tryTeleport(p,{dimension,checkForBlocks:true}),
+            notify:message=>say(player,message),label:lift.label});
+        }).catch(error=>{
+          promiseError(error);
+          if(isCurrent())say(player,"Lift could not load its destination. Try again.");
+        }).finally(()=>transit.delete(player.id));
         return;
       }
       if(isExit){
