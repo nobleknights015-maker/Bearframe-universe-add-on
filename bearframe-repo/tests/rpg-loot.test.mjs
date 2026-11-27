@@ -34,8 +34,8 @@ test("twelve original weapon IDs, item components and decodable unique pixel ico
 test("eight original boss signature drops are guaranteed and all links resolve",()=>{
  const bosses=catalog.filter(g=>g.boss);assert.equal(bosses.length,8);assert.equal(new Set(bosses.map(g=>g.boss)).size,8);
  for(const gear of bosses){
-  const e=read(bp,"entities/"+gear.boss+".json")["minecraft:entity"].components;
-  assert(e["minecraft:boss"]);assert(e["minecraft:health"].max>=150);
+  const def=read(bp,"entities/"+gear.boss+".json")["minecraft:entity"],e=def.components;
+  assert(!e["minecraft:boss"]);assert(def.component_groups["bearframe:boss_engaged"]["minecraft:boss"]);assert(e["minecraft:health"].max>=150);
   const path=e["minecraft:loot"].table;assert.equal(path,"loot_tables/entities/boss_"+gear.boss+".json");
   const loot=read(bp,path);assert(loot.pools.some(p=>p.rolls===1&&!p.conditions&&p.entries.length===1&&p.entries[0].name==="bearframe:"+gear.id));
   assert(loot.pools.length>=4);

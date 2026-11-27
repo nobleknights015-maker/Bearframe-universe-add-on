@@ -30,11 +30,6 @@
         "value": 180,
         "max": 180
       },
-      "minecraft:boss": {
-        "name": "Palinode-6",
-        "hud_range": 30,
-        "should_darken_sky": false
-      },
       "minecraft:collision_box": {
         "width": 2.2,
         "height": 1.55
@@ -88,6 +83,13 @@
         "minecraft:movement": {
           "value": 0
         }
+      },
+      "bearframe:boss_engaged": {
+        "minecraft:boss": {
+          "name": "Palinode-6",
+          "hud_range": 24,
+          "should_darken_sky": false
+        }
       }
     },
     "events": {
@@ -119,6 +121,20 @@
         },
         "set_property": {
           "bearframe:boss_move": 2
+        }
+      },
+      "bearframe:boss_show_hud": {
+        "add": {
+          "component_groups": [
+            "bearframe:boss_engaged"
+          ]
+        }
+      },
+      "bearframe:boss_hide_hud": {
+        "remove": {
+          "component_groups": [
+            "bearframe:boss_engaged"
+          ]
         }
       }
     }

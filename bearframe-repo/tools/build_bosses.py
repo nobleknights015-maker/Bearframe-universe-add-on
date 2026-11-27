@@ -586,7 +586,6 @@ def build(spec):
         "components":{
             "minecraft:type_family":{"family":[spec["family"],"bearframe_boss","mob","monster"]},
             "minecraft:health":{"value":spec["health"],"max":spec["health"]},
-            "minecraft:boss":{"name":spec["title"],"hud_range":30,"should_darken_sky":False},
             "minecraft:collision_box":{"width":spec["width"],"height":spec["height"]},
             "minecraft:persistent":{},"minecraft:physics":{},
             "minecraft:pushable":{"is_pushable":False,"is_pushable_by_piston":False},
@@ -599,8 +598,14 @@ def build(spec):
                 "entity_types":[{"filters":{"test":"is_family","subject":"other","value":"player"},"max_dist":24}]},
             "minecraft:behavior.move_towards_target":{"priority":3,"speed_multiplier":1,"within_radius":3},
             "minecraft:loot":{"table":f"loot_tables/entities/{loot}.json"}},
-        "component_groups":{hold_group:{"minecraft:movement":{"value":0}}},
+        "component_groups":{
+            hold_group:{"minecraft:movement":{"value":0}},
+            "bearframe:boss_engaged":{"minecraft:boss":{
+                "name":spec["title"],"hud_range":24,"should_darken_sky":False}},
+        },
         "events":{
+            "bearframe:boss_show_hud":{"add":{"component_groups":["bearframe:boss_engaged"]}},
+            "bearframe:boss_hide_hud":{"remove":{"component_groups":["bearframe:boss_engaged"]}},
             "bearframe:boss_idle":{"remove":{"component_groups":[hold_group]},
                                    "set_property":{"bearframe:boss_move":0}},
             **{f"bearframe:boss_attack{i}":{"add":{"component_groups":[hold_group]},

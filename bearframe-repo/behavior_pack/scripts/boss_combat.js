@@ -115,13 +115,21 @@ function reset(entity, state, now, cooldown = 24) {
   state.ready = now + cooldown;
 }
 
+function hideHud(entity, state) {
+  if (state.hudUntil === undefined) return;
+  entity.triggerEvent("bearframe:boss_hide_hud");
+  state.hudUntil = undefined;
+}
+
 function update(entity, state, now) {
+  if (state.hudUntil !== undefined && now >= state.hudUntil) hideHud(entity, state);
   if (!state.strike && now < state.ready) return;
   const origin = entity.location;
   const dimension = entity.dimension;
   state.origin=origin;state.dimension=dimension.id;state.claim=entity.getDynamicProperty("bearframe:boss_claim");
   const players = dimension.getPlayers({ location: origin, maxDistance: ENGAGE_RADIUS }).filter(eligible);
   if (world.getDifficulty() === Difficulty.Peaceful || !players.length) {
+    hideHud(entity, state);
     if (state.strike) reset(entity, state, now, 60);
     else state.ready=now+40;
     return;
@@ -158,6 +166,8 @@ function update(entity, state, now) {
   entity.setRotation({ x: 0, y: yaw });
   entity.clearVelocity();
   entity.triggerEvent("bearframe:boss_attack" + index);
+  if (state.hudUntil === undefined) entity.triggerEvent("bearframe:boss_show_hud");
+  state.hudUntil = now + move.end + 80;
   dimension.playSound("note.pling", origin, { volume: .65, pitch: enraged ? 1.55 : .93 });
   state.strike = { started: now, origin, mark, direction, move, enraged };
   state.next = 1 - index;
@@ -169,6 +179,7 @@ export function installBossCombat() {
   const register = entity => {
     if (!entity.isValid || !BOSS_MOVES[entity.typeId] || active.has(entity.id)) return;
     const state = { entity, next: 0, origin:entity.location, dimension:entity.dimension.id, claim:entity.getDynamicProperty("bearframe:boss_claim") };
+    entity.triggerEvent("bearframe:boss_hide_hud");
     reset(entity, state, system.currentTick, 32);
     active.set(entity.id, state);
   };

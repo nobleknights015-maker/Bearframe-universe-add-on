@@ -30,11 +30,6 @@
         "value": 162,
         "max": 162
       },
-      "minecraft:boss": {
-        "name": "Hush Pendulum",
-        "hud_range": 30,
-        "should_darken_sky": false
-      },
       "minecraft:collision_box": {
         "width": 1.05,
         "height": 2.6
@@ -88,6 +83,13 @@
         "minecraft:movement": {
           "value": 0
         }
+      },
+      "bearframe:boss_engaged": {
+        "minecraft:boss": {
+          "name": "Hush Pendulum",
+          "hud_range": 24,
+          "should_darken_sky": false
+        }
       }
     },
     "events": {
@@ -119,6 +121,20 @@
         },
         "set_property": {
           "bearframe:boss_move": 2
+        }
+      },
+      "bearframe:boss_show_hud": {
+        "add": {
+          "component_groups": [
+            "bearframe:boss_engaged"
+          ]
+        }
+      },
+      "bearframe:boss_hide_hud": {
+        "remove": {
+          "component_groups": [
+            "bearframe:boss_engaged"
+          ]
         }
       }
     }
