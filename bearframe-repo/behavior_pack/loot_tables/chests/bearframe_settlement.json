@@ -97,12 +97,7 @@
       "entries": [
         {
           "type": "empty",
-          "weight": 90
-        },
-        {
-          "type": "item",
-          "name": "bearframe:field_cutter",
-          "weight": 8
+          "weight": 98
         },
         {
           "type": "item",

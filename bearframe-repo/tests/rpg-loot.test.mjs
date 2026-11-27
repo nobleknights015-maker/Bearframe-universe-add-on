@@ -63,3 +63,20 @@ test("all custom item entries across loot tables resolve",()=>{
   const t=read(bp,"loot_tables/"+dir+"/"+name);for(const p of t.pools)for(const e of p.entries)if(e.type==="item"&&e.name?.startsWith("bearframe:"))assert(items.has(e.name),name+" references "+e.name);
  }
 });
+test("world container loot cannot award Farfield or a boss signature weapon",()=>{
+ const forbidden=new Set(["bearframe:field_cutter",...catalog.filter(gear=>gear.boss).map(gear=>"bearframe:"+gear.id)]);
+ function inspect(path,seen){
+  if(seen.has(path))return;
+  seen.add(path);
+  function walk(node){
+   if(!node||typeof node!=="object")return;
+   if(node.type==="item")assert(!forbidden.has(node.name),path+" contains "+node.name);
+   if(node.type==="loot_table")inspect(node.name,seen);
+   for(const value of Object.values(node))walk(value);
+  }
+  walk(read(bp,path));
+ }
+ for(const dir of ["chests","structures"])
+  for(const name of readdirSync(new URL("loot_tables/"+dir+"/",bp)))
+   if(name.endsWith(".json"))inspect("loot_tables/"+dir+"/"+name,new Set());
+});
