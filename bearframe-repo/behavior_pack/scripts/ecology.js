@@ -459,9 +459,15 @@ function spawnResident(dim,p,name,site){
   if(dangerous.has(name)&&world.getDifficulty()===Difficulty.Peaceful)return false;
   if(!openFeet(dim,p,name))return false;
   const entity=dim.spawnEntity("bearframe:"+name,{x:p.x+.5,y:p.y,z:p.z+.5});
-  retainResident(entity);
-  entity.setDynamicProperty("bearframe:region_role",site);
-  return true;
+  try{
+    retainResident(entity);
+    entity.setDynamicProperty("bearframe:region_role",site);
+    return true;
+  }catch(error){
+    // A failed initialization must not leave an untracked duplicate.
+    if(entity.isValid)entity.remove();
+    throw error;
+  }
 }
 const archiveFloor = new Set([
   "bearframe:frontier_deck","bearframe:frontier_dust","minecraft:chiseled_stone_bricks",
@@ -495,9 +501,15 @@ export function populateArchive(id,marker){
     if(dim.getEntities({location:{x:p.x+.5,y:p.y,z:p.z+.5},maxDistance:2}).length)continue;
     const desired=roles[count];
     const role=dangerous.has(desired)&&world.getDifficulty()===Difficulty.Peaceful?roles[0]:desired;
-    if(spawnResident(dim,p,role,id)){
-      count++;
-      world.setDynamicProperty(claim,count);
+    try{
+      if(spawnResident(dim,p,role,id)){
+        count++;
+        world.setDynamicProperty(claim,count);
+      }
+    }catch(error){
+      console.warn("[Bearframe archive population] "+id+": "+error);
+      // Leave the count unchanged for an uninitialized resident; retry on a later scan.
+      return;
     }
   }
 }
