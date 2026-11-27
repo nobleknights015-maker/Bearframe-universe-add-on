@@ -1,0 +1,31 @@
+name: Astro recovery regression
+on:
+  push:
+    branches: ['fix/last-dispatch-0.11.16-station-recovery']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: bearframe-repo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --ignore-scripts --no-audit --no-fund
+      - run: npm test
+      - name: Verify development package (not a release)
+        run: |
+          python3 tools/package_current.py dist
+          python3 tools/verify_package.py dist/Bearframe_The_Last_Dispatch_0.11.15.mcaddon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Astro-recovery-development-candidate-not-release
+          path: bearframe-repo/dist/*.mcaddon
+          if-no-files-found: error
+          retention-days: 7
