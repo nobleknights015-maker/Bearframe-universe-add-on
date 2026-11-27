@@ -14,10 +14,12 @@ import {
 } from "./regions.js";
 
 import {CITY_ORIGIN,DOCK_ROLES,STATION_WINGS} from "./station_layout.js";
+import {ASTRO} from "./astro_layout.js";
 import {GATEWAY_CREW,GATEWAY_PARTS} from "./gateway_layout.js";
 const CHEST="minecraft:barrel";
 const STATUS="bearframe:status";
 const TRANSIT="bearframe:return_berth";
+const STATION_ARRIVAL=ASTRO?.arrival??CITY_ARRIVAL;
 const CITY_BUILT="bearframe:city_built";
 const MOORINGS=["minecraft:air","minecraft:iron_bars"];
 const dims=(dim,p)=>dim.isChunkLoaded(p)?dim.getBlock(p):undefined;
@@ -270,8 +272,9 @@ function clearDockPreload(dim){
 async function withDockPreload(dim,task){
   if(dockUsers===0){
     clearDockPreload(dim);
-    if(!dim.isChunkLoaded(CITY_ARRIVAL)){
-      const result=dim.runCommand("tickingarea add 0 99 0 15 107 15 "+DOCK_PRELOAD+" true");
+    if(!dim.isChunkLoaded(STATION_ARRIVAL)){
+      const x=Math.floor(STATION_ARRIVAL.x/16)*16,z=Math.floor(STATION_ARRIVAL.z/16)*16,y=STATION_ARRIVAL.y;
+      const result=dim.runCommand(`tickingarea add ${x} ${y-2} ${z} ${x+15} ${y+5} ${z+15} ${DOCK_PRELOAD} true`);
       if(!result.successCount)throw Error("Could not preload the station dock");
       dockPreloaded=true;
     }
@@ -358,8 +361,55 @@ async function buildGateway(dim){
   });
 }
 
+async function buildAstro(dim){
+  const readyKey="bearframe:astro_station_ready";
+  if(world.getDynamicProperty(readyKey))return;
+  for(const {id,origin,size:[w,h,d]} of ASTRO.parts){
+    const key="bearframe:astro_built:"+id;
+    if(world.getDynamicProperty(key))continue;
+    const end=at(origin,[w-1,h-1,d-1]);
+    await withArea(dim,origin,end,id,()=>{
+      if(dim.getBlocks(new BlockVolume(origin,end),{excludeTypes:["minecraft:air"]},true).getCapacity())
+        throw Error("Astro section intersects existing blocks: "+id);
+      world.structureManager.place("bearframe:"+id,dim,origin,{includeEntities:false});
+      world.setDynamicProperty(key,true);
+    });
+    await new Promise(resolve=>system.run(resolve));
+  }
+  for(const [slot,{role,name,pos}] of ASTRO.staff.entries()){
+    const key="bearframe:astro_staff:"+slot;
+    if(world.getDynamicProperty(key))continue;
+    const cell={x:Math.floor(pos.x),y:pos.y,z:Math.floor(pos.z)};
+    await withArea(dim,cell,cell,"astro-crew-"+slot,()=>{
+      if(!standing(dim,pos))throw Error("Blocked crew position at "+keyAt(cell));
+      const prior=dim.getEntities({location:pos,maxDistance:2}).find(e=>e.getDynamicProperty("bearframe:astro_slot")===slot);
+      if(!prior){
+        const e=dim.spawnEntity(CITY_ROLES[role].type,pos);
+        try{
+          e.nameTag=name??CITY_ROLES[role].name;
+          e.setDynamicProperty("bearframe:city_role",name&&role===0?9:role);
+          e.setDynamicProperty("bearframe:astro_slot",slot);
+        }catch(error){if(e.isValid)e.remove();throw error;}
+      }
+      world.setDynamicProperty(key,true);
+    });
+  }
+  for(const [i,{pos,text}] of ASTRO.signs.entries()){
+    await withArea(dim,pos,pos,"astro-sign-"+i,()=>{
+      const sign=dim.getBlock(pos)?.getComponent("minecraft:sign");
+      if(!sign)throw Error("Missing station sign "+text);
+      sign.setText(text,SignSide.Front);
+      sign.setText(text,SignSide.Back);
+    });
+  }
+  const log=ASTRO.log;
+  await withArea(dim,log,log,"astro-field-log",()=>placeFieldLog(dim,"bearframe:astro_field_log",[log]));
+  world.setDynamicProperty(readyKey,true);
+}
+
 async function buildOrbit(){
   const dim=world.getDimension(ORBIT);
+  if(ASTRO){await buildAstro(dim);return;}
   if(!world.getDynamicProperty(CITY_BUILT)||world.getDynamicProperty(GATEWAY_BUILT)){
     await buildGateway(dim);
     return;
@@ -402,15 +452,17 @@ async function dockAtStation(player,origin,canDepart){
     const dim=world.getDimension(ORBIT);
     await withDockPreload(dim,async()=>{
       await ensureCity();
-      await withArea(dim,{x:0,y:99,z:-12},{x:10,y:107,z:12},"bearframe-dock-in-"+player.id,()=>{
+      const p=STATION_ARRIVAL;
+      await withArea(dim,{x:Math.floor(p.x)-3,y:p.y-2,z:Math.floor(p.z)-3},
+        {x:Math.floor(p.x)+3,y:p.y+5,z:Math.floor(p.z)+3},"bearframe-dock-in-"+player.id,()=>{
         if(!player.isValid||player.dimension.id!==surface.id)return;
         if(!canDepart())return say(player,"Docking canceled. Stay near your departure point and try again.");
-        const arrival=[CITY_ARRIVAL,...[-1,1,2].map(dz=>({...CITY_ARRIVAL,z:CITY_ARRIVAL.z+dz}))]
+        const arrival=[p,...[-1,1,2].map(dz=>({...p,z:p.z+dz}))]
           .find(point=>standing(dim,point)&&player.tryTeleport(point,{dimension:dim,checkForBlocks:true}));
         if(!arrival)return say(player,"The orbital arrival bay is obstructed.");
         player.setDynamicProperty(TRANSIT,JSON.stringify(origin));
         fieldSound(dim,"dock",arrival);
-        say(player,"Bearframe City. Sneak-interact with Mira at Farfield Dispatch to begin The Last Dispatch. Use the Return Desk in the arrival bay to go back.");
+        say(player,"Bearframe Station. Mira is at Farfield Dispatch. The Commons Deck Lift serves the department pods. Use the Return Desk to go back.");
       });
     });
   }finally{transit.delete(player.id);}
@@ -523,13 +575,23 @@ export function installExpedition({validPlayer,spend,attempt}){
   });
   world.beforeEvents.playerInteractWithBlock.subscribe(event=>{
     const {player,block}=event;
-    const isExit=block.dimension.id===ORBIT && block.typeId==="minecraft:lodestone" && keyAt(block.location)===keyAt(CITY_EXIT);
-    if(!isExit&&!matchRegionDevice(block))return;
+    const stationDevice=block.dimension.id===ORBIT&&block.typeId==="minecraft:lodestone";
+    const isExit=stationDevice&&[CITY_EXIT,ASTRO?.exit].filter(Boolean).some(p=>keyAt(p)===keyAt(block.location));
+    const lift=stationDevice&&ASTRO?.lifts.find(({pos})=>keyAt(pos)===keyAt(block.location));
+    if(!isExit&&!lift&&!matchRegionDevice(block))return;
     event.cancel=true;
     if(!event.isFirstEvent)return;
     const {dimension,location}=block;
     system.run(()=>attempt(()=>{
       if(!validPlayer(player)||player.dimension.id!==dimension.id||dist(player.location,location)>49)return;
+      if(lift){
+        const p=lift.target,cell={x:Math.floor(p.x),y:p.y,z:Math.floor(p.z)};
+        withArea(dimension,cell,cell,"astro-lift-"+player.id,()=>{
+          if(player.isValid&&player.dimension.id===dimension.id&&dist(player.location,location)<=49&&
+            standing(dimension,p)&&player.tryTeleport(p,{dimension,checkForBlocks:true}))say(player,lift.label);
+        }).catch(promiseError);
+        return;
+      }
       if(isExit){
         travelSurface(player).catch(error=>{
           promiseError(error);
