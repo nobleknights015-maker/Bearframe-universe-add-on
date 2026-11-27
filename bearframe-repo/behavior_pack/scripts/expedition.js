@@ -14,6 +14,7 @@ import {
 } from "./regions.js";
 
 import {CITY_ORIGIN,DOCK_ROLES,STATION_WINGS} from "./station_layout.js";
+import {matchesAstroSection} from "./astro_recovery.js";
 import {ASTRO} from "./astro_layout.js";
 import {GATEWAY_CREW,GATEWAY_PARTS} from "./gateway_layout.js";
 const CHEST="minecraft:barrel";
@@ -369,9 +370,14 @@ async function buildAstro(dim){
     if(world.getDynamicProperty(key))continue;
     const end=at(origin,[w-1,h-1,d-1]);
     await withArea(dim,origin,end,id,()=>{
-      if(dim.getBlocks(new BlockVolume(origin,end),{excludeTypes:["minecraft:air"]},true).getCapacity())
-        throw Error("Astro section intersects existing blocks: "+id);
-      world.structureManager.place("bearframe:"+id,dim,origin,{includeEntities:false});
+      const structureId="bearframe:"+id;
+      if(dim.getBlocks(new BlockVolume(origin,end),{excludeTypes:["minecraft:air"]},true).getCapacity()){
+        const structure=world.structureManager.get(structureId);
+        if(!matchesAstroSection(dim,origin,[w,h,d],structure))
+          throw Error("Astro section intersects existing blocks: "+id);
+      }else{
+        world.structureManager.place(structureId,dim,origin,{includeEntities:false});
+      }
       world.setDynamicProperty(key,true);
     });
     await new Promise(resolve=>system.run(resolve));
@@ -586,10 +592,19 @@ export function installExpedition({validPlayer,spend,attempt}){
       if(!validPlayer(player)||player.dimension.id!==dimension.id||dist(player.location,location)>49)return;
       if(lift){
         const p=lift.target,cell={x:Math.floor(p.x),y:p.y,z:Math.floor(p.z)};
+        if(transit.has(player.id))return;
+        transit.add(player.id);
         withArea(dimension,cell,cell,"astro-lift-"+player.id,()=>{
-          if(player.isValid&&player.dimension.id===dimension.id&&dist(player.location,location)<=49&&
-            standing(dimension,p)&&player.tryTeleport(p,{dimension,checkForBlocks:true}))say(player,lift.label);
-        }).catch(promiseError);
+          if(!player.isValid||player.dimension.id!==dimension.id||dist(player.location,location)>49)return;
+          if(standing(dimension,p)&&player.tryTeleport(p,{dimension,checkForBlocks:true})){
+            say(player,lift.label);
+          }else{
+            say(player,"Lift landing is blocked. Clear the landing and try again, or use the Station Tablet to return.");
+          }
+        }).catch(error=>{
+          promiseError(error);
+          if(player.isValid)say(player,"The lift could not load its landing. Try again in a moment.");
+        }).finally(()=>transit.delete(player.id));
         return;
       }
       if(isExit){
