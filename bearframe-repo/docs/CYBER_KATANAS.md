@@ -1,3 +1,0 @@
-# Cyber-katanas — 0.11.6 candidate
-
-Reference-driven held-model overhaul: dark mechanical blade spines, broad colored cutting bevels, tapered tips, faceted guards and illuminated accents. Existing MK I–V inventory PNGs, recipes, IDs, damage and durability preserved. Added MK VI Omni (Mythic), with red blade and cyan accents, +10 damage component, no durability component, and an expensive survival recipe consuming MK V, nether star, two netherite ingots, two legacy cells, two echo shards and a diamond. No copied Java enchantment stack, dash attack, or attack-speed mechanics. Bright texture colors are not true emissive lighting. No additional runtime scripts. In-game hand positioning and quality require live QA.

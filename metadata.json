@@ -1,8 +1,0 @@
-{
-  "name": "Bearframe Bedrock 0.4.0 — Release Portal",
-  "description": "Direct Android .mcaddon download, source bundle, and in-game Bedrock QA checklist for Bearframe Universe v0.4.0.",
-  "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
-}

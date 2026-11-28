@@ -1,4 +1,0 @@
-Gateway II station built by Meister_Warpy.
-Source: https://www.planetminecraft.com/project/space-station-gateway-ii/
-The author permits reuse in any form with credit. Bearframe Labs converted the
-Java structure to Minecraft Bedrock and furnished the central cabin.
